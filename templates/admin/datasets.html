@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('admin_datasets_title') }}{% endblock %}
+{% block breadcrumb %}<a href="{{ url_for('admin_dashboard') }}" style="color: inherit; text-decoration: none;">{{ t('nav_admin') }}</a> / <span>{{ t('admin_datasets_title') }}</span>{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+    <div>
+        <h1 style="font-family: var(--font-serif); font-size: 1.5rem; color: #1a202c;">{{ t('admin_datasets_title') }}</h1>
+        <p style="font-size: 0.88rem; color: var(--text-muted);">{{ t('admin_datasets_desc') }}</p>
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <a href="{{ url_for('upload') }}" class="btn btn-primary btn-sm">{{ t('btn_add_dataset') }}</a>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline btn-sm">{{ t('btn_back_dashboard') }}</a>
+    </div>
+</div>
+
+<div class="card" style="padding: 0; overflow: hidden;">
+    <div style="overflow-x: auto;">
+        <table class="data-table" style="margin: 0;">
+            <thead>
+                <tr>
+                    <th style="width: 50px;">ID</th>
+                    <th>标题与摘要</th>
+                    <th>样点 / 尺度</th>
+                    <th>时间覆盖</th>
+                    <th>数据类型 / 渠道</th>
+                    <th style="text-align: center;">下载量</th>
+                    <th style="text-align: right; min-width: 140px;">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ds in datasets %}
+                <tr>
+                    <td><strong>#{{ ds.id }}</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #1e293b; font-size: 0.92rem; margin-bottom: 4px;">
+                            <a href="{{ url_for('detail', dataset_id=ds.id) }}" target="_blank" style="color: inherit; text-decoration: none;">
+                                {{ ds.title }} ↗
+                            </a>
+                        </div>
+                        <div style="font-size: 0.78rem; color: #64748b; margin-bottom: 4px;">
+                            作者: <strong>{{ ds.author }}</strong> {% if ds.doi %}| DOI: {{ ds.doi }}{% endif %}
+                        </div>
+                        <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                            {% for v in ds.variables[:4] %}
+                                <span class="badge" style="font-size: 0.7rem; padding: 2px 6px;">{{ v.code }}</span>
+                            {% endfor %}
+                            {% if ds.variables|length > 4 %}
+                                <span class="badge" style="font-size: 0.7rem; padding: 2px 6px;">+{{ ds.variables|length - 4 }}</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 500;">{{ ds.site_code or (ds.site.site_code if ds.site else 'N/A') }}</div>
+                        <small style="color: #64748b;">{{ ds.spatial_scale or 'Point' }}</small>
+                    </td>
+                    <td>
+                        <div style="font-size: 0.8rem;">
+                            {% if ds.start_date and ds.end_date %}
+                                {{ ds.start_date.strftime('%Y-%m') }} ~ {{ ds.end_date.strftime('%Y-%m') }}
+                            {% else %}
+                                {{ ds.year }}
+                            {% endif %}
+                        </div>
+                        <small style="color: #64748b;">{{ ds.temporal_resolution or 'Daily' }}</small>
+                    </td>
+                    <td>
+                        <div style="font-size: 0.8rem; font-weight: 500;">{{ ds.data_type }}</div>
+                        <span class="badge {% if ds.data_source_type == 'oss' %}badge-brown{% elif ds.data_source_type == 'github' %}badge-primary{% endif %}" style="font-size: 0.7rem; margin-top: 2px;">
+                            {{ ds.data_source_type|upper }}
+                        </span>
+                    </td>
+                    <td style="text-align: center; font-weight: bold; color: var(--primary);">
+                        {{ ds.download_count }}
+                    </td>
+                    <td style="text-align: right;">
+                        <div style="display: flex; justify-content: flex-end; gap: 6px;">
+                            <a href="{{ url_for('admin_edit_dataset', dataset_id=ds.id) }}" class="btn btn-outline btn-sm">
+                                ✏️ {{ t('btn_edit') }}
+                            </a>
+                            <form method="POST" action="{{ url_for('admin_delete_dataset', dataset_id=ds.id) }}" style="display: inline;" onsubmit="return confirm('确定彻底删除该数据集及其全部关联历史吗？此操作不可撤销！');">
+                                <button type="submit" class="btn btn-outline btn-sm" style="color: #b91c1c; border-color: #fca5a5;">
+                                    🗑️ {{ t('btn_delete') }}
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

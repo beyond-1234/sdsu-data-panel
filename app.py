@@ -953,6 +953,150 @@ def admin_oss():
 
     return render_template('admin/oss.html', oss_config=oss_config)
 
+# ----------------- 后台科研数据集综合管理 (CRUD) -----------------
+@app.route('/admin/datasets')
+@login_required
+def admin_datasets():
+    if current_user.role != 'admin':
+        flash('权限不足，仅管理员可管理数据集', 'error')
+        return redirect(url_for('index'))
+
+    datasets = Dataset.query.order_by(Dataset.created_at.desc()).all()
+    return render_template('admin/datasets.html', datasets=datasets)
+
+@app.route('/admin/dataset/<int:dataset_id>/edit', methods=['GET', 'POST'])
+@login_required
+def admin_edit_dataset(dataset_id):
+    if current_user.role != 'admin':
+        flash('权限不足', 'error')
+        return redirect(url_for('index'))
+
+    dataset = Dataset.query.get_or_404(dataset_id)
+
+    if request.method == 'POST':
+        title = request.form.get('title', '').strip()
+        author = request.form.get('author', '').strip()
+        year = request.form.get('year', '').strip()
+        site_id = request.form.get('site_id', type=int)
+        site_code = request.form.get('site_code', '').strip()
+        spatial_scale = request.form.get('spatial_scale', 'Point').strip()
+        start_date_str = request.form.get('start_date', '').strip()
+        end_date_str = request.form.get('end_date', '').strip()
+        temporal_resolution = request.form.get('temporal_resolution', 'Daily').strip()
+        data_type = request.form.get('data_type', 'Model Simulation').strip()
+        scenario = request.form.get('scenario', 'Control').strip()
+        min_depth = request.form.get('min_depth', type=float) or 0.0
+        max_depth = request.form.get('max_depth', type=float) or 1.0
+        doi = request.form.get('doi', '').strip()
+        data_source_type = request.form.get('data_source_type', 'github').strip()
+        github_url = request.form.get('github_url', '').strip()
+        description = request.form.get('description', '').strip()
+
+        if not title or not author or not description:
+            flash('标题、作者及描述不能为空', 'error')
+            return redirect(url_for('admin_edit_dataset', dataset_id=dataset.id))
+
+        from datetime import date
+        s_date = None
+        e_date = None
+        try:
+            if start_date_str:
+                s_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            if end_date_str:
+                e_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+        except Exception:
+            pass
+
+        yr_val = int(year) if year.isdigit() else (s_date.year if s_date else dataset.year)
+
+        target_site = None
+        if site_id:
+            target_site = db.session.get(SiteLocation, site_id)
+        elif site_code:
+            target_site = SiteLocation.query.filter_by(site_code=site_code).first()
+
+        # 更新基本字段
+        dataset.title = title
+        dataset.author = author
+        dataset.year = yr_val
+        dataset.site = target_site
+        dataset.site_code = target_site.site_code if target_site else (site_code or dataset.site_code)
+        dataset.spatial_scale = spatial_scale
+        if s_date:
+            dataset.start_date = s_date
+        if e_date:
+            dataset.end_date = e_date
+        dataset.temporal_resolution = temporal_resolution
+        dataset.data_type = data_type
+        dataset.scenario = scenario
+        dataset.min_depth = min_depth
+        dataset.max_depth = max_depth
+        dataset.doi = doi
+        dataset.data_source_type = data_source_type
+        dataset.github_url = github_url if data_source_type == 'github' else None
+        dataset.description = description
+
+        # 重新挂载所选的标准化变量
+        var_ids = request.form.getlist('variables')
+        dataset.variables.clear()
+        for vid in var_ids:
+            if str(vid).isdigit():
+                v_obj = db.session.get(VariableDefinition, int(vid))
+                if v_obj:
+                    dataset.variables.append(v_obj)
+
+        # 重新同步关联关键词
+        kw_ids = request.form.getlist('keyword_ids')
+        dataset.keywords.clear()
+        for kid in kw_ids:
+            if str(kid).isdigit():
+                k_obj = db.session.get(Keyword, int(kid))
+                if k_obj:
+                    dataset.keywords.append(k_obj)
+
+        # 追加新手写关键词
+        extra_kws = request.form.get('keywords', '').strip()
+        if extra_kws:
+            raw_kws = [k.strip().lower() for k in extra_kws.replace('，', ',').split(',') if k.strip()]
+            for k_name in raw_kws:
+                kw_obj = Keyword.query.filter_by(name=k_name).first()
+                if not kw_obj:
+                    kw_obj = Keyword(name=k_name)
+                    db.session.add(kw_obj)
+                    db.session.flush()
+                if kw_obj not in dataset.keywords:
+                    dataset.keywords.append(kw_obj)
+
+        db.session.commit()
+        flash(f'数据集 #{dataset.id} 更新成功！', 'success')
+        return redirect(url_for('admin_datasets'))
+
+    all_sites = SiteLocation.query.order_by(SiteLocation.site_code.asc()).all()
+    all_variables = VariableDefinition.query.order_by(VariableDefinition.category.asc()).all()
+    all_keywords = Keyword.query.order_by(Keyword.name.asc()).all()
+    return render_template('admin/dataset_edit.html', dataset=dataset, all_sites=all_sites, all_variables=all_variables, all_keywords=all_keywords)
+
+@app.route('/admin/dataset/<int:dataset_id>/delete', methods=['POST'])
+@login_required
+def admin_delete_dataset(dataset_id):
+    if current_user.role != 'admin':
+        flash('权限不足', 'error')
+        return redirect(url_for('index'))
+
+    dataset = Dataset.query.get_or_404(dataset_id)
+    ds_title = dataset.title
+
+    # 清理关联的审计下载日志与关联多对多
+    DownloadLog.query.filter_by(dataset_id=dataset.id).delete()
+    dataset.keywords.clear()
+    dataset.variables.clear()
+
+    db.session.delete(dataset)
+    db.session.commit()
+
+    flash(f'数据集 #{dataset_id} "{ds_title[:20]}..." 已成功从系统中彻底删除！', 'info')
+    return redirect(url_for('admin_datasets'))
+
 if __name__ == '__main__':
     seed_database()
     app.run(host='0.0.0.0', port=5001, debug=True)

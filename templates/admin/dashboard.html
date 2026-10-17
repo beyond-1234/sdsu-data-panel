@@ -9,10 +9,11 @@
         <h1 style="font-family: var(--font-serif); font-size: 1.5rem; color: #1a202c;">{{ t('admin_dashboard_title') }}</h1>
         <p style="font-size: 0.88rem; color: var(--text-muted);">{{ t('admin_dashboard_desc') }}</p>
     </div>
-    <div style="display: flex; gap: 10px;">
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <a href="{{ url_for('admin_datasets') }}" class="btn btn-primary btn-sm">{{ t('btn_manage_datasets') }}</a>
         <a href="{{ url_for('admin_oss') }}" class="btn btn-outline btn-sm">{{ t('btn_manage_oss') }}</a>
         <a href="{{ url_for('admin_keywords') }}" class="btn btn-outline btn-sm">{{ t('btn_manage_keywords') }}</a>
-        <a href="{{ url_for('upload') }}" class="btn btn-primary btn-sm">{{ t('btn_add_dataset') }}</a>
+        <a href="{{ url_for('upload') }}" class="btn btn-outline btn-sm">{{ t('btn_add_dataset') }}</a>
     </div>
 </div>
 
