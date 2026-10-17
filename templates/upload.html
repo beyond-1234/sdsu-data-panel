@@ -36,33 +36,48 @@
             <div style="font-weight: 600; font-size: 0.92rem; color: #1e293b; margin-bottom: 12px;">🌐 多维时空与工况属性 (Spatio-Temporal & Context)</div>
             
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 14px;">
+                <!-- 1. 样点：既可选择已有样点，也可手写输入新样点代码与名称 -->
                 <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">观测/模拟样点 (Site Location)</label>
-                    <select name="site_id" class="form-control">
+                    <select name="site_id" id="siteSelect" class="form-control" onchange="onSiteSelectChange(this.value)">
                         <option value="">-- 选择已有样点 (如 US-Atq) --</option>
                         {% for st in all_sites %}
-                            <option value="{{ st.id }}">{{ st.site_code }} ({{ st.site_name[:18] }}) - {{ st.biome }}</option>
+                            <option value="{{ st.id }}" data-code="{{ st.site_code }}">{{ st.site_code }} ({{ st.site_name[:18] }}) - {{ st.biome }}</option>
                         {% endfor %}
                     </select>
+                    <div style="margin-top: 6px;">
+                        <input type="text" name="site_code" id="siteCodeInput" class="form-control" style="font-size: 0.82rem; padding: 6px 10px;" placeholder="或手写自定义样点代号 (如 US-MySite)">
+                    </div>
                 </div>
 
+                <!-- 2. 空间尺度：既可选择预设选项，也可手写输入 -->
                 <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">空间尺度 (Spatial Scale)</label>
-                    <select name="spatial_scale" class="form-control">
-                        <option value="Point" selected>Point (样点/单点微地形)</option>
-                        <option value="Regional">Regional (区域网格化)</option>
-                        <option value="Global">Global (全球陆面模拟)</option>
-                    </select>
+                    <input list="spatialScaleOptions" name="spatial_scale" class="form-control" value="Point" placeholder="选择或手写空间尺度 (如 Point, Regional...)">
+                    <datalist id="spatialScaleOptions">
+                        <option value="Point">样点/单点微地形 (Point)</option>
+                        <option value="Micro-topography">微地形多边形 (Micro-topography)</option>
+                        <option value="Regional">区域网格化 (Regional Gridded)</option>
+                        <option value="Watershed">小流域尺度 (Watershed)</option>
+                        <option value="Global">全球陆面模拟 (Global 0.5°)</option>
+                    </datalist>
+                    <small style="color: var(--text-muted); font-size: 0.75rem;">可从下拉列表中挑选，也可直接在框内手写新尺度</small>
                 </div>
 
+                <!-- 3. 时间分辨率：既可选择预设选项，也可手写输入 -->
                 <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">时间分辨率 (Frequency)</label>
-                    <select name="temporal_resolution" class="form-control">
-                        <option value="Daily" selected>Daily (日均)</option>
-                        <option value="Half-hourly">Half-hourly (半小时高频)</option>
-                        <option value="Monthly">Monthly (月度)</option>
-                        <option value="Yearly">Yearly (年度积分)</option>
-                    </select>
+                    <input list="tempResOptions" name="temporal_resolution" class="form-control" value="Daily" placeholder="选择或手写时频 (如 Daily, Hourly...)">
+                    <datalist id="tempResOptions">
+                        <option value="Half-hourly">半小时高频 (Half-hourly)</option>
+                        <option value="Hourly">逐小时 (Hourly)</option>
+                        <option value="Daily">日均值 (Daily)</option>
+                        <option value="Weekly">周频 (Weekly)</option>
+                        <option value="Monthly">月度积分 (Monthly)</option>
+                        <option value="Seasonal">季度 (Seasonal)</option>
+                        <option value="Yearly">年度 (Yearly)</option>
+                    </datalist>
+                    <small style="color: var(--text-muted); font-size: 0.75rem;">可从下拉列表中挑选，也可直接在框内手写新时频</small>
                 </div>
             </div>
 
@@ -119,16 +134,9 @@
             </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-            <div class="form-group">
-                <label class="form-label" for="site_code">{{ t('form_site') }}</label>
-                <input type="text" id="site_code" name="site_code" class="form-control" placeholder="e.g., US-Atq / Global">
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="doi">{{ t('form_doi') }}</label>
-                <input type="text" id="doi" name="doi" class="form-control" placeholder="10.5281/zenodo.xxxxxxx">
-            </div>
+        <div class="form-group">
+            <label class="form-label" for="doi">{{ t('form_doi') }}</label>
+            <input type="text" id="doi" name="doi" class="form-control" placeholder="10.5281/zenodo.xxxxxxx">
         </div>
 
         <div class="form-group">
@@ -136,10 +144,25 @@
             <textarea id="description" name="description" class="form-control" rows="4" placeholder="Model drivers, temporal resolution, key findings..." required></textarea>
         </div>
 
-        <div class="form-group">
-            <label class="form-label" for="keywords">{{ t('form_keywords') }}</label>
-            <input type="text" id="keywords" name="keywords" class="form-control" value="clm-microbe, methane, soil_respiration" placeholder="methane, soil_respiration, bacterial_biomass" required>
-            <small style="color: var(--text-muted); font-size: 0.78rem;">{{ t('form_keywords_tip') }}</small>
+        <!-- 对标管理端的关键词多维挂载体系 (只增不删已录入核心词) -->
+        <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 18px; margin-bottom: 20px;">
+            <div style="font-weight: 600; font-size: 0.92rem; color: #1e293b; margin-bottom: 6px;">🏷️ 学科分类关键词 (对标词库，不可破坏已有核心词)</div>
+            <p style="font-size: 0.78rem; color: #64748b; margin-bottom: 12px;">从系统统一治理的已有科学词库中直接勾选，并可在下方输入框追加新标签（系统自动纳入主词库，普通用户无法删除既有词）：</p>
+            
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;">
+                {% for kw in all_keywords %}
+                    <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; cursor: pointer; background: #fff; padding: 5px 12px; border-radius: 14px; border: 1px solid #cbd5e1;">
+                        <input type="checkbox" name="keyword_ids" value="{{ kw.id }}" {% if kw.name in ['methanogenesis', 'soil_respiration'] %}checked{% endif %}>
+                        <span># {{ kw.name }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="keywords">补充手写新关键词 (英文或中文逗号隔开，自动创建并关联)</label>
+                <input type="text" id="keywords" name="keywords" class="form-control" placeholder="例如: arctic_permafrost, thaw_depth, winter_respiration">
+                <small style="color: var(--text-muted); font-size: 0.75rem;">注意：所输入的新词将作为新标引自动归入系统词典，由管理员在后台统一管理，保证全库查全率。</small>
+            </div>
         </div>
 
         <!-- 来源类型切换 -->
@@ -189,6 +212,17 @@
 
 {% block scripts %}
 <script>
+function onSiteSelectChange(val) {
+    const siteSelect = document.getElementById('siteSelect');
+    const siteCodeInput = document.getElementById('siteCodeInput');
+    if (!siteSelect || !siteCodeInput) return;
+
+    const selectedOption = siteSelect.options[siteSelect.selectedIndex];
+    if (selectedOption && selectedOption.dataset && selectedOption.dataset.code) {
+        siteCodeInput.value = selectedOption.dataset.code;
+    }
+}
+
 function toggleSourceType(type) {
     const gh = document.getElementById('githubSection');
     const loc = document.getElementById('localSection');
