@@ -22,9 +22,10 @@
                     <span>🔍</span> {{ t('nav_overview') }}
                 </a>
             </li>
+            <!-- 交互式模型分析页签（已按需禁用） -->
             <li>
-                <a href="{{ url_for('analysis') }}" class="{% if request.path == '/analysis' %}active{% endif %}">
-                    <span>📈</span> {{ t('nav_analysis') }}
+                <a href="javascript:void(0);" style="opacity: 0.45; cursor: not-allowed; pointer-events: none; text-decoration: none;" title="该功能模块维护升级中 (Disabled)">
+                    <span>📈</span> {{ t('nav_analysis') }} <small style="font-size: 0.68rem; background: rgba(255,255,255,0.12); padding: 1px 6px; border-radius: 4px; margin-left: 6px;">待开放</small>
                 </a>
             </li>
             <li>

@@ -562,8 +562,8 @@ def detail(dataset_id):
 
 @app.route('/analysis')
 def analysis():
-    depth_data = get_depth_profile_data()
-    return render_template('analysis.html', depth_data=depth_data)
+    flash('交互式模型分析模块目前维护升级中，暂未开放访问', 'info')
+    return redirect(url_for('index'))
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
