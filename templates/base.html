@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CLM-Microbe 科研数据平台{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/echarts.min.js') }}"></script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- 左侧竖向导航栏 (GRooT 质感) -->
+    <aside class="sidebar">
+        <div class="brand">
+            <span>🌿</span> CLM-Microbe
+        </div>
+        <div class="sub-brand">SDSU Data Repository</div>
+        
+        <ul class="sidebar-nav">
+            <li>
+                <a href="{{ url_for('index') }}" class="{% if request.path == '/' %}active{% endif %}">
+                    <span>🔍</span> 数据总览 & 搜索
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('analysis') }}" class="{% if request.path == '/analysis' %}active{% endif %}">
+                    <span>📈</span> 交互式模型分析
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('upload') }}" class="{% if request.path == '/upload' %}active{% endif %}">
+                    <span>📤</span> 数据提交上传
+                </a>
+            </li>
+            {% if current_user.is_authenticated and current_user.role == 'admin' %}
+            <li>
+                <a href="{{ url_for('admin_dashboard') }}" class="{% if '/admin' in request.path %}active{% endif %}">
+                    <span>📊</span> 后台管理与埋点
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+
+        <div class="sidebar-footer">
+            {% if current_user.is_authenticated %}
+                <div style="font-weight: 600; color: #fff;">{{ current_user.username }} <small style="color: #94a3b8;">({{ current_user.role }})</small></div>
+                <div style="font-size: 0.78rem;">{{ current_user.institution or '未登记机构' }}</div>
+                <div><a href="{{ url_for('logout') }}">退出登录</a></div>
+            {% else %}
+                <div>访客模式 (只读检索)</div>
+                <div><a href="{{ url_for('login') }}">登录 / 注册新账号</a></div>
+            {% endif %}
+            <div style="margin-top: 10px; font-size: 0.75rem; color: #64748b;">
+                SDSU Ecohydrology Lab © 2026<br>
+                CLM-Microbe & LeafWeb
+            </div>
+        </div>
+    </aside>
+
+    <!-- 右侧主体内容 -->
+    <div class="main-wrapper">
+        <header class="top-header">
+            <div class="breadcrumbs">
+                CLM-Microbe 平台 / <span>{% block breadcrumb %}数据空间{% endblock %}</span>
+            </div>
+            <div class="header-user-status">
+                {% if current_user.is_authenticated %}
+                    <span>欢迎，<strong>{{ current_user.username }}</strong></span>
+                    <a href="{{ url_for('logout') }}" class="btn btn-outline btn-sm">登出</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="btn btn-outline btn-sm">登录 / 注册</a>
+                {% endif %}
+            </div>
+        </header>
+
+        <main class="content-area">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="footer">
+            <div>
+                <strong>CLM-Microbe 数据管理、展示与分发平台</strong> | 基于 LeafWeb 交互分析体系与 GRooT 典雅设计
+            </div>
+            <div>
+                DOI: <a href="https://doi.org/10.5281/zenodo.clm-microbe" target="_blank" style="color: var(--primary);">10.5281/zenodo.clm-microbe</a>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 全局科研下载用途登记模态框 (埋点) -->
+    <div class="modal-overlay" id="downloadModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">科学数据共享与下载登记</div>
+                <button class="modal-close" onclick="closeDownloadModal()">&times;</button>
+            </div>
+            <form onsubmit="submitDownloadTracking(event)">
+                <div style="margin-bottom: 16px; font-size: 0.9rem; color: var(--text-muted);">
+                    您正在申请下载数据集：<br>
+                    <strong id="modalDatasetTitle" style="color: var(--text-dark);">-</strong>
+                    <div style="margin-top: 4px; font-size: 0.82rem;">分发渠道：<span id="modalSourceType">-</span></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="modalInstitution">您的工作单位 / 科研机构 *</label>
+                    <input type="text" id="modalInstitution" class="form-control" 
+                           value="{% if current_user.is_authenticated %}{{ current_user.institution or '' }}{% endif %}" 
+                           placeholder="例如：中国科学院地理科学与资源研究所 / SDSU" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="modalPurpose">数据应用场景与研究目的 *</label>
+                    <select id="modalPurpose" class="form-control" required>
+                        <option value="Academic Research" selected>学术科研与论文撰写 (Academic Research)</option>
+                        <option value="Model Calibration & Validation">陆面/生物地球化学模型校准验证 (Model Calibration)</option>
+                        <option value="Teaching & Education">高校或研究生课程教学 (Teaching & Education)</option>
+                        <option value="Cross-site Synthesis">跨站点宏观综合对比 (Cross-site Synthesis)</option>
+                        <option value="General Exploration">个人兴趣与技术评估 (General Exploration)</option>
+                    </select>
+                </div>
+
+                <div style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 18px; line-height: 1.4;">
+                    * 依据 FLUXNET & LeafWeb 数据协议，登记的用途与单位将归档于审计日志，以保障科研成果的溯源与致谢规范。
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" class="btn btn-outline" onclick="closeDownloadModal()">取消</button>
+                    <button type="submit" id="modalSubmitBtn" class="btn btn-primary">确认用途并开始下载</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

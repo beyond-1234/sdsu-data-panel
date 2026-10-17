@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}按数据集维护关键词 - CLM-Microbe{% endblock %}
+{% block breadcrumb %}<a href="{{ url_for('admin_dashboard') }}" style="color: inherit; text-decoration: none;">管理看板</a> / <span>以数据为核心的关键词维护</span>{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <div>
+        <h1 style="font-family: var(--font-serif); font-size: 1.5rem; color: #1a202c;">数据主导的学科关键词维护</h1>
+        <p style="font-size: 0.88rem; color: var(--text-muted);">
+            遵循“以数据为主数据”的科研数据治理规范，通过选定具体数据集来维护其标引关键词，保障关键词的科学语境与上下文溯源。
+        </p>
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <!-- 一键清理孤立未关联标签 -->
+        <form method="POST" action="{{ url_for('admin_keywords') }}" onsubmit="return confirm('确定要清理所有未关联任何数据集的孤立关键词吗？');">
+            <input type="hidden" name="action" value="cleanup_orphan">
+            <button type="submit" class="btn btn-outline btn-sm" style="color: #64748b;">🧹 清理未引用的孤立标签</button>
+        </form>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline btn-sm">← 返回看板</a>
+    </div>
+</div>
+
+<!-- 数据集主列表与对应的关键词维护 -->
+<div style="display: flex; flex-direction: column; gap: 20px;">
+    {% for ds in datasets %}
+    <div class="card" style="margin-bottom: 0;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 12px;">
+            <div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <span class="badge badge-primary">ID: {{ ds.id }}</span>
+                    <span class="badge">{{ ds.year }} 年</span>
+                    {% if ds.site_code %}<span class="badge badge-brown">{{ ds.site_code }}</span>{% endif %}
+                    <span style="font-size: 0.82rem; color: var(--text-muted);">作者: {{ ds.author }}</span>
+                </div>
+                <h3 style="font-family: var(--font-serif); font-size: 1.15rem; color: #1a202c;">
+                    <a href="{{ url_for('detail', dataset_id=ds.id) }}" target="_blank" style="text-decoration: none; color: inherit;">
+                        {{ ds.title }} ↗
+                    </a>
+                </h3>
+            </div>
+            <div>
+                <a href="{{ url_for('detail', dataset_id=ds.id) }}" class="btn btn-outline btn-sm">查看详情</a>
+            </div>
+        </div>
+
+        <div style="background: #f8fafc; border-radius: 6px; padding: 14px 18px; border: 1px solid var(--border-color);">
+            <div style="font-size: 0.82rem; font-weight: 600; color: #475569; margin-bottom: 10px;">
+                当前挂载的关键词 (共 {{ ds.keywords|length }} 个):
+            </div>
+
+            <!-- 当前数据集标签列表，支持单项移除 -->
+            <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;">
+                {% if ds.keywords %}
+                    {% for kw in ds.keywords %}
+                    <span class="badge" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; background: #ffffff; border: 1px solid #cbd5e1;">
+                        <strong># {{ kw.name }}</strong>
+                        <form method="POST" action="{{ url_for('manage_dataset_keyword', dataset_id=ds.id) }}" style="display: inline;" onsubmit="return confirm('确定解绑此关键词？');">
+                            <input type="hidden" name="action" value="remove">
+                            <input type="hidden" name="keyword_id" value="{{ kw.id }}">
+                            <input type="hidden" name="redirect_to" value="admin_keywords">
+                            <button type="submit" style="background: none; border: none; cursor: pointer; color: #94a3b8; font-size: 1rem; line-height: 1; padding: 0 2px;" title="解除绑定">&times;</button>
+                        </form>
+                    </span>
+                    {% endfor %}
+                {% else %}
+                    <span style="font-size: 0.82rem; color: #94a3b8; font-style: italic;">暂未关联任何关键词</span>
+                {% endif %}
+            </div>
+
+            <!-- 为该数据集关联/新增关键词 -->
+            <form method="POST" action="{{ url_for('manage_dataset_keyword', dataset_id=ds.id) }}" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <input type="hidden" name="action" value="add">
+                <input type="hidden" name="redirect_to" value="admin_keywords">
+                
+                <!-- 从系统已有词库快捷挑选关联 -->
+                <select name="existing_keyword_id" class="form-control" style="width: 220px; font-size: 0.85rem; padding: 6px 10px;">
+                    <option value="">-- 从已有词库选择关联 --</option>
+                    {% for all_kw in all_keywords %}
+                        {% if all_kw not in ds.keywords %}
+                            <option value="{{ all_kw.id }}">{{ all_kw.name }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+
+                <span style="font-size: 0.82rem; color: var(--text-muted);">或输入新词:</span>
+                <input type="text" name="keyword_name" class="form-control" style="width: 200px; font-size: 0.85rem; padding: 6px 10px;" placeholder="例如: arctic_wetland">
+
+                <button type="submit" class="btn btn-primary btn-sm">+ 挂载到此数据集</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- 底部统计与全局词库概览 -->
+<div class="card" style="margin-top: 24px;">
+    <div class="card-title">全局标引词引用概览 (共 {{ all_keywords|length }} 个)</div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+        {% for kw in all_keywords %}
+            <span class="badge" style="padding: 6px 12px; font-size: 0.82rem;">
+                # {{ kw.name }} <span style="color: var(--primary); font-weight: bold; margin-left: 4px;">({{ kw.datasets.count() }} 条数据)</span>
+            </span>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

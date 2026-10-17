@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}数据总览与多维检索 - CLM-Microbe{% endblock %}
+{% block breadcrumb %}数据总览与检索{% endblock %}
+
+{% block content %}
+<div class="card" style="background: linear-gradient(135deg, #245d3e 0%, #1a3c29 100%); color: #fff; padding: 32px;">
+    <h1 style="font-family: var(--font-serif); font-size: 1.8rem; margin-bottom: 8px;">CLM-Microbe 科研数据管理与分发中心</h1>
+    <p style="opacity: 0.88; font-size: 0.95rem; max-width: 820px; line-height: 1.6;">
+        集成陆面过程模式（Community Land Model）显式微生物模块输出与全球通量塔样点观测数据。融合 LeafWeb 动态交互分析体系与规范化科研数据分发审计。
+    </p>
+    <div style="margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
+        <span class="badge" style="background: rgba(255,255,255,0.2); color: #fff; border: none;">当前纳管数据集: {{ datasets|length }} 项</span>
+        <span class="badge" style="background: rgba(255,255,255,0.2); color: #fff; border: none;">累计分发引用: {{ total_downloads }} 次</span>
+        <span class="badge" style="background: rgba(255,255,255,0.2); color: #fff; border: none;">核心学科标引词: {{ keywords|length }} 个</span>
+    </div>
+</div>
+
+<!-- 检索与多重过滤栏 -->
+<div class="card">
+    <div class="card-title">
+        <span>多维检索过滤</span>
+        {% if query or selected_year or selected_kw %}
+            <a href="{{ url_for('index') }}" class="btn btn-outline btn-sm">清除筛选条件</a>
+        {% endif %}
+    </div>
+
+    <form method="GET" action="{{ url_for('index') }}" style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 16px; align-items: end;">
+        <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" for="q">关键字 / 标题 / 摘要全文搜索</label>
+            <input type="text" id="q" name="q" class="form-control" value="{{ query }}" placeholder="输入关键词，如: Methane, Atqasuk, Soil Respiration, Fungi...">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" for="year">模拟 / 观测年份</label>
+            <select id="year" name="year" class="form-control">
+                <option value="">全部年份</option>
+                {% for y in available_years %}
+                    <option value="{{ y }}" {% if selected_year == y|string %}selected{% endif %}>{{ y }} 年</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" for="keyword">学科核心标引</label>
+            <select id="keyword" name="keyword" class="form-control">
+                <option value="">全部标签</option>
+                {% for kw in keywords %}
+                    <option value="{{ kw.name }}" {% if selected_kw == kw.name %}selected{% endif %}>{{ kw.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <button type="submit" class="btn btn-primary" style="height: 42px; width: 100px;">筛选</button>
+        </div>
+    </form>
+
+    <!-- 热门关键词标签云 -->
+    <div style="margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--border-color); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">热门标签:</span>
+        {% for kw in keywords %}
+            <a href="{{ url_for('index', keyword=kw.name) }}" class="badge {% if selected_kw == kw.name %}active{% endif %}">
+                # {{ kw.name }}
+            </a>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- 数据集列表卡片流 -->
+<div style="display: flex; flex-direction: column; gap: 16px;">
+    {% if datasets %}
+        {% for ds in datasets %}
+            <div class="card" style="margin-bottom: 0; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.boxShadow='0 6px 18px rgba(0,0,0,0.08)'" onmouseout="this.style.boxShadow='0 3px 12px rgba(0,0,0,0.04)'">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;">
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                            <span class="badge badge-primary">{{ ds.year }}</span>
+                            {% if ds.site_code %}
+                                <span class="badge badge-brown">样点: {{ ds.site_code }}</span>
+                            {% endif %}
+                            <span style="font-size: 0.82rem; color: var(--text-muted);">作者 / 团队: <strong>{{ ds.author }}</strong></span>
+                        </div>
+                        <h2 style="font-family: var(--font-serif); font-size: 1.22rem; margin-bottom: 10px; color: #1a202c;">
+                            <a href="{{ url_for('detail', dataset_id=ds.id) }}" style="text-decoration: none; color: inherit;">{{ ds.title }}</a>
+                        </h2>
+                        <p style="font-size: 0.9rem; color: #4a5568; line-height: 1.5; margin-bottom: 14px;">
+                            {{ ds.description[:260] }}{% if ds.description|length > 260 %}...{% endif %}
+                        </p>
+                        
+                        <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                            {% for kw in ds.keywords %}
+                                <a href="{{ url_for('index', keyword=kw.name) }}" class="badge"># {{ kw.name }}</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- 操作栏 -->
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 10px; min-width: 170px;">
+                        <div style="font-size: 0.82rem; color: var(--text-muted);">
+                            累计下载: <strong id="dl-count-{{ ds.id }}" style="color: var(--primary);">{{ ds.download_count }}</strong> 次
+                        </div>
+                        <div style="font-size: 0.78rem; color: #718096;">
+                            渠道: 
+                            {% if ds.data_source_type == 'github' %}
+                                <span style="color: #0366d6;">GitHub 镜像</span>
+                            {% else %}
+                                <span style="color: #2e7d32;">本地归档</span>
+                            {% endif %}
+                        </div>
+
+                        <div style="display: flex; gap: 8px; margin-top: 6px;">
+                            <a href="{{ url_for('detail', dataset_id=ds.id) }}" class="btn btn-outline btn-sm">交互预览</a>
+                            <button class="btn btn-primary btn-sm" onclick="openDownloadModal({{ ds.id }}, '{{ ds.title|replace('\'', '\\\'') }}', '{{ ds.data_source_type }}')">
+                                申请下载
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="card" style="text-align: center; padding: 48px 24px; color: var(--text-muted);">
+            <div style="font-size: 2rem; margin-bottom: 12px;">📂</div>
+            <div style="font-size: 1.1rem; font-weight: 500;">未找到符合检索条件的数据集</div>
+            <p style="margin-top: 8px; font-size: 0.88rem;">请尝试调整关键词、选择更宽泛的年份，或清除筛选条件。</p>
+            <div style="margin-top: 18px;">
+                <a href="{{ url_for('index') }}" class="btn btn-outline btn-sm">重置全部筛选条件</a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

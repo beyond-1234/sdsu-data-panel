@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}科研数据集录入与上传 - CLM-Microbe{% endblock %}
+{% block breadcrumb %}数据集提交与录入{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 900px; margin: 0 auto;">
+    <div class="card-title">
+        <span>📤 提交与共享科研数据集</span>
+        <span class="badge badge-primary">支持 GitHub 直连 / 本地文件</span>
+    </div>
+    <p class="card-subtitle">
+        依据生态科学数据共享规范，请如实录入元数据。所提交数据将经历元数据核验并自动编目纳管。
+    </p>
+
+    <form method="POST" action="{{ url_for('upload') }}" enctype="multipart/form-data">
+        <div class="form-group">
+            <label class="form-label" for="title">数据集名称 / 论文成果标题 *</label>
+            <input type="text" id="title" name="title" class="form-control" placeholder="例如：CLM-Microbe 湿地样点土壤甲烷通量与微生物群落动态模拟数据集" required>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+                <label class="form-label" for="author">第一作者 / 责任课题组 *</label>
+                <input type="text" id="author" name="author" class="form-control" placeholder="例如：SDSU Ecohydrology Lab / 张教授团队" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="year">模拟 / 观测基准年份 *</label>
+                <input type="number" id="year" name="year" class="form-control" value="2023" min="1950" max="2100" required>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+                <label class="form-label" for="site_code">观测样点代号 (Site Code)</label>
+                <input type="text" id="site_code" name="site_code" class="form-control" placeholder="例如：US-Atq / CN-HaM / Global">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="doi">数字对象唯一标识 (DOI)</label>
+                <input type="text" id="doi" name="doi" class="form-control" placeholder="10.5281/zenodo.xxxxxxx">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="description">详细描述与科学背景 *</label>
+            <textarea id="description" name="description" class="form-control" rows="4" placeholder="请简述模拟驱动条件、模型版本、时间分辨率以及关键科学结论..." required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="keywords">关键词标引 (以英文或中文逗号隔开) *</label>
+            <input type="text" id="keywords" name="keywords" class="form-control" value="clm-microbe, methane, soil_respiration" placeholder="如: methane, soil_respiration, bacterial_biomass, arctic_tundra" required>
+            <small style="color: var(--text-muted); font-size: 0.78rem;">提示：系统将自动识别或新建对应的核心分类标引词。</small>
+        </div>
+
+        <!-- 来源类型切换 -->
+        <div class="card" style="background: #f8fafc; border-style: dashed; padding: 18px; margin-top: 20px;">
+            <div class="form-group">
+                <label class="form-label">数据接入渠道选择 *</label>
+                <div style="display: flex; gap: 24px; margin-top: 8px;">
+                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                        <input type="radio" name="data_source_type" value="github" checked onchange="toggleSourceType('github')">
+                        <strong>渠道 A：GitHub 远端链接 / Release 直连</strong>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                        <input type="radio" name="data_source_type" value="local" onchange="toggleSourceType('local')">
+                        <strong>渠道 B：上传本地数据文件 (.csv / .txt)</strong>
+                    </label>
+                </div>
+            </div>
+
+            <div id="githubSection" class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="github_url">GitHub 文件 Raw / Release 下载直链</label>
+                <input type="url" id="github_url" name="github_url" class="form-control" placeholder="https://raw.githubusercontent.com/email-clm/clm-microbe/main/inputdata/atqasuk_forcing.csv">
+            </div>
+
+            <div id="localSection" class="form-group" style="margin-bottom: 0; display: none;">
+                <label class="form-label" for="file">选择本地数据文件 (支持 CSV / TXT / NetCDF)</label>
+                <input type="file" id="file" name="file" class="form-control">
+            </div>
+        </div>
+
+        <div style="margin-top: 28px; display: flex; justify-content: flex-end; gap: 12px;">
+            <a href="{{ url_for('index') }}" class="btn btn-outline">取消返回</a>
+            <button type="submit" class="btn btn-primary" style="min-width: 140px;">提交并完成归档</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleSourceType(type) {
+    const gh = document.getElementById('githubSection');
+    const loc = document.getElementById('localSection');
+    if (type === 'github') {
+        gh.style.display = 'block';
+        loc.style.display = 'none';
+    } else {
+        gh.style.display = 'none';
+        loc.style.display = 'block';
+    }
+}
+</script>
+{% endblock %}

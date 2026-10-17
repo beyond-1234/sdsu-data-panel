@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}账号登录与注册 - CLM-Microbe{% endblock %}
+{% block breadcrumb %}账号登录 / 注册{% endblock %}
+
+{% block content %}
+<div style="max-width: 480px; margin: 40px auto;">
+    <div class="card" style="padding: 32px;">
+        <div style="text-align: center; margin-bottom: 24px;">
+            <div style="font-size: 2.2rem; margin-bottom: 6px;">🌿</div>
+            <h2 style="font-family: var(--font-serif); font-size: 1.4rem; color: #1a202c;">SDSU CLM-Microbe</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">科研数据统一身份认证</p>
+        </div>
+
+        <!-- 切换登录与注册 Tab -->
+        <div style="display: flex; border-bottom: 2px solid var(--border-color); margin-bottom: 24px;">
+            <button id="tabLogin" class="btn" style="flex: 1; border-radius: 0; border-bottom: 2px solid var(--primary); font-weight: bold; color: var(--primary);" onclick="showAuthTab('login')">登录已有账号</button>
+            <button id="tabRegister" class="btn" style="flex: 1; border-radius: 0; border-bottom: 2px solid transparent; color: var(--text-muted);" onclick="showAuthTab('register')">注册新科研账号</button>
+        </div>
+
+        <!-- 登录表单 -->
+        <form id="loginForm" method="POST" action="{{ url_for('login') }}">
+            <input type="hidden" name="action" value="login">
+            <div class="form-group">
+                <label class="form-label" for="username">科研账号 / 用户名</label>
+                <input type="text" id="username" name="username" class="form-control" placeholder="请输入用户名" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">密码</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; padding: 10px;">立即登录</button>
+            <div style="margin-top: 16px; font-size: 0.8rem; color: var(--text-muted); text-align: center;">
+                默认内置管理员账号：<strong>admin</strong> / 密码：<strong>admin123</strong>
+            </div>
+        </form>
+
+        <!-- 注册表单 -->
+        <form id="registerForm" method="POST" action="{{ url_for('login') }}" style="display: none;">
+            <input type="hidden" name="action" value="register">
+            <div class="form-group">
+                <label class="form-label" for="reg_username">用户名 *</label>
+                <input type="text" id="reg_username" name="username" class="form-control" placeholder="英文字母或数字" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="email">电子邮箱 *</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="name@institution.edu" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="reg_institution">所属科研单位 / 院校</label>
+                <input type="text" id="reg_institution" name="institution" class="form-control" placeholder="例如：中科院地理所 / SDSU">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="reg_password">设置登录密码 *</label>
+                <input type="password" id="reg_password" name="password" class="form-control" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; padding: 10px;">完成注册并自动登录</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showAuthTab(tab) {
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const tabLogin = document.getElementById('tabLogin');
+    const tabRegister = document.getElementById('tabRegister');
+
+    if (tab === 'login') {
+        loginForm.style.display = 'block';
+        registerForm.style.display = 'none';
+        tabLogin.style.borderBottomColor = 'var(--primary)';
+        tabLogin.style.color = 'var(--primary)';
+        tabLogin.style.fontWeight = 'bold';
+        tabRegister.style.borderBottomColor = 'transparent';
+        tabRegister.style.color = 'var(--text-muted)';
+        tabRegister.style.fontWeight = 'normal';
+    } else {
+        loginForm.style.display = 'none';
+        registerForm.style.display = 'block';
+        tabRegister.style.borderBottomColor = 'var(--primary)';
+        tabRegister.style.color = 'var(--primary)';
+        tabRegister.style.fontWeight = 'bold';
+        tabLogin.style.borderBottomColor = 'transparent';
+        tabLogin.style.color = 'var(--text-muted)';
+        tabLogin.style.fontWeight = 'normal';
+    }
+}
+</script>
+{% endblock %}
