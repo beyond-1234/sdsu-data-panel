@@ -213,9 +213,9 @@ def seed_database():
                 year=2021,
                 author='SDSU Ecohydrology Lab / ORNL NGEE-Arctic',
                 doi='10.5281/zenodo.7891023',
-                description='基于 email-clm/CLM-Microbe 仓库 inputdata/atm/datm7/CLM1PT_data/1x1pt_US-Brw 实测大气驱动 (all_hourly.nc) 与 CLM1PT 模式模拟。涵盖降水、风速、气温辐射驱动下北极苔原甲烷净排放、细菌碳与真菌碳的时序动态。',
+                description='基于 email-clm/CLM-Microbe 仓库 inputdata/atm/datm7/CLM1PT_data/1x1pt_US-Brw 实测大气驱动与 CLM1PT 模式模拟。涵盖降水、风速、气温辐射驱动下北极苔原甲烷净排放、细菌碳与真菌碳的时序动态。',
                 data_source_type='github',
-                github_url='https://raw.githubusercontent.com/email-clm/CLM-Microbe/master/inputdata/atm/datm7/CLM1PT_data/1x1pt_US-Brw/cpl_bypass_full/catall4cplbypass.sh',
+                github_url='https://github.com/email-clm/CLM-Microbe',
                 local_file_path='clm_microbe_us_atq_2021.csv',
                 download_count=64,
                 site_code='US-Brw',
@@ -291,7 +291,7 @@ def seed_database():
                 doi='10.5281/zenodo.7891022',
                 description='基于 CLM1PT_InputFile/clm_climatenc.m 生成的单点气象水热与土壤驱动。面向显式微生物生物量碳分解及底物动力学推演。',
                 data_source_type='github',
-                github_url='https://raw.githubusercontent.com/email-clm/CLM-Microbe/master/inputdata/lnd/clm2/CLM1PT_InputFile/readme.txt',
+                github_url='https://github.com/email-clm/CLM-Microbe',
                 local_file_path='clm_microbe_us_atq_2021.csv',
                 download_count=35,
                 site_code='US-Atq',
@@ -739,9 +739,14 @@ def trigger_download(dataset_id):
     db.session.add(log)
     db.session.commit()
 
-    # 3. 分发数据：支持 GitHub 直链重定向、OSS 云端分发 或 本地文件传输
-    if dataset.data_source_type == 'github' and dataset.github_url:
-        return jsonify({'status': 'success', 'download_url': dataset.github_url})
+    # 3. 分发数据：支持 GitHub 仓库直连、OSS 云端分发 或 本地文件传输
+    if dataset.data_source_type == 'github':
+        # 如果配置了具体的 github_url 则优先使用，否则默认指向开源代码与数据主仓库
+        target_gh_url = dataset.github_url or 'https://github.com/email-clm/CLM-Microbe'
+        # 兼容处理历史可能录入的 raw 或失效的单文件直链，统一规整为可靠的 GitHub 仓库访问链接
+        if 'raw.githubusercontent.com' in target_gh_url:
+            target_gh_url = 'https://github.com/email-clm/CLM-Microbe'
+        return jsonify({'status': 'success', 'download_url': target_gh_url})
     elif dataset.data_source_type == 'oss':
         oss_key = f"datasets/{dataset.year}/{dataset.local_file_path or 'data.csv'}"
         oss_url = get_oss_download_url(oss_key)
