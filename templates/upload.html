@@ -31,6 +31,94 @@
             </div>
         </div>
 
+        <!-- 多维时空与实验属性配置 -->
+        <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 18px; margin-bottom: 20px;">
+            <div style="font-weight: 600; font-size: 0.92rem; color: #1e293b; margin-bottom: 12px;">🌐 多维时空与工况属性 (Spatio-Temporal & Context)</div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 14px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">观测/模拟样点 (Site Location)</label>
+                    <select name="site_id" class="form-control">
+                        <option value="">-- 选择已有样点 (如 US-Atq) --</option>
+                        {% for st in all_sites %}
+                            <option value="{{ st.id }}">{{ st.site_code }} ({{ st.site_name[:18] }}) - {{ st.biome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">空间尺度 (Spatial Scale)</label>
+                    <select name="spatial_scale" class="form-control">
+                        <option value="Point" selected>Point (样点/单点微地形)</option>
+                        <option value="Regional">Regional (区域网格化)</option>
+                        <option value="Global">Global (全球陆面模拟)</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">时间分辨率 (Frequency)</label>
+                    <select name="temporal_resolution" class="form-control">
+                        <option value="Daily" selected>Daily (日均)</option>
+                        <option value="Half-hourly">Half-hourly (半小时高频)</option>
+                        <option value="Monthly">Monthly (月度)</option>
+                        <option value="Yearly">Yearly (年度积分)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">起始覆盖日期 (Start Date)</label>
+                    <input type="date" name="start_date" class="form-control" value="2023-01-01">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">终止覆盖日期 (End Date)</label>
+                    <input type="date" name="end_date" class="form-control" value="2023-12-31">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">数据类型 (Data Type)</label>
+                    <select name="data_type" class="form-control">
+                        <option value="Model Simulation" selected>CLM-Microbe 模式模拟</option>
+                        <option value="Field Observation">原位观测 / 通量塔</option>
+                        <option value="Hybrid">数据同化 / 混合序列</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">情景/处理 (Scenario)</label>
+                    <input type="text" name="scenario" class="form-control" value="Historical" placeholder="如 Control, Warming, SSP5-8.5">
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">最小土层深度 (m)</label>
+                    <input type="number" step="0.1" name="min_depth" class="form-control" value="0.0">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">最大土层深度 (m)</label>
+                    <input type="number" step="0.1" name="max_depth" class="form-control" value="1.0">
+                </div>
+            </div>
+        </div>
+
+        <!-- 关联的标准科学变量多选 -->
+        <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 18px; margin-bottom: 20px;">
+            <div style="font-weight: 600; font-size: 0.92rem; color: #1e293b; margin-bottom: 8px;">📊 挂载的标准化观测指标 (Select Standardized Variables)</div>
+            <p style="font-size: 0.78rem; color: #64748b; margin-bottom: 12px;">勾选该数据序列中实际包含并产出的关键指标：</p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px;">
+                {% for v in all_variables %}
+                    <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; cursor: pointer; background: #fff; padding: 6px 10px; border-radius: 4px; border: 1px solid #e2e8f0;">
+                        <input type="checkbox" name="variables" value="{{ v.id }}" {% if v.code in ['CH4_FLUX', 'HR', 'BBC', 'TSOI'] %}checked{% endif %}>
+                        <strong>{{ v.code }}</strong> - <span style="color: #64748b;">{{ v.display_name }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+        </div>
+
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
             <div class="form-group">
                 <label class="form-label" for="site_code">{{ t('form_site') }}</label>

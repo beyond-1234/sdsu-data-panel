@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
 from config import Config
-from models import db, User, Dataset, Keyword, DownloadLog, StorageConfig
+from models import db, User, Dataset, Keyword, DownloadLog, StorageConfig, VariableDefinition, SiteLocation
 from services.data_parser import (
     generate_sample_clm_timeseries,
     parse_dataset_timeseries,
@@ -109,6 +109,64 @@ def seed_database():
             kw_map[kw_name] = kw_obj
         db.session.commit()
 
+        # 2.1 初始预置标准化科学变量指标字典 (FLUXNET/CLM-Microbe 规范)
+        default_variables = [
+            # 气体通量
+            ('CH4_FLUX', '甲烷净通量 (CH4 Net Flux)', 'Gas Flux', 'mg C m-2 d-1', '地表甲烷净排放通量 (Net methane surface flux)'),
+            ('HR', '土壤异养呼吸 (Heterotrophic Respiration)', 'Gas Flux', 'g C m-2 d-1', '微生物土壤有机质分解与异养呼吸碳通量'),
+            ('NEE', '净生态系统碳交换 (Net Ecosystem Exchange)', 'Gas Flux', 'g C m-2 d-1', '生态系统与大气净二氧化碳交换率'),
+            ('GPP', '总初级生产力 (Gross Primary Productivity)', 'Gas Flux', 'g C m-2 d-1', '植被光合总固碳速率'),
+            # 微生物库
+            ('BBC', '细菌生物量碳 (Bacterial Biomass C)', 'Microbial Pool', 'g C m-2', '土壤活跃细菌碳储量'),
+            ('FBC', '真菌生物量碳 (Fungal Biomass C)', 'Microbial Pool', 'g C m-2', '土壤活跃真菌菌丝碳储量'),
+            ('VMAX', '底物分解最大反应速率 (Vmax)', 'Microbial Pool', 'g C m-3 h-1', 'Michaelis-Menten 酶促分解饱和速率'),
+            # 环境与土壤物理
+            ('TSOI', '土壤剖面温度 (Soil Temperature)', 'Soil Physics', '°C', '分层土壤热状态观测/模拟'),
+            ('H2OSOI', '土壤体积含水量 (Soil Moisture)', 'Soil Physics', 'm3 m-3', '分层土壤基质水分饱和度'),
+            ('SOC', '土壤有机碳储量 (Soil Organic Carbon)', 'Soil Physics', 'kg C m-3', '垂直剖面土壤固碳量')
+        ]
+        var_map = {}
+        for code, dname, cat, unit, desc in default_variables:
+            var_obj = VariableDefinition.query.filter_by(code=code).first()
+            if not var_obj:
+                var_obj = VariableDefinition(
+                    code=code,
+                    display_name=dname,
+                    category=cat,
+                    unit=unit,
+                    description=desc
+                )
+                db.session.add(var_obj)
+                db.session.flush()
+            var_map[code] = var_obj
+        db.session.commit()
+
+        # 2.2 初始预置生态样点/地理区域 (空间维度)
+        default_sites = [
+            ('US-Atq', 'Atqasuk Tundra Research Site', 'United States', 70.47, -157.41, 15.0, 'Tundra'),
+            ('US-Brw', 'Barrow Environmental Observatory', 'United States', 71.32, -156.61, 4.0, 'Tundra'),
+            ('CN-Sanjiang', '三江平原沼泽湿地生态试验站', 'China', 47.58, 133.52, 55.0, 'Wetland'),
+            ('CN-HaM', '海北高寒草甸生态系统国家野外科学观测研究站', 'China', 37.61, 101.32, 3250.0, 'Alpine Meadow'),
+            ('SE-St1', 'Stordalen Mire Wetland Site', 'Sweden', 68.35, 19.05, 360.0, 'Peatland/Permafrost')
+        ]
+        site_map = {}
+        for scode, sname, country, lat, lon, elev, biome in default_sites:
+            s_obj = SiteLocation.query.filter_by(site_code=scode).first()
+            if not s_obj:
+                s_obj = SiteLocation(
+                    site_code=scode,
+                    site_name=sname,
+                    country=country,
+                    latitude=lat,
+                    longitude=lon,
+                    elevation=elev,
+                    biome=biome
+                )
+                db.session.add(s_obj)
+                db.session.flush()
+            site_map[scode] = s_obj
+        db.session.commit()
+
         # 3. 初始生成模拟数据文件
         data_dir = os.path.join(app.config['UPLOAD_FOLDER'])
         os.makedirs(data_dir, exist_ok=True)
@@ -137,6 +195,7 @@ def seed_database():
 
         # 5. 预置数据集记录
         if Dataset.query.count() == 0:
+            from datetime import date
             ds1 = Dataset(
                 title='CLM-Microbe 北极苔原 (US-Atq) 土壤异养呼吸与甲烷通量模拟驱动集',
                 year=2021,
@@ -147,13 +206,30 @@ def seed_database():
                 github_url='https://raw.githubusercontent.com/email-clm/clm-microbe/main/inputdata/atqasuk_forcing.csv',
                 local_file_path='clm_microbe_us_atq_2021.csv',
                 download_count=42,
-                site_code='US-Atq'
+                site_code='US-Atq',
+                site=site_map.get('US-Atq'),
+                spatial_scale='Point',
+                start_date=date(2021, 1, 1),
+                end_date=date(2021, 12, 31),
+                temporal_resolution='Daily',
+                data_type='Model Simulation',
+                scenario='Control',
+                min_depth=0.0,
+                max_depth=1.0
             )
             ds1.keywords.extend([
                 kw_map['methanogenesis'],
                 kw_map['soil_respiration'],
                 kw_map['arctic_tundra'],
                 kw_map['fungal_biomass']
+            ])
+            ds1.variables.extend([
+                var_map['CH4_FLUX'],
+                var_map['HR'],
+                var_map['BBC'],
+                var_map['FBC'],
+                var_map['TSOI'],
+                var_map['H2OSOI']
             ])
 
             ds2 = Dataset(
@@ -166,7 +242,16 @@ def seed_database():
                 github_url=None,
                 local_file_path='clm_microbe_arctic_permafrost_2022.csv',
                 download_count=28,
-                site_code='US-Atq'
+                site_code='US-Atq',
+                site=site_map.get('US-Atq'),
+                spatial_scale='Point',
+                start_date=date(2020, 6, 1),
+                end_date=date(2022, 10, 1),
+                temporal_resolution='Monthly',
+                data_type='Field Observation',
+                scenario='Warming',
+                min_depth=0.0,
+                max_depth=1.5
             )
             ds2.keywords.extend([
                 kw_map['q10_temperature_sensitivity'],
@@ -174,23 +259,45 @@ def seed_database():
                 kw_map['subsurface_permafrost'],
                 kw_map['methanotrophy']
             ])
+            ds2.variables.extend([
+                var_map['BBC'],
+                var_map['FBC'],
+                var_map['SOC'],
+                var_map['VMAX']
+            ])
 
             ds3 = Dataset(
-                title='全球 FLUXNET 苔原通量塔甲烷氧化与好氧呼吸机制模型验证集',
+                title='三江平原湿地沼泽产甲烷菌与甲烷氧化菌原位模拟驱动集',
                 year=2023,
-                author='Global Tundra Ecology Network',
+                author='Sanjiang Wetland Ecological Research Station, CAS',
                 doi='10.5281/zenodo.9012345',
-                description='跨纬度苔原微生态通量交叉验证数据，面向陆面过程生物地球化学循环机制校准。',
-                data_source_type='github',
-                github_url='https://github.com/email-clm/clm-microbe/releases/tag/v1.0-data',
+                description='跨纬度高寒与温带沼泽湿地微生态通量交叉验证数据，面向陆面过程生物地球化学循环机制校准。',
+                data_source_type='oss',
+                github_url=None,
                 local_file_path='clm_microbe_us_atq_2021.csv',
                 download_count=19,
-                site_code='Global-Tundra'
+                site_code='CN-Sanjiang',
+                site=site_map.get('CN-Sanjiang'),
+                spatial_scale='Regional',
+                start_date=date(2022, 1, 1),
+                end_date=date(2023, 12, 31),
+                temporal_resolution='Daily',
+                data_type='Hybrid',
+                scenario='Control',
+                min_depth=0.0,
+                max_depth=0.8
             )
             ds3.keywords.extend([
                 kw_map['methanotrophy'],
                 kw_map['soil_respiration'],
-                kw_map['arctic_tundra']
+                kw_map['bacterial_biomass']
+            ])
+            ds3.variables.extend([
+                var_map['CH4_FLUX'],
+                var_map['HR'],
+                var_map['NEE'],
+                var_map['GPP'],
+                var_map['H2OSOI']
             ])
 
             db.session.add_all([ds1, ds2, ds3])
@@ -231,37 +338,114 @@ def seed_database():
 
 @app.route('/')
 def index():
+    # 1. 基础全文检索 (标题、描述、作者、样点名称)
     query_str = request.args.get('q', '').strip()
-    year_str = request.args.get('year', '').strip()
+
+    # 2. 时间跨度切片 (覆盖区间包含，StartA <= EndB and EndA >= StartB)
+    start_year = request.args.get('start_year', type=int)
+    end_year = request.args.get('end_year', type=int)
+    temp_res = request.args.get('temp_res', '').strip()
+
+    # 3. 空间与生态区维度
+    selected_biomes = request.args.getlist('biome')
+    selected_site = request.args.get('site', '').strip()
+    spatial_scale = request.args.get('spatial_scale', '').strip()
+    min_lat = request.args.get('min_lat', type=float)
+    max_lat = request.args.get('max_lat', type=float)
+
+    # 4. 指标变量多选 (要求数据集包含所选变量)
+    selected_vars = request.args.getlist('var')
+
+    # 5. 实验工况与数据类型
+    data_type = request.args.get('data_type', '').strip()
+    scenario = request.args.get('scenario', '').strip()
+
+    # 6. 土层深度范围 (m)
+    depth_max_filter = request.args.get('depth_max', type=float)
+
+    # 7. 关键词快捷标引
     keyword_str = request.args.get('keyword', '').strip()
 
-    query = Dataset.query
+    # 构造动态查询
+    query = Dataset.query.join(Dataset.site, isouter=True)
 
     if query_str:
         query = query.filter(
             (Dataset.title.ilike(f'%{query_str}%')) | 
             (Dataset.description.ilike(f'%{query_str}%')) |
-            (Dataset.author.ilike(f'%{query_str}%'))
+            (Dataset.author.ilike(f'%{query_str}%')) |
+            (SiteLocation.site_name.ilike(f'%{query_str}%')) |
+            (SiteLocation.site_code.ilike(f'%{query_str}%'))
         )
-    if year_str and year_str.isdigit():
-        query = query.filter(Dataset.year == int(year_str))
+
+    # 时间跨度过滤
+    if start_year:
+        query = query.filter(
+            (db.func.strftime('%Y', Dataset.end_date) >= str(start_year)) |
+            (Dataset.year >= start_year)
+        )
+    if end_year:
+        query = query.filter(
+            (db.func.strftime('%Y', Dataset.start_date) <= str(end_year)) |
+            (Dataset.year <= end_year)
+        )
+    if temp_res:
+        query = query.filter(Dataset.temporal_resolution == temp_res)
+
+    # 生态群系与样点
+    if selected_biomes:
+        query = query.filter(SiteLocation.biome.in_(selected_biomes))
+    if selected_site:
+        query = query.filter((SiteLocation.site_code == selected_site) | (Dataset.site_code == selected_site))
+    if spatial_scale:
+        query = query.filter(Dataset.spatial_scale == spatial_scale)
+    if min_lat is not None and max_lat is not None:
+        query = query.filter(SiteLocation.latitude.between(min_lat, max_lat))
+
+    # 指标变量过滤 (交集匹配)
+    if selected_vars:
+        for v_code in selected_vars:
+            query = query.filter(Dataset.variables.any(VariableDefinition.code == v_code))
+
+    # 数据类型与情景
+    if data_type:
+        query = query.filter(Dataset.data_type == data_type)
+    if scenario:
+        query = query.filter(Dataset.scenario == scenario)
+
+    # 垂直土层深度
+    if depth_max_filter is not None:
+        query = query.filter(Dataset.max_depth <= depth_max_filter)
+
+    # 关键词
     if keyword_str:
-        query = query.join(Dataset.keywords).filter(Keyword.name == keyword_str)
+        query = query.filter(Dataset.keywords.any(Keyword.name == keyword_str))
 
     datasets = query.order_by(Dataset.created_at.desc()).all()
     keywords = Keyword.query.order_by(Keyword.name.asc()).all()
-    
-    # 全部可选年份
-    all_years = [r[0] for r in db.session.query(Dataset.year).distinct().order_by(Dataset.year.desc()).all()]
+
+    # 供给切片器的维度选项
+    all_variables = VariableDefinition.query.order_by(VariableDefinition.category.asc(), VariableDefinition.code.asc()).all()
+    all_biomes = [r[0] for r in db.session.query(SiteLocation.biome).distinct().filter(SiteLocation.biome != None).all()]
+    all_sites = SiteLocation.query.order_by(SiteLocation.site_code.asc()).all()
+
     total_downloads = db.session.query(db.func.sum(Dataset.download_count)).scalar() or 0
 
     return render_template(
         'index.html',
         datasets=datasets,
         keywords=keywords,
-        available_years=all_years,
+        all_variables=all_variables,
+        all_biomes=all_biomes,
+        all_sites=all_sites,
         query=query_str,
-        selected_year=year_str,
+        start_year=start_year,
+        end_year=end_year,
+        selected_biomes=selected_biomes,
+        selected_site=selected_site,
+        selected_vars=selected_vars,
+        selected_data_type=data_type,
+        selected_scenario=scenario,
         selected_kw=keyword_str,
         total_downloads=total_downloads
     )
@@ -296,15 +480,43 @@ def upload():
         author = request.form.get('author', '').strip()
         year = request.form.get('year', '').strip()
         site_code = request.form.get('site_code', '').strip()
+        site_id = request.form.get('site_id', type=int)
+        spatial_scale = request.form.get('spatial_scale', 'Point')
+        start_date_str = request.form.get('start_date', '').strip()
+        end_date_str = request.form.get('end_date', '').strip()
+        temporal_resolution = request.form.get('temporal_resolution', 'Daily')
+        data_type = request.form.get('data_type', 'Model Simulation')
+        scenario = request.form.get('scenario', 'Control')
+        min_depth = request.form.get('min_depth', type=float) or 0.0
+        max_depth = request.form.get('max_depth', type=float) or 1.0
         doi = request.form.get('doi', '').strip()
         description = request.form.get('description', '').strip()
         data_source_type = request.form.get('data_source_type', 'github')
         github_url = request.form.get('github_url', '').strip()
         keywords_str = request.form.get('keywords', '').strip()
+        var_ids = request.form.getlist('variables')
 
-        if not title or not author or not year or not description:
-            flash('请完整填写数据集标题、第一作者、年份与摘要描述', 'error')
+        if not title or not author or not description:
+            flash('请完整填写数据集标题、第一作者与摘要描述', 'error')
             return redirect(url_for('upload'))
+
+        # 解析时间跨度日期
+        from datetime import date
+        s_date = None
+        e_date = None
+        try:
+            if start_date_str:
+                s_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            if end_date_str:
+                e_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+        except Exception:
+            pass
+
+        yr_val = int(year) if year.isdigit() else (s_date.year if s_date else 2023)
+        if not s_date:
+            s_date = date(yr_val, 1, 1)
+        if not e_date:
+            e_date = date(yr_val, 12, 31)
 
         # 处理文件或 GitHub / OSS 来源
         local_filename = None
@@ -315,15 +527,14 @@ def upload():
                 save_path = os.path.join(app.config['UPLOAD_FOLDER'], fname)
                 file.save(save_path)
                 local_filename = fname
-                # 同步向 OSS 存储进行归档
-                oss_key = f"datasets/{year}/{fname}"
+                oss_key = f"datasets/{yr_val}/{fname}"
                 upload_to_oss(save_path, oss_key)
             else:
-                fname = f"sample_oss_{year}.csv"
+                fname = f"sample_oss_{yr_val}.csv"
                 save_path = os.path.join(app.config['UPLOAD_FOLDER'], fname)
-                generate_sample_clm_timeseries(save_path, year=int(year) if year.isdigit() else 2023)
+                generate_sample_clm_timeseries(save_path, year=yr_val)
                 local_filename = fname
-                upload_to_oss(save_path, f"datasets/{year}/{fname}")
+                upload_to_oss(save_path, f"datasets/{yr_val}/{fname}")
         elif data_source_type == 'local':
             file = request.files.get('file')
             if file and file.filename:
@@ -332,20 +543,33 @@ def upload():
                 file.save(save_path)
                 local_filename = fname
             else:
-                # 默认生成一份样本时序支撑可视化
-                fname = f"sample_{title[:8].strip().replace(' ', '_')}_{year}.csv"
+                fname = f"sample_{title[:8].strip().replace(' ', '_')}_{yr_val}.csv"
                 save_path = os.path.join(app.config['UPLOAD_FOLDER'], fname)
-                generate_sample_clm_timeseries(save_path, year=int(year) if year.isdigit() else 2022)
+                generate_sample_clm_timeseries(save_path, year=yr_val)
                 local_filename = fname
         else:
-            # GitHub 类型同样绑定一份样点预览
             local_filename = 'clm_microbe_us_atq_2021.csv'
+
+        target_site = None
+        if site_id:
+            target_site = db.session.get(SiteLocation, site_id)
+        elif site_code:
+            target_site = SiteLocation.query.filter_by(site_code=site_code).first()
 
         new_dataset = Dataset(
             title=title,
             author=author,
-            year=int(year) if year.isdigit() else 2023,
-            site_code=site_code or 'US-Atq',
+            year=yr_val,
+            site=target_site,
+            site_code=target_site.site_code if target_site else (site_code or 'US-Atq'),
+            spatial_scale=spatial_scale,
+            start_date=s_date,
+            end_date=e_date,
+            temporal_resolution=temporal_resolution,
+            data_type=data_type,
+            scenario=scenario,
+            min_depth=min_depth,
+            max_depth=max_depth,
             doi=doi,
             description=description,
             data_source_type=data_source_type,
@@ -355,6 +579,14 @@ def upload():
         )
         db.session.add(new_dataset)
         db.session.flush()
+
+        # 关联多维变量指标
+        if var_ids:
+            for vid in var_ids:
+                if str(vid).isdigit():
+                    v_obj = db.session.get(VariableDefinition, int(vid))
+                    if v_obj:
+                        new_dataset.variables.append(v_obj)
 
         # 关联关键词
         if keywords_str:
@@ -368,10 +600,12 @@ def upload():
                 new_dataset.keywords.append(kw_obj)
 
         db.session.commit()
-        flash('数据集已成功提交并归档纳管！', 'success')
+        flash('科研数据集已成功录入，并已挂载时空与变量多维属性！', 'success')
         return redirect(url_for('detail', dataset_id=new_dataset.id))
 
-    return render_template('upload.html')
+    all_sites = SiteLocation.query.order_by(SiteLocation.site_code.asc()).all()
+    all_variables = VariableDefinition.query.order_by(VariableDefinition.category.asc()).all()
+    return render_template('upload.html', all_sites=all_sites, all_variables=all_variables)
 
 # ----------------- 埋点下载与分发中转路由 -----------------
 @app.route('/dataset/<int:dataset_id>/download', methods=['POST'])
