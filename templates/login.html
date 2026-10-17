@@ -1,39 +1,39 @@
 {% extends "base.html" %}
 
-{% block title %}账号登录与注册 - CLM-Microbe{% endblock %}
-{% block breadcrumb %}账号登录 / 注册{% endblock %}
+{% block title %}{{ t('auth_title') }} - {{ t('auth_subtitle') }}{% endblock %}
+{% block breadcrumb %}{{ t('login_register') }}{% endblock %}
 
 {% block content %}
 <div style="max-width: 480px; margin: 40px auto;">
     <div class="card" style="padding: 32px;">
         <div style="text-align: center; margin-bottom: 24px;">
             <div style="font-size: 2.2rem; margin-bottom: 6px;">🌿</div>
-            <h2 style="font-family: var(--font-serif); font-size: 1.4rem; color: #1a202c;">SDSU CLM-Microbe</h2>
-            <p style="font-size: 0.85rem; color: var(--text-muted);">科研数据统一身份认证</p>
+            <h2 style="font-family: var(--font-serif); font-size: 1.4rem; color: #1a202c;">{{ t('auth_title') }}</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">{{ t('auth_subtitle') }}</p>
         </div>
 
         <!-- 切换登录与注册 Tab -->
         <div style="display: flex; border-bottom: 2px solid var(--border-color); margin-bottom: 24px;">
-            <button id="tabLogin" class="btn" style="flex: 1; border-radius: 0; border-bottom: 2px solid var(--primary); font-weight: bold; color: var(--primary);" onclick="showAuthTab('login')">登录已有账号</button>
-            <button id="tabRegister" class="btn" style="flex: 1; border-radius: 0; border-bottom: 2px solid transparent; color: var(--text-muted);" onclick="showAuthTab('register')">注册新科研账号</button>
+            <button id="tabLogin" class="btn" style="flex: 1; border-radius: 0; border-bottom: 2px solid var(--primary); font-weight: bold; color: var(--primary);" onclick="showAuthTab('login')">{{ t('tab_login') }}</button>
+            <button id="tabRegister" class="btn" style="flex: 1; border-radius: 0; border-bottom: 2px solid transparent; color: var(--text-muted);" onclick="showAuthTab('register')">{{ t('tab_register') }}</button>
         </div>
 
         <!-- 登录表单 -->
         <form id="loginForm" method="POST" action="{{ url_for('login') }}">
             <input type="hidden" name="action" value="login">
             <div class="form-group">
-                <label class="form-label" for="username">科研账号 / 用户名</label>
-                <input type="text" id="username" name="username" class="form-control" placeholder="请输入用户名" required>
+                <label class="form-label" for="username">{{ t('form_username') }}</label>
+                <input type="text" id="username" name="username" class="form-control" placeholder="admin / researcher" required>
             </div>
 
             <div class="form-group">
-                <label class="form-label" for="password">密码</label>
+                <label class="form-label" for="password">{{ t('form_password') }}</label>
                 <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; padding: 10px;">立即登录</button>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; padding: 10px;">{{ t('btn_login') }}</button>
             <div style="margin-top: 16px; font-size: 0.8rem; color: var(--text-muted); text-align: center;">
-                默认内置管理员账号：<strong>admin</strong> / 密码：<strong>admin123</strong>
+                {{ t('default_admin_tip') }}
             </div>
         </form>
 
@@ -41,26 +41,34 @@
         <form id="registerForm" method="POST" action="{{ url_for('login') }}" style="display: none;">
             <input type="hidden" name="action" value="register">
             <div class="form-group">
-                <label class="form-label" for="reg_username">用户名 *</label>
-                <input type="text" id="reg_username" name="username" class="form-control" placeholder="英文字母或数字" required>
+                <label class="form-label" for="reg_username">{{ t('form_username') }} *</label>
+                <input type="text" id="reg_username" name="username" class="form-control" required>
             </div>
 
             <div class="form-group">
-                <label class="form-label" for="email">电子邮箱 *</label>
+                <label class="form-label" for="email">{{ t('form_email') }}</label>
                 <input type="email" id="email" name="email" class="form-control" placeholder="name@institution.edu" required>
             </div>
 
             <div class="form-group">
-                <label class="form-label" for="reg_institution">所属科研单位 / 院校</label>
-                <input type="text" id="reg_institution" name="institution" class="form-control" placeholder="例如：中科院地理所 / SDSU">
+                <label class="form-label" for="reg_institution">{{ t('form_institution') }}</label>
+                <input type="text" id="reg_institution" name="institution" class="form-control" placeholder="CAS / SDSU">
             </div>
 
             <div class="form-group">
-                <label class="form-label" for="reg_password">设置登录密码 *</label>
-                <input type="password" id="reg_password" name="password" class="form-control" placeholder="••••••••" required>
+                <label class="form-label" for="reg_password">{{ t('form_password_hint') }}</label>
+                <input type="password" id="reg_password" name="password" class="form-control" placeholder="••••••••" minlength="6" required>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; padding: 10px;">完成注册并自动登录</button>
+            <div class="form-group">
+                <label class="form-label" for="reg_confirm_password">{{ t('form_password_confirm') }}</label>
+                <input type="password" id="reg_confirm_password" name="confirm_password" class="form-control" placeholder="••••••••" minlength="6" required>
+                <div id="passwordMatchError" style="display: none; color: #b91c1c; font-size: 0.8rem; margin-top: 4px;">
+                    {{ t('password_mismatch') }}
+                </div>
+            </div>
+
+            <button type="submit" id="btnRegisterSubmit" class="btn btn-primary" style="width: 100%; margin-top: 10px; padding: 10px;">{{ t('btn_register') }}</button>
         </form>
     </div>
 </div>
@@ -94,5 +102,38 @@ function showAuthTab(tab) {
         tabLogin.style.fontWeight = 'normal';
     }
 }
+
+// 前端实时密码一致性校验
+document.addEventListener('DOMContentLoaded', function() {
+    const pwd = document.getElementById('reg_password');
+    const cpwd = document.getElementById('reg_confirm_password');
+    const matchError = document.getElementById('passwordMatchError');
+    const regForm = document.getElementById('registerForm');
+
+    function checkMatch() {
+        if (!pwd || !cpwd) return true;
+        if (cpwd.value && pwd.value !== cpwd.value) {
+            matchError.style.display = 'block';
+            return false;
+        } else {
+            matchError.style.display = 'none';
+            return true;
+        }
+    }
+
+    if (pwd && cpwd) {
+        pwd.addEventListener('input', checkMatch);
+        cpwd.addEventListener('input', checkMatch);
+    }
+
+    if (regForm) {
+        regForm.addEventListener('submit', function(e) {
+            if (!checkMatch()) {
+                e.preventDefault();
+                alert('{{ t("password_mismatch") }}');
+            }
+        });
+    }
+});
 </script>
 {% endblock %}

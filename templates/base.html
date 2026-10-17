@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="{{ current_lang }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}CLM-Microbe 科研数据平台{% endblock %}</title>
+    <title>{% block title %}{{ t('platform_title') }}{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="{{ url_for('static', filename='js/echarts.min.js') }}"></script>
     {% block extra_head %}{% endblock %}
@@ -14,41 +14,58 @@
         <div class="brand">
             <span>🌿</span> CLM-Microbe
         </div>
-        <div class="sub-brand">SDSU Data Repository</div>
+        <div class="sub-brand">{{ t('sub_brand') }}</div>
         
         <ul class="sidebar-nav">
             <li>
                 <a href="{{ url_for('index') }}" class="{% if request.path == '/' %}active{% endif %}">
-                    <span>🔍</span> 数据总览 & 搜索
+                    <span>🔍</span> {{ t('nav_overview') }}
                 </a>
             </li>
             <li>
                 <a href="{{ url_for('analysis') }}" class="{% if request.path == '/analysis' %}active{% endif %}">
-                    <span>📈</span> 交互式模型分析
+                    <span>📈</span> {{ t('nav_analysis') }}
                 </a>
             </li>
             <li>
                 <a href="{{ url_for('upload') }}" class="{% if request.path == '/upload' %}active{% endif %}">
-                    <span>📤</span> 数据提交上传
+                    <span>📤</span> {{ t('nav_upload') }}
                 </a>
             </li>
             {% if current_user.is_authenticated and current_user.role == 'admin' %}
             <li>
                 <a href="{{ url_for('admin_dashboard') }}" class="{% if '/admin' in request.path %}active{% endif %}">
-                    <span>📊</span> 后台管理与埋点
+                    <span>📊</span> {{ t('nav_admin') }}
                 </a>
             </li>
             {% endif %}
         </ul>
 
+        <!-- 语言切换器 (I18n Switcher) -->
+        <div style="margin-top: 24px; padding: 10px 14px; background: rgba(0,0,0,0.18); border-radius: 6px;">
+            <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
+                🌐 {{ t('lang_switch') }}
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <a href="{{ url_for('set_language', lang='zh') }}" 
+                   style="flex: 1; text-align: center; padding: 4px; border-radius: 4px; font-size: 0.8rem; text-decoration: none; font-weight: 500; {% if current_lang == 'zh' %}background: var(--primary); color: #fff;{% else %}color: #cbd5e1; background: rgba(255,255,255,0.06);{% endif %}">
+                   中文
+                </a>
+                <a href="{{ url_for('set_language', lang='en') }}" 
+                   style="flex: 1; text-align: center; padding: 4px; border-radius: 4px; font-size: 0.8rem; text-decoration: none; font-weight: 500; {% if current_lang == 'en' %}background: var(--primary); color: #fff;{% else %}color: #cbd5e1; background: rgba(255,255,255,0.06);{% endif %}">
+                   English
+                </a>
+            </div>
+        </div>
+
         <div class="sidebar-footer">
             {% if current_user.is_authenticated %}
                 <div style="font-weight: 600; color: #fff;">{{ current_user.username }} <small style="color: #94a3b8;">({{ current_user.role }})</small></div>
                 <div style="font-size: 0.78rem;">{{ current_user.institution or '未登记机构' }}</div>
-                <div><a href="{{ url_for('logout') }}">退出登录</a></div>
+                <div><a href="{{ url_for('logout') }}">{{ t('logout') }}</a></div>
             {% else %}
-                <div>访客模式 (只读检索)</div>
-                <div><a href="{{ url_for('login') }}">登录 / 注册新账号</a></div>
+                <div>{{ t('guest_mode') }}</div>
+                <div><a href="{{ url_for('login') }}">{{ t('login_register') }}</a></div>
             {% endif %}
             <div style="margin-top: 10px; font-size: 0.75rem; color: #64748b;">
                 SDSU Ecohydrology Lab © 2026<br>
@@ -61,14 +78,14 @@
     <div class="main-wrapper">
         <header class="top-header">
             <div class="breadcrumbs">
-                CLM-Microbe 平台 / <span>{% block breadcrumb %}数据空间{% endblock %}</span>
+                CLM-Microbe / <span>{% block breadcrumb %}Data Space{% endblock %}</span>
             </div>
             <div class="header-user-status">
                 {% if current_user.is_authenticated %}
-                    <span>欢迎，<strong>{{ current_user.username }}</strong></span>
-                    <a href="{{ url_for('logout') }}" class="btn btn-outline btn-sm">登出</a>
+                    <span>{{ t('welcome') }}，<strong>{{ current_user.username }}</strong></span>
+                    <a href="{{ url_for('logout') }}" class="btn btn-outline btn-sm">{{ t('logout_btn') }}</a>
                 {% else %}
-                    <a href="{{ url_for('login') }}" class="btn btn-outline btn-sm">登录 / 注册</a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline btn-sm">{{ t('login_btn') }}</a>
                 {% endif %}
             </div>
         </header>
@@ -87,7 +104,7 @@
 
         <footer class="footer">
             <div>
-                <strong>CLM-Microbe 数据管理、展示与分发平台</strong> | 基于 LeafWeb 交互分析体系与 GRooT 典雅设计
+                <strong>{{ t('footer_rights') }}</strong>
             </div>
             <div>
                 DOI: <a href="https://doi.org/10.5281/zenodo.clm-microbe" target="_blank" style="color: var(--primary);">10.5281/zenodo.clm-microbe</a>
@@ -99,41 +116,41 @@
     <div class="modal-overlay" id="downloadModal">
         <div class="modal-card">
             <div class="modal-header">
-                <div class="modal-title">科学数据共享与下载登记</div>
+                <div class="modal-title">{{ t('modal_title') }}</div>
                 <button class="modal-close" onclick="closeDownloadModal()">&times;</button>
             </div>
             <form onsubmit="submitDownloadTracking(event)">
                 <div style="margin-bottom: 16px; font-size: 0.9rem; color: var(--text-muted);">
-                    您正在申请下载数据集：<br>
+                    {{ t('modal_desc_prefix') }}<br>
                     <strong id="modalDatasetTitle" style="color: var(--text-dark);">-</strong>
-                    <div style="margin-top: 4px; font-size: 0.82rem;">分发渠道：<span id="modalSourceType">-</span></div>
+                    <div style="margin-top: 4px; font-size: 0.82rem;">{{ t('modal_channel_prefix') }} <span id="modalSourceType">-</span></div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="modalInstitution">您的工作单位 / 科研机构 *</label>
+                    <label class="form-label" for="modalInstitution">{{ t('modal_inst_label') }}</label>
                     <input type="text" id="modalInstitution" class="form-control" 
                            value="{% if current_user.is_authenticated %}{{ current_user.institution or '' }}{% endif %}" 
-                           placeholder="例如：中国科学院地理科学与资源研究所 / SDSU" required>
+                           placeholder="e.g., CAS IGSNRR / SDSU" required>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="modalPurpose">数据应用场景与研究目的 *</label>
+                    <label class="form-label" for="modalPurpose">{{ t('modal_purpose_label') }}</label>
                     <select id="modalPurpose" class="form-control" required>
-                        <option value="Academic Research" selected>学术科研与论文撰写 (Academic Research)</option>
-                        <option value="Model Calibration & Validation">陆面/生物地球化学模型校准验证 (Model Calibration)</option>
-                        <option value="Teaching & Education">高校或研究生课程教学 (Teaching & Education)</option>
-                        <option value="Cross-site Synthesis">跨站点宏观综合对比 (Cross-site Synthesis)</option>
-                        <option value="General Exploration">个人兴趣与技术评估 (General Exploration)</option>
+                        <option value="Academic Research" selected>{{ t('purpose_research') }}</option>
+                        <option value="Model Calibration & Validation">{{ t('purpose_model') }}</option>
+                        <option value="Teaching & Education">{{ t('purpose_teaching') }}</option>
+                        <option value="Cross-site Synthesis">{{ t('purpose_synthesis') }}</option>
+                        <option value="General Exploration">{{ t('purpose_general') }}</option>
                     </select>
                 </div>
 
                 <div style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 18px; line-height: 1.4;">
-                    * 依据 FLUXNET & LeafWeb 数据协议，登记的用途与单位将归档于审计日志，以保障科研成果的溯源与致谢规范。
+                    {{ t('modal_tip') }}
                 </div>
 
                 <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                    <button type="button" class="btn btn-outline" onclick="closeDownloadModal()">取消</button>
-                    <button type="submit" id="modalSubmitBtn" class="btn btn-primary">确认用途并开始下载</button>
+                    <button type="button" class="btn btn-outline" onclick="closeDownloadModal()">{{ t('modal_cancel') }}</button>
+                    <button type="submit" id="modalSubmitBtn" class="btn btn-primary">{{ t('modal_confirm') }}</button>
                 </div>
             </form>
         </div>

@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory, abort
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory, abort, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
 from config import Config
@@ -11,6 +11,7 @@ from services.data_parser import (
     calculate_kinetics_curve
 )
 from services.stats_service import get_dashboard_summary
+from services.i18n import TRANSLATIONS
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -26,6 +27,35 @@ login_manager.init_app(app)
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
+
+# ----------------- 国际化 i18n 注入与切换 -----------------
+@app.context_processor
+def inject_i18n():
+    current_lang = session.get('lang', 'zh')
+    if current_lang not in ('zh', 'en'):
+        current_lang = 'zh'
+    
+    def t(key, *args):
+        lang_dict = TRANSLATIONS.get(current_lang, TRANSLATIONS['zh'])
+        val = lang_dict.get(key, TRANSLATIONS['zh'].get(key, key))
+        if args:
+            try:
+                return val.format(*args)
+            except Exception:
+                return val
+        return val
+
+    return {
+        'current_lang': current_lang,
+        't': t
+    }
+
+@app.route('/set-language/<lang>')
+def set_language(lang):
+    if lang in ('zh', 'en'):
+        session['lang'] = lang
+    next_page = request.referrer or url_for('index')
+    return redirect(next_page)
 
 # ----------------- 数据库初始化与初始数据 Seed -----------------
 def seed_database():
@@ -359,13 +389,28 @@ def login():
         password = request.form.get('password', '').strip()
 
         if action == 'register':
+            confirm_password = request.form.get('confirm_password', '').strip()
             email = request.form.get('email', '').strip()
             institution = request.form.get('institution', '').strip()
-            if not username or not password or not email:
-                flash('请完整填写注册信息', 'error')
+
+            current_lang = session.get('lang', 'zh')
+            lang_dict = TRANSLATIONS.get(current_lang, TRANSLATIONS['zh'])
+
+            if not username or not password or not email or not confirm_password:
+                flash(lang_dict.get('form_email', '请完整填写注册信息'), 'error')
                 return redirect(url_for('login'))
+
+            if password != confirm_password:
+                flash(lang_dict.get('password_mismatch', '两次输入的密码不一致，请重新输入'), 'error')
+                return redirect(url_for('login'))
+
+            if len(password) < 6:
+                flash(lang_dict.get('password_too_weak', '密码强度不足，请至少设置6位字符'), 'error')
+                return redirect(url_for('login'))
+
             if User.query.filter_by(username=username).first():
-                flash('用户名已存在，请换一个名称', 'error')
+                msg = '用户名已存在，请换一个名称' if current_lang == 'zh' else 'Username already taken, please choose another.'
+                flash(msg, 'error')
                 return redirect(url_for('login'))
             
             user = User(username=username, email=email, institution=institution, role='user')
@@ -373,16 +418,19 @@ def login():
             db.session.add(user)
             db.session.commit()
             login_user(user)
-            flash('恭喜，科研账号注册成功并已自动登录！', 'success')
+            succ_msg = '恭喜，科研账号注册成功并已自动登录！' if current_lang == 'zh' else 'Registration successful! You are now signed in.'
+            flash(succ_msg, 'success')
             return redirect(url_for('index'))
         else:
             user = User.query.filter_by(username=username).first()
             if user and user.check_password(password):
                 login_user(user)
-                flash(f'欢迎回来，{user.username}！', 'success')
+                succ_msg = f'欢迎回来，{user.username}！' if session.get('lang', 'zh') == 'zh' else f'Welcome back, {user.username}!'
+                flash(succ_msg, 'success')
                 next_page = request.args.get('next')
                 return redirect(next_page or url_for('index'))
-            flash('用户名或密码有误，请重新核对', 'error')
+            err_msg = '用户名或密码有误，请重新核对' if session.get('lang', 'zh') == 'zh' else 'Invalid username or password.'
+            flash(err_msg, 'error')
             return redirect(url_for('login'))
 
     return render_template('login.html')

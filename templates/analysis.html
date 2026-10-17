@@ -1,31 +1,31 @@
 {% extends "base.html" %}
 
-{% block title %}交互式模型分析与诊断 - CLM-Microbe{% endblock %}
-{% block breadcrumb %}交互式模型分析 (LeafWeb 体系){% endblock %}
+{% block title %}{{ t('analysis_page_title') }}{% endblock %}
+{% block breadcrumb %}{{ t('nav_analysis') }}{% endblock %}
 
 {% block content %}
 <div class="card" style="border-left: 4px solid var(--primary-light);">
-    <h1 style="font-family: var(--font-serif); font-size: 1.5rem; margin-bottom: 8px;">LeafWeb 交互式生物地球化学动力学诊断平台</h1>
+    <h1 style="font-family: var(--font-serif); font-size: 1.5rem; margin-bottom: 8px;">{{ t('analysis_page_title') }}</h1>
     <p style="color: var(--text-muted); font-size: 0.92rem;">
-        提供底物-反应动力学拟合（Michaelis-Menten & Arrhenius/Q10 温敏校正）、多站点时序通量对比以及土壤剖面生物量模拟的即时交互式推演。
+        {{ t('analysis_page_desc') }}
     </p>
 </div>
 
 <!-- 交互参数调节工作台 (LeafWeb Kinetics Playground) -->
 <div class="card">
     <div class="card-title">
-        <span>🔬 底物-酶动力学与温敏响应推演 (Enzyme Kinetics Simulator)</span>
-        <span class="badge badge-primary">实时参数响应</span>
+        <span>{{ t('kinetics_simulator_title') }}</span>
+        <span class="badge badge-primary">{{ t('realtime_response') }}</span>
     </div>
     <p class="card-subtitle">
-        公式：\( V = \frac{V_{max}(T) \cdot [S]}{K_m + [S]} \)，其中 \( V_{max}(T) = V_{max0} \cdot Q_{10}^{(T - 20)/10} \)
+        \( V = \frac{V_{max}(T) \cdot [S]}{K_m + [S]} \), \( V_{max}(T) = V_{max0} \cdot Q_{10}^{(T - 20)/10} \)
     </p>
 
     <!-- 交互控制器 -->
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; background: #f8fafc; padding: 18px; border-radius: 8px; margin-bottom: 20px;">
         <div>
             <label class="form-label" style="display: flex; justify-content: space-between;">
-                <span>最大反应速率 \(V_{max0}\)</span>
+                <span>{{ t('vmax_label') }}</span>
                 <span id="vmaxVal" style="color: var(--primary); font-weight: bold;">15.0</span>
             </label>
             <input type="range" id="vmaxInput" min="1" max="40" step="0.5" value="15.0" style="width: 100%;">
@@ -33,7 +33,7 @@
 
         <div>
             <label class="form-label" style="display: flex; justify-content: space-between;">
-                <span>米氏常数 \(K_m\) (g C/m³)</span>
+                <span>{{ t('km_label') }}</span>
                 <span id="kmVal" style="color: var(--primary); font-weight: bold;">25.0</span>
             </label>
             <input type="range" id="kmInput" min="5" max="100" step="1" value="25.0" style="width: 100%;">
@@ -41,7 +41,7 @@
 
         <div>
             <label class="form-label" style="display: flex; justify-content: space-between;">
-                <span>土壤温度 \(T\) (℃)</span>
+                <span>{{ t('temp_label') }}</span>
                 <span id="tempVal" style="color: #e65100; font-weight: bold;">15.0</span>
             </label>
             <input type="range" id="tempInput" min="-5" max="35" step="0.5" value="15.0" style="width: 100%;">
@@ -49,7 +49,7 @@
 
         <div>
             <label class="form-label" style="display: flex; justify-content: space-between;">
-                <span>温度敏感系数 \(Q_{10}\)</span>
+                <span>{{ t('q10_label') }}</span>
                 <span id="q10Val" style="color: #6d4c41; font-weight: bold;">2.2</span>
             </label>
             <input type="range" id="q10Input" min="1.0" max="3.5" step="0.1" value="2.2" style="width: 100%;">
@@ -62,14 +62,14 @@
 <!-- 剖面深层诊断与多变量散点 (Scatter correlation) -->
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
     <div class="card">
-        <div class="card-title">土壤垂向剖面分层多组分结构 (0 ~ 1.5m)</div>
-        <p class="card-subtitle">真菌 vs. 细菌生物量、SOC及温敏敏感度剖面变化</p>
+        <div class="card-title">{{ t('profile_multi_title') }}</div>
+        <p class="card-subtitle">{{ t('profile_multi_desc') }}</p>
         <div id="profileMultiChart" style="width: 100%; height: 360px;"></div>
     </div>
 
     <div class="card">
-        <div class="card-title">水热协同与异养呼吸散点响应拟合</div>
-        <p class="card-subtitle">土壤温度 vs. 异养呼吸通量（气泡大小代表土壤含水量）</p>
+        <div class="card-title">{{ t('scatter_title') }}</div>
+        <p class="card-subtitle">{{ t('scatter_desc') }}</p>
         <div id="scatterChart" style="width: 100%; height: 360px;"></div>
     </div>
 </div>
@@ -78,6 +78,8 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const isZh = '{{ current_lang }}' === 'zh';
+
     // 1. 动力学滑块交互计算与图表
     const kinDom = document.getElementById('interactiveKineticsChart');
     const kinChart = echarts.init(kinDom);
@@ -114,15 +116,15 @@ document.addEventListener('DOMContentLoaded', function () {
             grid: { left: '4%', right: '4%', bottom: '10%', containLabel: true },
             xAxis: {
                 type: 'category',
-                name: '底物浓度 [S] (g C/m³)',
+                name: isZh ? '底物浓度 [S] (g C/m³)' : 'Substrate [S]',
                 data: data.substrate
             },
             yAxis: {
                 type: 'value',
-                name: '分解速率 V (g C/m³/h)'
+                name: isZh ? '分解速率 V (g C/m³/h)' : 'Decomposition Rate V'
             },
             series: [{
-                name: '反应速率',
+                name: isZh ? '反应速率' : 'Reaction Rate',
                 type: 'line',
                 smooth: true,
                 data: data.rate,
@@ -139,7 +141,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         yAxis: data.vmaxAdj,
                         name: 'Vmax(T)',
                         lineStyle: { color: '#b91c1c', type: 'dashed' },
-                        label: { formatter: '校正 Vmax = {c}' }
+                        label: { formatter: isZh ? '校正 Vmax = {c}' : 'Adjusted Vmax = {c}' }
                     }]
                 }
             }]
@@ -158,21 +160,25 @@ document.addEventListener('DOMContentLoaded', function () {
     const profChart = echarts.init(profDom);
     const depthData = {{ depth_data|tojson }};
 
+    const legF = isZh ? '真菌 (FBC)' : 'Fungi (FBC)';
+    const legB = isZh ? '细菌 (BBC)' : 'Bacteria (BBC)';
+    const legS = isZh ? '土壤有机碳 (SOC)' : 'Soil Organic Carbon (SOC)';
+
     profChart.setOption({
         tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
-        legend: { data: ['真菌 (FBC)', '细菌 (BBC)', '土壤有机碳 (SOC)'], top: 0 },
+        legend: { data: [legF, legB, legS], top: 0 },
         grid: { left: '4%', right: '5%', bottom: '8%', containLabel: true },
-        xAxis: { type: 'value', name: '储量 / 浓度 (g C / m²)' },
+        xAxis: { type: 'value', name: 'g C / m²' },
         yAxis: {
             type: 'category',
-            name: '剖面深度',
+            name: isZh ? '剖面深度' : 'Depth',
             inverse: true,
             data: depthData.depth_labels
         },
         series: [
-            { name: '真菌 (FBC)', type: 'bar', data: depthData.fbc, itemStyle: { color: '#8d6e63' } },
-            { name: '细菌 (BBC)', type: 'bar', data: depthData.bbc, itemStyle: { color: '#2e7d32' } },
-            { name: '土壤有机碳 (SOC)', type: 'line', smooth: true, data: depthData.soc, itemStyle: { color: '#d97706' } }
+            { name: legF, type: 'bar', data: depthData.fbc, itemStyle: { color: '#8d6e63' } },
+            { name: legB, type: 'bar', data: depthData.bbc, itemStyle: { color: '#2e7d32' } },
+            { name: legS, type: 'line', smooth: true, data: depthData.soc, itemStyle: { color: '#d97706' } }
         ]
     });
     window.addEventListener('resize', () => profChart.resize());
@@ -181,7 +187,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const scatterDom = document.getElementById('scatterChart');
     const scatterChart = echarts.init(scatterDom);
     
-    // 生成模拟散点数据 [Temp, HR, Moisture, DOY]
     const scatterPoints = [];
     for (let doy = 1; doy <= 365; doy += 2) {
         const temp = 10.0 * Math.sin(2 * Math.PI * (doy - 105) / 365) + 2.0 + (Math.random() * 2 - 1);
@@ -193,22 +198,18 @@ document.addEventListener('DOMContentLoaded', function () {
     scatterChart.setOption({
         tooltip: {
             formatter: function (param) {
-                return 'DOY: ' + param.data[3] + '<br/>温度: ' + param.data[0] + ' ℃<br/>异养呼吸 HR: ' + param.data[1] + ' g C/m²/d<br/>湿度: ' + param.data[2];
+                return 'DOY: ' + param.data[3] + '<br/>' + (isZh ? '温度: ' : 'Temp: ') + param.data[0] + ' ℃<br/>' + (isZh ? '异养呼吸: ' : 'HR: ') + param.data[1] + ' g C/m²/d<br/>' + (isZh ? '湿度: ' : 'Moisture: ') + param.data[2];
             }
         },
         grid: { left: '4%', right: '5%', bottom: '8%', containLabel: true },
-        xAxis: { type: 'value', name: '土壤温度 (℃)' },
-        yAxis: { type: 'value', name: '异养呼吸 HR (g C/m²/d)' },
+        xAxis: { type: 'value', name: isZh ? '土壤温度 (℃)' : 'Soil Temperature (°C)' },
+        yAxis: { type: 'value', name: isZh ? '异养呼吸 HR (g C/m²/d)' : 'HR Flux (g C/m²/d)' },
         series: [{
-            name: '散点响应',
+            name: isZh ? '散点响应' : 'Scatter',
             type: 'scatter',
-            symbolSize: function (val) {
-                return val[2] * 28; // 根据含水量缩放气泡
-            },
+            symbolSize: function (val) { return val[2] * 28; },
             data: scatterPoints,
-            itemStyle: {
-                color: 'rgba(46, 125, 50, 0.65)'
-            }
+            itemStyle: { color: 'rgba(46, 125, 50, 0.65)' }
         }]
     });
     window.addEventListener('resize', () => scatterChart.resize());

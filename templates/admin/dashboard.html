@@ -1,36 +1,36 @@
 {% extends "base.html" %}
 
-{% block title %}后台管理与埋点审计看板 - CLM-Microbe{% endblock %}
-{% block breadcrumb %}管理看板与埋点审计{% endblock %}
+{% block title %}{{ t('admin_dashboard_title') }}{% endblock %}
+{% block breadcrumb %}{{ t('nav_admin') }}{% endblock %}
 
 {% block content %}
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
     <div>
-        <h1 style="font-family: var(--font-serif); font-size: 1.5rem; color: #1a202c;">平台运营管理与科研审计看板</h1>
-        <p style="font-size: 0.88rem; color: var(--text-muted);">实时汇总数据集分发走向、用户下载用途与学科标签拓扑。</p>
+        <h1 style="font-family: var(--font-serif); font-size: 1.5rem; color: #1a202c;">{{ t('admin_dashboard_title') }}</h1>
+        <p style="font-size: 0.88rem; color: var(--text-muted);">{{ t('admin_dashboard_desc') }}</p>
     </div>
     <div style="display: flex; gap: 10px;">
-        <a href="{{ url_for('admin_keywords') }}" class="btn btn-outline btn-sm">🏷️ 维护全局关键词库</a>
-        <a href="{{ url_for('upload') }}" class="btn btn-primary btn-sm">➕ 录入新数据集</a>
+        <a href="{{ url_for('admin_keywords') }}" class="btn btn-outline btn-sm">{{ t('btn_manage_keywords') }}</a>
+        <a href="{{ url_for('upload') }}" class="btn btn-primary btn-sm">{{ t('btn_add_dataset') }}</a>
     </div>
 </div>
 
 <!-- 顶层关键指标汇总 -->
 <div class="stats-grid">
     <div class="stat-box">
-        <div class="stat-label">纳管数据集总数</div>
+        <div class="stat-label">{{ t('stat_datasets') }}</div>
         <div class="stat-num">{{ summary.total_datasets }}</div>
     </div>
     <div class="stat-box">
-        <div class="stat-label">累计分发/下载总计</div>
+        <div class="stat-label">{{ t('stat_downloads') }}</div>
         <div class="stat-num" style="color: var(--primary);">{{ summary.total_downloads }}</div>
     </div>
     <div class="stat-box">
-        <div class="stat-label">审计行为日志记录</div>
+        <div class="stat-label">{{ t('stat_logs') }}</div>
         <div class="stat-num">{{ summary.total_logs }}</div>
     </div>
     <div class="stat-box">
-        <div class="stat-label">活跃学科标引词</div>
+        <div class="stat-label">{{ t('stat_keywords') }}</div>
         <div class="stat-num" style="color: var(--secondary);">{{ summary.total_keywords }}</div>
     </div>
 </div>
@@ -38,12 +38,12 @@
 <!-- 埋点可视化图表 -->
 <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 24px;">
     <div class="card">
-        <div class="card-title">近 7 日数据请求与下载分发走势 (Download Trends)</div>
+        <div class="card-title">{{ t('chart_trend') }}</div>
         <div id="trendChart" style="width: 100%; height: 320px;"></div>
     </div>
 
     <div class="card">
-        <div class="card-title">下载用途分类构成 (Research Purposes)</div>
+        <div class="card-title">{{ t('chart_purpose') }}</div>
         <div id="purposeChart" style="width: 100%; height: 320px;"></div>
     </div>
 </div>
@@ -52,12 +52,12 @@
 <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px;">
     <!-- 热门 Top 5 -->
     <div class="card">
-        <div class="card-title">最受关注数据集 Top 5</div>
+        <div class="card-title">{{ t('top_5_title') }}</div>
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>数据集</th>
-                    <th style="text-align: right;">下载量</th>
+                    <th>{{ t('col_dataset') }}</th>
+                    <th style="text-align: right;">{{ t('stat_downloads') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -79,18 +79,18 @@
     <!-- 最近下载审计日志 (Audit Log) -->
     <div class="card">
         <div class="card-title">
-            <span>实时下载审计流水 (最近 15 条)</span>
-            <span class="badge badge-primary">FLUXNET/LeafWeb 规范</span>
+            <span>{{ t('recent_logs_title') }}</span>
+            <span class="badge badge-primary">FLUXNET/LeafWeb</span>
         </div>
         <div style="overflow-x: auto;">
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>时间</th>
-                        <th>数据集</th>
-                        <th>登记机构 / 用户</th>
-                        <th>研究目的</th>
-                        <th>渠道</th>
+                        <th>{{ t('col_time') }}</th>
+                        <th>{{ t('col_dataset') }}</th>
+                        <th>{{ t('col_user_inst') }}</th>
+                        <th>{{ t('col_purpose') }}</th>
+                        <th>{{ t('col_channel') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -103,10 +103,10 @@
                             </a>
                         </td>
                         <td>
-                            <div>{{ log.institution or '未填' }}</div>
-                            <small style="color: #94a3b8;">{{ log.user.username if log.user else '匿名访客' }}</small>
+                            <div>{{ log.institution or 'N/A' }}</div>
+                            <small style="color: #94a3b8;">{{ log.user.username if log.user else 'Guest' }}</small>
                         </td>
-                        <td><span class="badge">{{ log.purpose or '科学研究' }}</span></td>
+                        <td><span class="badge">{{ log.purpose or 'Research' }}</span></td>
                         <td>
                             <span style="font-size: 0.75rem; color: {% if log.download_type == 'github_redirect' %}#0284c7{% else %}#16a34a{% endif %};">
                                 {{ log.download_type }}
@@ -124,6 +124,8 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const isZh = '{{ current_lang }}' === 'zh';
+
     // 1. 趋势折线图
     const trendDom = document.getElementById('trendChart');
     if (trendDom) {
@@ -138,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             yAxis: { type: 'value', minInterval: 1 },
             series: [{
-                name: '分发次数',
+                name: isZh ? '分发次数' : 'Downloads',
                 type: 'line',
                 smooth: true,
                 data: {{ summary.trend_values|tojson }},
@@ -163,7 +165,7 @@ document.addEventListener('DOMContentLoaded', function () {
             tooltip: { trigger: 'item' },
             legend: { bottom: 0, textStyle: { fontSize: 11 } },
             series: [{
-                name: '用途占比',
+                name: isZh ? '用途占比' : 'Purpose',
                 type: 'pie',
                 radius: ['40%', '70%'],
                 center: ['50%', '45%'],
