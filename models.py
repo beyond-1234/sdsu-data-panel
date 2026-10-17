@@ -38,10 +38,22 @@ class VariableDefinition(db.Model):
     __tablename__ = 'variable_definitions'
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(50), unique=True, nullable=False, index=True) # 如: "CH4_FLUX", "BBC", "TSOI"
-    display_name = db.Column(db.String(100), nullable=False)                 # 如: "Methane Net Flux", "Bacterial Biomass C"
+    display_name = db.Column(db.String(100), nullable=False)                 # 中文显示名称
+    display_name_en = db.Column(db.String(120), nullable=True)               # 英文显示名称
     category = db.Column(db.String(50), index=True)                          # 如: "Gas Flux", "Microbial Pool", "Soil Physics"
     unit = db.Column(db.String(30))                                          # 如: "mg C m-2 d-1", "g C kg-1"
-    description = db.Column(db.String(255))
+    description = db.Column(db.String(255))                                  # 中文科学描述
+    description_en = db.Column(db.String(255))                               # 英文科学描述
+
+    def get_name(self, lang='zh'):
+        if lang == 'en' and self.display_name_en:
+            return self.display_name_en
+        return self.display_name
+
+    def get_desc(self, lang='zh'):
+        if lang == 'en' and self.description_en:
+            return self.description_en
+        return self.description or ''
 
 # ----------------- 2. 地理样点/区域表 (空间与生态区维度) -----------------
 class SiteLocation(db.Model):

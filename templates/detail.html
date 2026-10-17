@@ -87,7 +87,7 @@
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
             {% for v in dataset.variables %}
                 <span class="badge" style="padding: 6px 10px; background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1; font-size: 0.8rem;">
-                    <strong>{{ v.code }}</strong> - {{ v.display_name }} 
+                    <strong>{{ v.code }}</strong> - {{ v.get_name(current_lang) }} 
                     <span style="color: var(--primary); font-weight: bold; margin-left: 4px;">[{{ v.unit }}]</span>
                 </span>
             {% endfor %}

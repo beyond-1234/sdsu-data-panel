@@ -95,7 +95,7 @@
                         {% for v in all_variables if v.category == 'Gas Flux' %}
                             <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; cursor: pointer;">
                                 <input type="checkbox" name="var" value="{{ v.code }}" {% if v.code in selected_vars %}checked{% endif %}>
-                                <strong>{{ v.code }}</strong> - <span style="color: #64748b;">{{ v.display_name }}</span>
+                                <strong>{{ v.code }}</strong> - <span style="color: #64748b;">{{ v.get_name(current_lang) }}</span>
                             </label>
                         {% endfor %}
                     </div>
@@ -108,7 +108,7 @@
                         {% for v in all_variables if v.category == 'Microbial Pool' %}
                             <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; cursor: pointer;">
                                 <input type="checkbox" name="var" value="{{ v.code }}" {% if v.code in selected_vars %}checked{% endif %}>
-                                <strong>{{ v.code }}</strong> - <span style="color: #64748b;">{{ v.display_name }}</span>
+                                <strong>{{ v.code }}</strong> - <span style="color: #64748b;">{{ v.get_name(current_lang) }}</span>
                             </label>
                         {% endfor %}
                     </div>
@@ -121,7 +121,7 @@
                         {% for v in all_variables if v.category == 'Soil Physics' %}
                             <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; cursor: pointer;">
                                 <input type="checkbox" name="var" value="{{ v.code }}" {% if v.code in selected_vars %}checked{% endif %}>
-                                <strong>{{ v.code }}</strong> - <span style="color: #64748b;">{{ v.display_name }}</span>
+                                <strong>{{ v.code }}</strong> - <span style="color: #64748b;">{{ v.get_name(current_lang) }}</span>
                             </label>
                         {% endfor %}
                     </div>
@@ -211,7 +211,7 @@
                         <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
                             <span style="font-size: 0.78rem; font-weight: 600; color: #475569;">{{ t('variables_contained') }}</span>
                             {% for v in ds.variables %}
-                                <span class="badge" style="background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1; font-size: 0.75rem;">
+                                <span class="badge" style="background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1; font-size: 0.75rem;" title="{{ v.get_name(current_lang) }}">
                                     <strong>{{ v.code }}</strong> <small style="color: #64748b;">({{ v.unit }})</small>
                                 </span>
                             {% endfor %}

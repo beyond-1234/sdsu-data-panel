@@ -120,7 +120,7 @@
                 {% for v in all_variables %}
                     <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; cursor: pointer; background: #fff; padding: 6px 10px; border-radius: 4px; border: 1px solid #e2e8f0;">
                         <input type="checkbox" name="variables" value="{{ v.id }}" {% if v in dataset.variables %}checked{% endif %}>
-                        <strong>{{ v.code }}</strong> - <span style="color: #64748b;">{{ v.display_name }}</span>
+                        <strong>{{ v.code }}</strong> - <span style="color: #64748b;">{{ v.get_name(current_lang) }}</span>
                     </label>
                 {% endfor %}
             </div>

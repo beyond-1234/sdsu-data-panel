@@ -116,38 +116,43 @@ def seed_database():
         # 2.1 初始预置标准化科学变量指标字典 (对标 CLM-Microbe 源码 ch4Mod/microbeMod 与 NetCDF 驱动)
         default_variables = [
             # 气体通量 (Fluxes)
-            ('CH4_FLUX', '甲烷净通量 (CH4 Net Surface Flux)', 'Gas Flux', 'mg C m-2 d-1', '地表甲烷净排放通量 (Net surface methane emissions)'),
-            ('HR', '土壤异养呼吸 (Heterotrophic Respiration)', 'Gas Flux', 'g C m-2 d-1', '微生物分解有机质与土壤碳库异养呼吸通量'),
-            ('NEE', '净生态系统碳交换 (Net Ecosystem Exchange)', 'Gas Flux', 'g C m-2 d-1', '生态系统与大气净二氧化碳交换率'),
-            ('GPP', '总初级生产力 (Gross Primary Productivity)', 'Gas Flux', 'g C m-2 d-1', '植被冠层光合碳同化速率'),
-            ('FSR', '土壤总呼吸 (Total Soil Respiration)', 'Gas Flux', 'g C m-2 d-1', '土壤异养与根系自养总呼吸通量'),
+            ('CH4_FLUX', '甲烷净通量 (CH4 Net Surface Flux)', 'Net Methane Surface Flux', 'Gas Flux', 'mg C m-2 d-1', '地表甲烷净排放通量 (Net surface methane emissions)', 'Net surface methane exchange flux'),
+            ('HR', '土壤异养呼吸 (Heterotrophic Respiration)', 'Heterotrophic Respiration', 'Gas Flux', 'g C m-2 d-1', '微生物分解有机质与土壤碳库异养呼吸通量', 'Microbial heterotrophic decomposition carbon flux'),
+            ('NEE', '净生态系统碳交换 (Net Ecosystem Exchange)', 'Net Ecosystem Exchange', 'Gas Flux', 'g C m-2 d-1', '生态系统与大气净二氧化碳交换率', 'Net CO2 ecosystem exchange rate'),
+            ('GPP', '总初级生产力 (Gross Primary Productivity)', 'Gross Primary Productivity', 'Gas Flux', 'g C m-2 d-1', '植被冠层光合碳同化速率', 'Gross canopy photosynthetic carbon assimilation'),
+            ('FSR', '土壤总呼吸 (Total Soil Respiration)', 'Total Soil Respiration', 'Gas Flux', 'g C m-2 d-1', '土壤异养与根系自养总呼吸通量', 'Combined autotrophic and heterotrophic soil respiration'),
             
             # 微生物库与反应动力学 (Microbial Pools & Kinetics)
-            ('BBC', '细菌生物量碳 (Bacterial Biomass C)', 'Microbial Pool', 'g C m-2', 'CLM-Microbe 显式土壤活跃细菌群落碳储量'),
-            ('FBC', '真菌生物量碳 (Fungal Biomass C)', 'Microbial Pool', 'g C m-2', 'CLM-Microbe 显式土壤活跃真菌菌丝碳储量'),
-            ('VMAX_CH4', '产甲烷与氧化反应最大速率 (Vmax_CH4)', 'Microbial Pool', 'g C m-3 h-1', '底物饱和下的 Michaelis-Menten 反应峰值速率'),
-            ('KM_CH4', '米氏反应常数 (Km_CH4)', 'Microbial Pool', 'g C m-3', '酶促半饱和底物浓度'),
-            ('AOM_RATE', '厌氧甲烷氧化速率 (AOM Rate)', 'Microbial Pool', 'mg C m-3 d-1', '厌氧电子受体驱动的甲烷反硝化/硫酸盐氧化'),
+            ('BBC', '细菌生物量碳 (Bacterial Biomass C)', 'Bacterial Biomass Carbon', 'Microbial Pool', 'g C m-2', 'CLM-Microbe 显式土壤活跃细菌群落碳储量', 'Explicit active bacterial carbon pool in CLM-Microbe'),
+            ('FBC', '真菌生物量碳 (Fungal Biomass C)', 'Fungal Biomass Carbon', 'Microbial Pool', 'g C m-2', 'CLM-Microbe 显式土壤活跃真菌菌丝碳储量', 'Explicit active fungal mycelial carbon pool in CLM-Microbe'),
+            ('VMAX_CH4', '产甲烷与氧化反应最大速率 (Vmax_CH4)', 'Max Methane Reaction Rate (Vmax)', 'Microbial Pool', 'g C m-3 h-1', '底物饱和下的 Michaelis-Menten 反应峰值速率', 'Substrate-saturated maximum Michaelis-Menten kinetics rate'),
+            ('KM_CH4', '米氏反应常数 (Km_CH4)', 'Half-Saturation Constant (Km)', 'Microbial Pool', 'g C m-3', '酶促半饱和底物浓度', 'Enzymatic half-saturation substrate concentration'),
+            ('AOM_RATE', '厌氧甲烷氧化速率 (AOM Rate)', 'Anaerobic Methane Oxidation Rate', 'Microbial Pool', 'mg C m-3 d-1', '厌氧电子受体驱动的甲烷反硝化/硫酸盐氧化', 'Anaerobic methane oxidation mediated by alternative electron acceptors'),
 
             # 水热与土壤理化 (Abiotic Drivers)
-            ('TSOI', '土壤剖面温度 (Soil Temperature)', 'Soil Physics', '°C', 'CLM 分层土壤热动力学状态观测/驱动'),
-            ('H2OSOI', '土壤体积含水量 (Soil Moisture)', 'Soil Physics', 'm3 m-3', '分层土壤水分饱和度与孔隙含水量'),
-            ('SOC', '土壤有机碳储量 (Soil Organic Carbon)', 'Soil Physics', 'kg C m-3', '垂直剖面分层活跃与顽固碳库储量'),
-            ('FROST_TABLE', '多年冻土活动层融化深度 (Thaw Depth)', 'Soil Physics', 'm', '活动层季节性融深与冻土界面')
+            ('TSOI', '土壤剖面温度 (Soil Temperature)', 'Soil Profile Temperature', 'Soil Physics', '°C', 'CLM 分层土壤热动力学状态观测/驱动', 'Layered soil profile thermal thermodynamic state'),
+            ('H2OSOI', '土壤体积含水量 (Soil Moisture)', 'Soil Volumetric Moisture', 'Soil Physics', 'm3 m-3', '分层土壤水分饱和度与孔隙含水量', 'Layered volumetric water content and matric potential'),
+            ('SOC', '土壤有机碳储量 (Soil Organic Carbon)', 'Soil Organic Carbon', 'Soil Physics', 'kg C m-3', '垂直剖面分层活跃与顽固碳库储量', 'Vertical profile active and recalcitrant organic carbon pools'),
+            ('FROST_TABLE', '多年冻土活动层融化深度 (Thaw Depth)', 'Permafrost Thaw Depth', 'Soil Physics', 'm', '活动层季节性融深与冻土界面', 'Seasonal active layer thaw depth and permafrost boundary')
         ]
         var_map = {}
-        for code, dname, cat, unit, desc in default_variables:
+        for code, dname, dname_en, cat, unit, desc, desc_en in default_variables:
             var_obj = VariableDefinition.query.filter_by(code=code).first()
             if not var_obj:
                 var_obj = VariableDefinition(
                     code=code,
                     display_name=dname,
+                    display_name_en=dname_en,
                     category=cat,
                     unit=unit,
-                    description=desc
+                    description=desc,
+                    description_en=desc_en
                 )
                 db.session.add(var_obj)
                 db.session.flush()
+            else:
+                var_obj.display_name_en = dname_en
+                var_obj.description_en = desc_en
             var_map[code] = var_obj
         db.session.commit()
 
@@ -1101,6 +1106,84 @@ def admin_delete_dataset(dataset_id):
 
     flash(f'数据集 #{dataset_id} "{ds_title[:20]}..." 已成功从系统中彻底删除！', 'info')
     return redirect(url_for('admin_datasets'))
+
+# ----------------- 后台标准化观测指标字典管理 (CRUD) -----------------
+@app.route('/admin/variables', methods=['GET', 'POST'])
+@login_required
+def admin_variables():
+    if current_user.role != 'admin':
+        flash('权限不足，仅管理员可维护指标字典', 'error')
+        return redirect(url_for('index'))
+
+    edit_id = request.args.get('edit_id', type=int)
+    edit_var = db.session.get(VariableDefinition, edit_id) if edit_id else None
+
+    if request.method == 'POST':
+        action = request.form.get('action')
+
+        if action == 'create':
+            code = request.form.get('code', '').strip().upper()
+            display_name = request.form.get('display_name', '').strip()
+            display_name_en = request.form.get('display_name_en', '').strip()
+            category = request.form.get('category', 'Gas Flux').strip()
+            unit = request.form.get('unit', '').strip()
+            description = request.form.get('description', '').strip()
+            description_en = request.form.get('description_en', '').strip()
+
+            if not code or not display_name or not unit:
+                flash('指标代码、显示名称与单位不能为空', 'error')
+                return redirect(url_for('admin_variables'))
+
+            if VariableDefinition.query.filter_by(code=code).first():
+                flash(f'指标代码 "{code}" 已存在，请勿重复定义', 'error')
+                return redirect(url_for('admin_variables'))
+
+            new_v = VariableDefinition(
+                code=code,
+                display_name=display_name,
+                display_name_en=display_name_en,
+                category=category,
+                unit=unit,
+                description=description,
+                description_en=description_en
+            )
+            db.session.add(new_v)
+            db.session.commit()
+            flash(f'科学指标 "{code}" 添加发布成功！', 'success')
+            return redirect(url_for('admin_variables'))
+
+        elif action == 'update':
+            var_id = request.form.get('var_id', type=int)
+            v_obj = db.session.get(VariableDefinition, var_id)
+            if v_obj:
+                v_obj.display_name = request.form.get('display_name', '').strip()
+                v_obj.display_name_en = request.form.get('display_name_en', '').strip()
+                v_obj.category = request.form.get('category', '').strip()
+                v_obj.unit = request.form.get('unit', '').strip()
+                v_obj.description = request.form.get('description', '').strip()
+                v_obj.description_en = request.form.get('description_en', '').strip()
+                db.session.commit()
+                flash(f'指标 "{v_obj.code}" 信息已成功更新！', 'success')
+            return redirect(url_for('admin_variables'))
+
+    variables = VariableDefinition.query.order_by(VariableDefinition.category.asc(), VariableDefinition.code.asc()).all()
+    return render_template('admin/variables.html', variables=variables, edit_var=edit_var)
+
+@app.route('/admin/variable/<int:var_id>/delete', methods=['POST'])
+@login_required
+def admin_delete_variable(var_id):
+    if current_user.role != 'admin':
+        flash('权限不足', 'error')
+        return redirect(url_for('index'))
+
+    v_obj = db.session.get(VariableDefinition, var_id)
+    if v_obj:
+        v_code = v_obj.code
+        db.session.delete(v_obj)
+        db.session.commit()
+        flash(f'科学指标 "{v_code}" 已从词典中删除', 'info')
+
+    return redirect(url_for('admin_variables'))
 
 if __name__ == '__main__':
     seed_database()
