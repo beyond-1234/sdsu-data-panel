@@ -104,6 +104,8 @@
                             {{ t('channel_label') }} 
                             {% if ds.data_source_type == 'github' %}
                                 <span style="color: #0366d6;">{{ t('github_mirror') }}</span>
+                            {% elif ds.data_source_type == 'oss' %}
+                                <span style="color: #d97706;">{{ t('oss_channel') }}</span>
                             {% else %}
                                 <span style="color: #2e7d32;">{{ t('local_archive') }}</span>
                             {% endif %}

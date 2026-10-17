@@ -55,7 +55,7 @@ class DownloadLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True) # 未登录可存 NULL
     dataset_id = db.Column(db.Integer, db.ForeignKey('datasets.id'), nullable=False)
-    download_type = db.Column(db.String(20))   # 'github_redirect' 或 'local_download'
+    download_type = db.Column(db.String(20))   # 'github_redirect'、'local_download' 或 'oss_download'
     ip_address = db.Column(db.String(45))      # 客户端 IP
     user_agent = db.Column(db.String(255))     # 埋点：设备/浏览器信息
     institution = db.Column(db.String(150))    # 登记的单位
@@ -64,3 +64,15 @@ class DownloadLog(db.Model):
 
     user = db.relationship('User', backref=db.backref('downloads', lazy='dynamic'))
     dataset = db.relationship('Dataset', backref=db.backref('logs', lazy='dynamic'))
+
+class StorageConfig(db.Model):
+    __tablename__ = 'storage_configs'
+    id = db.Column(db.Integer, primary_key=True)
+    provider = db.Column(db.String(50), default='aliyun_oss') # 'aliyun_oss', 's3', 'minio'
+    endpoint = db.Column(db.String(200), nullable=False)      # 如 oss-cn-beijing.aliyuncs.com
+    bucket_name = db.Column(db.String(100), nullable=False)   # 存储桶名称
+    access_key_id = db.Column(db.String(150), nullable=False)
+    access_key_secret = db.Column(db.String(200), nullable=False)
+    custom_domain = db.Column(db.String(200), nullable=True)  # 自定义 CDN 或加速域名
+    is_active = db.Column(db.Boolean, default=True)           # 是否启用
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

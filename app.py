@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
 from config import Config
-from models import db, User, Dataset, Keyword, DownloadLog
+from models import db, User, Dataset, Keyword, DownloadLog, StorageConfig
 from services.data_parser import (
     generate_sample_clm_timeseries,
     parse_dataset_timeseries,
@@ -11,6 +11,7 @@ from services.data_parser import (
     calculate_kinetics_curve
 )
 from services.stats_service import get_dashboard_summary
+from services.oss_service import upload_to_oss, get_oss_download_url, get_active_oss_config
 from services.i18n import TRANSLATIONS
 
 app = Flask(__name__)
@@ -120,7 +121,21 @@ def seed_database():
         if not os.path.exists(sample_csv_2):
             generate_sample_clm_timeseries(sample_csv_2, year=2022, site='US-Atq')
 
-        # 4. 预置数据集记录
+        # 4. 预置默认 OSS 配置样例
+        if StorageConfig.query.count() == 0:
+            default_oss = StorageConfig(
+                provider='aliyun_oss',
+                endpoint='oss-cn-beijing.aliyuncs.com',
+                bucket_name='sdsu-clm-microbe-bucket',
+                access_key_id='LTAI5tDemoAccessKeyId2026',
+                access_key_secret='DemoSecretAccessKeySecret987654321',
+                custom_domain='https://data-cdn.sdsu-clm.org',
+                is_active=True
+            )
+            db.session.add(default_oss)
+            db.session.commit()
+
+        # 5. 预置数据集记录
         if Dataset.query.count() == 0:
             ds1 = Dataset(
                 title='CLM-Microbe 北极苔原 (US-Atq) 土壤异养呼吸与甲烷通量模拟驱动集',
@@ -291,9 +306,25 @@ def upload():
             flash('请完整填写数据集标题、第一作者、年份与摘要描述', 'error')
             return redirect(url_for('upload'))
 
-        # 处理文件或 GitHub 来源
+        # 处理文件或 GitHub / OSS 来源
         local_filename = None
-        if data_source_type == 'local':
+        if data_source_type == 'oss':
+            file = request.files.get('oss_file') or request.files.get('file')
+            if file and file.filename:
+                fname = secure_filename(file.filename)
+                save_path = os.path.join(app.config['UPLOAD_FOLDER'], fname)
+                file.save(save_path)
+                local_filename = fname
+                # 同步向 OSS 存储进行归档
+                oss_key = f"datasets/{year}/{fname}"
+                upload_to_oss(save_path, oss_key)
+            else:
+                fname = f"sample_oss_{year}.csv"
+                save_path = os.path.join(app.config['UPLOAD_FOLDER'], fname)
+                generate_sample_clm_timeseries(save_path, year=int(year) if year.isdigit() else 2023)
+                local_filename = fname
+                upload_to_oss(save_path, f"datasets/{year}/{fname}")
+        elif data_source_type == 'local':
             file = request.files.get('file')
             if file and file.filename:
                 fname = secure_filename(file.filename)
@@ -322,6 +353,8 @@ def upload():
             local_file_path=local_filename,
             download_count=0
         )
+        db.session.add(new_dataset)
+        db.session.flush()
 
         # 关联关键词
         if keywords_str:
@@ -334,7 +367,6 @@ def upload():
                     db.session.flush()
                 new_dataset.keywords.append(kw_obj)
 
-        db.session.add(new_dataset)
         db.session.commit()
         flash('数据集已成功提交并归档纳管！', 'success')
         return redirect(url_for('detail', dataset_id=new_dataset.id))
@@ -352,10 +384,16 @@ def trigger_download(dataset_id):
     purpose = data.get('purpose', 'Academic Research')
 
     # 2. 写入审计日志埋点表
+    dl_type = 'github_redirect'
+    if dataset.data_source_type == 'oss':
+        dl_type = 'oss_download'
+    elif dataset.data_source_type == 'local':
+        dl_type = 'local_download'
+
     log = DownloadLog(
         user_id=current_user.id if current_user.is_authenticated else None,
         dataset_id=dataset.id,
-        download_type='github_redirect' if dataset.data_source_type == 'github' else 'local_download',
+        download_type=dl_type,
         ip_address=request.remote_addr,
         user_agent=request.user_agent.string[:250] if request.user_agent else '',
         institution=institution,
@@ -365,9 +403,13 @@ def trigger_download(dataset_id):
     db.session.add(log)
     db.session.commit()
 
-    # 3. 分发数据：支持 GitHub 直链重定向 或 本地文件传输
+    # 3. 分发数据：支持 GitHub 直链重定向、OSS 云端分发 或 本地文件传输
     if dataset.data_source_type == 'github' and dataset.github_url:
         return jsonify({'status': 'success', 'download_url': dataset.github_url})
+    elif dataset.data_source_type == 'oss':
+        oss_key = f"datasets/{dataset.year}/{dataset.local_file_path or 'data.csv'}"
+        oss_url = get_oss_download_url(oss_key)
+        return jsonify({'status': 'success', 'download_url': oss_url or url_for('download_file', filename=dataset.local_file_path)})
     elif dataset.local_file_path:
         return jsonify({'status': 'success', 'download_url': url_for('download_file', filename=dataset.local_file_path)})
     else:
@@ -525,6 +567,55 @@ def admin_keywords():
     datasets = Dataset.query.order_by(Dataset.created_at.desc()).all()
     all_keywords = Keyword.query.order_by(Keyword.name.asc()).all()
     return render_template('admin/keywords.html', datasets=datasets, all_keywords=all_keywords)
+
+# ----------------- 后台 OSS 对象存储配置管理 -----------------
+@app.route('/admin/oss', methods=['GET', 'POST'])
+@login_required
+def admin_oss():
+    if current_user.role != 'admin':
+        flash('权限不足，仅管理员可配置对象存储', 'error')
+        return redirect(url_for('index'))
+
+    oss_config = StorageConfig.query.first()
+
+    if request.method == 'POST':
+        provider = request.form.get('provider', 'aliyun_oss').strip()
+        endpoint = request.form.get('endpoint', '').strip().replace('https://', '').replace('http://', '')
+        bucket_name = request.form.get('bucket_name', '').strip()
+        access_key_id = request.form.get('access_key_id', '').strip()
+        access_key_secret = request.form.get('access_key_secret', '').strip()
+        custom_domain = request.form.get('custom_domain', '').strip()
+        is_active = bool(request.form.get('is_active'))
+
+        if not endpoint or not bucket_name or not access_key_id or not access_key_secret:
+            flash('请完整填写 OSS 地域节点、Bucket 及访问凭证', 'error')
+            return redirect(url_for('admin_oss'))
+
+        if not oss_config:
+            oss_config = StorageConfig(
+                provider=provider,
+                endpoint=endpoint,
+                bucket_name=bucket_name,
+                access_key_id=access_key_id,
+                access_key_secret=access_key_secret,
+                custom_domain=custom_domain,
+                is_active=is_active
+            )
+            db.session.add(oss_config)
+        else:
+            oss_config.provider = provider
+            oss_config.endpoint = endpoint
+            oss_config.bucket_name = bucket_name
+            oss_config.access_key_id = access_key_id
+            oss_config.access_key_secret = access_key_secret
+            oss_config.custom_domain = custom_domain
+            oss_config.is_active = is_active
+
+        db.session.commit()
+        flash('OSS 对象存储配置已更新并成功启用！', 'success')
+        return redirect(url_for('admin_oss'))
+
+    return render_template('admin/oss.html', oss_config=oss_config)
 
 if __name__ == '__main__':
     seed_database()
