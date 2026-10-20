@@ -7,7 +7,7 @@
 <div class="card" style="max-width: 900px; margin: 0 auto;">
     <div class="card-title">
         <span>{{ t('upload_page_title') }}</span>
-        <span class="badge badge-primary">GitHub & Local File</span>
+        <span class="badge badge-primary">GitHub & Local File & Cloud</span>
     </div>
     <p class="card-subtitle">
         {{ t('upload_page_subtitle') }}
@@ -16,33 +16,32 @@
     <form method="POST" action="{{ url_for('upload') }}" enctype="multipart/form-data">
         <div class="form-group">
             <label class="form-label" for="title">{{ t('form_title') }}</label>
-            <input type="text" id="title" name="title" class="form-control" placeholder="e.g., CLM-Microbe Soil Methane & Microbial Dynamics" required>
+            <input type="text" id="title" name="title" class="form-control" placeholder="e.g., Global Soil Microbial Biomass Carbon and Nitrogen Dataset" required>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
             <div class="form-group">
                 <label class="form-label" for="author">{{ t('form_author') }}</label>
-                <input type="text" id="author" name="author" class="form-control" placeholder="e.g., SDSU Ecohydrology Lab" required>
+                <input type="text" id="author" name="author" class="form-control" placeholder="e.g., Xiaofeng Xu et al. (SDSU)" required>
             </div>
 
             <div class="form-group">
                 <label class="form-label" for="year">{{ t('form_year') }}</label>
-                <input type="number" id="year" name="year" class="form-control" value="2023" min="1950" max="2100" required>
+                <input type="number" id="year" name="year" class="form-control" value="2024" min="1950" max="2100" required>
             </div>
         </div>
 
-        <!-- 多维时空与实验属性配置 -->
+        <!-- Spatio-Temporal and Context Attributes -->
         <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 18px; margin-bottom: 20px;">
             <div style="font-weight: 600; font-size: 0.92rem; color: #1e293b; margin-bottom: 12px;">{{ t('upload_spatio_temporal_title') }}</div>
             
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 14px;">
-                <!-- 1. 样点：既可选择已有样点，也可手写输入新样点代码与名称 -->
                 <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">{{ t('upload_site_label') }}</label>
                     <select name="site_id" id="siteSelect" class="form-control" onchange="onSiteSelectChange(this.value)">
                         <option value="">{{ t('upload_select_site_prompt') }}</option>
                         {% for st in all_sites %}
-                            <option value="{{ st.id }}" data-code="{{ st.site_code }}">{{ st.site_code }} ({{ st.site_name[:18] }}) - {{ st.biome }}</option>
+                            <option value="{{ st.id }}" data-code="{{ st.site_code }}">{{ st.site_code }} ({{ st.site_name[:20] }}) - {{ st.biome }}</option>
                         {% endfor %}
                     </select>
                     <div style="margin-top: 6px;">
@@ -50,32 +49,27 @@
                     </div>
                 </div>
 
-                <!-- 2. 空间尺度：既可选择预设选项，也可手写输入 -->
                 <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">{{ t('upload_spatial_scale_label') }}</label>
-                    <input list="spatialScaleOptions" name="spatial_scale" class="form-control" value="Point" placeholder="{{ t('upload_scale_placeholder') }}">
+                    <input list="spatialScaleOptions" name="spatial_scale" class="form-control" value="Global" placeholder="{{ t('upload_scale_placeholder') }}">
                     <datalist id="spatialScaleOptions">
-                        <option value="Point">Point</option>
-                        <option value="Micro-topography">Micro-topography</option>
+                        <option value="Global">Global Terrestrial</option>
                         <option value="Regional">Regional Gridded</option>
+                        <option value="Point">Point / In-situ Site</option>
                         <option value="Watershed">Watershed</option>
-                        <option value="Global">Global 0.5°</option>
                     </datalist>
                     <small style="color: var(--text-muted); font-size: 0.75rem;">{{ t('upload_scale_tip') }}</small>
                 </div>
 
-                <!-- 3. 时间分辨率：既可选择预设选项，也可手写输入 -->
                 <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">{{ t('upload_temp_res_label') }}</label>
-                    <input list="tempResOptions" name="temporal_resolution" class="form-control" value="Daily" placeholder="{{ t('upload_temp_res_placeholder') }}">
+                    <input list="tempResOptions" name="temporal_resolution" class="form-control" value="Yearly" placeholder="{{ t('upload_temp_res_placeholder') }}">
                     <datalist id="tempResOptions">
-                        <option value="Half-hourly">Half-hourly</option>
-                        <option value="Hourly">Hourly</option>
+                        <option value="Yearly">Yearly</option>
+                        <option value="Monthly">Monthly</option>
                         <option value="Daily">Daily</option>
                         <option value="Weekly">Weekly</option>
-                        <option value="Monthly">Monthly</option>
-                        <option value="Seasonal">Seasonal</option>
-                        <option value="Yearly">Yearly</option>
+                        <option value="Half-hourly">Half-hourly</option>
                     </datalist>
                     <small style="color: var(--text-muted); font-size: 0.75rem;">{{ t('upload_temp_res_tip') }}</small>
                 </div>
@@ -84,26 +78,26 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px;">
                 <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">{{ t('upload_start_date_label') }}</label>
-                    <input type="date" name="start_date" class="form-control" value="2023-01-01">
+                    <input type="date" name="start_date" class="form-control" value="2010-01-01">
                 </div>
 
                 <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">{{ t('upload_end_date_label') }}</label>
-                    <input type="date" name="end_date" class="form-control" value="2023-12-31">
+                    <input type="date" name="end_date" class="form-control" value="2024-12-31">
                 </div>
 
                 <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">{{ t('upload_data_type_label') }}</label>
                     <select name="data_type" class="form-control">
-                        <option value="Model Simulation" selected>Model Simulation</option>
-                        <option value="Field Observation">Field Observation</option>
-                        <option value="Hybrid">Hybrid</option>
+                        <option value="Field Observation" selected>Field Observation</option>
+                        <option value="Model Simulation">Model Simulation</option>
+                        <option value="Hybrid">Hybrid Synthesis</option>
                     </select>
                 </div>
 
                 <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">{{ t('upload_scenario_label') }}</label>
-                    <input type="text" name="scenario" class="form-control" value="Historical" placeholder="e.g. Control, Warming, SSP5-8.5">
+                    <input type="text" name="scenario" class="form-control" value="Historical" placeholder="e.g. Control, Warming, Field Survey">
                 </div>
             </div>
 
@@ -119,7 +113,7 @@
             </div>
         </div>
 
-        <!-- 关联的标准科学变量多选 -->
+        <!-- Standardized Variables Selection & Dynamic Addition -->
         <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 18px; margin-bottom: 20px;">
             <div style="font-weight: 600; font-size: 0.92rem; color: #1e293b; margin-bottom: 8px;">{{ t('upload_variables_header') }}</div>
             <p style="font-size: 0.78rem; color: #64748b; margin-bottom: 12px;">{{ t('upload_variables_prompt') }}</p>
@@ -128,12 +122,11 @@
                 {% for v in all_variables %}
                     <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; cursor: pointer; background: #fff; padding: 6px 10px; border-radius: 4px; border: 1px solid #e2e8f0;">
                         <input type="checkbox" name="variables" value="{{ v.id }}" {% if v.code in ['MBC', 'MBN', 'SOC', 'DOC'] %}checked{% endif %}>
-                        <strong>{{ v.code }}</strong> - <span style="color: #64748b;">{{ v.get_name(current_lang) }}</span>
+                        <strong>{{ v.code }}</strong> - <span style="color: #64748b;">{{ v.get_name('en') }}</span>
                     </label>
                 {% endfor %}
             </div>
 
-            <!-- 支持动态手写追加新变量 -->
             <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border-color);">
                 <label class="form-label" style="font-size: 0.8rem; color: var(--primary); font-weight: 600;">
                     + {{ t('upload_custom_var_label') }}
@@ -145,15 +138,15 @@
 
         <div class="form-group">
             <label class="form-label" for="doi">{{ t('form_doi') }}</label>
-            <input type="text" id="doi" name="doi" class="form-control" placeholder="10.5281/zenodo.xxxxxxx">
+            <input type="text" id="doi" name="doi" class="form-control" placeholder="10.1111/geb.12029">
         </div>
 
         <div class="form-group">
             <label class="form-label" for="description">{{ t('form_desc') }}</label>
-            <textarea id="description" name="description" class="form-control" rows="4" placeholder="Model drivers, temporal resolution, key findings..." required></textarea>
+            <textarea id="description" name="description" class="form-control" rows="4" placeholder="Experimental design, sampling methods, geographical scope..." required></textarea>
         </div>
 
-        <!-- 对标管理端的关键词多维挂载体系 (只增不删已录入核心词) -->
+        <!-- Subject Taxonomy Governance -->
         <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 18px; margin-bottom: 20px;">
             <div style="font-weight: 600; font-size: 0.92rem; color: #1e293b; margin-bottom: 6px;">{{ t('upload_keywords_header') }}</div>
             <p style="font-size: 0.78rem; color: #64748b; margin-bottom: 12px;">{{ t('upload_keywords_prompt') }}</p>
@@ -161,7 +154,7 @@
             <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;">
                 {% for kw in all_keywords %}
                     <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; cursor: pointer; background: #fff; padding: 5px 12px; border-radius: 14px; border: 1px solid #cbd5e1;">
-                        <input type="checkbox" name="keyword_ids" value="{{ kw.id }}" {% if kw.name in ['methanogenesis', 'soil_respiration'] %}checked{% endif %}>
+                        <input type="checkbox" name="keyword_ids" value="{{ kw.id }}" {% if kw.name in ['soil_microbial_biomass', 'microbial_biomass_c'] %}checked{% endif %}>
                         <span># {{ kw.name }}</span>
                     </label>
                 {% endfor %}
@@ -174,7 +167,7 @@
             </div>
         </div>
 
-        <!-- 来源类型切换 -->
+        <!-- Storage Channel Choice -->
         <div class="card" style="background: #f8fafc; border-style: dashed; padding: 18px; margin-top: 20px;">
             <div class="form-group">
                 <label class="form-label">{{ t('form_channel') }}</label>
@@ -196,7 +189,7 @@
 
             <div id="githubSection" class="form-group" style="margin-bottom: 0;">
                 <label class="form-label" for="github_url">{{ t('github_url_label') }}</label>
-                <input type="url" id="github_url" name="github_url" class="form-control" placeholder="https://raw.githubusercontent.com/email-clm/clm-microbe/main/inputdata/atqasuk_forcing.csv">
+                <input type="url" id="github_url" name="github_url" class="form-control" placeholder="https://raw.githubusercontent.com/email-clm/MicrobialDataSystem/master/Soil_Microbial_Biomass_C_N_P_spatial.csv">
             </div>
 
             <div id="localSection" class="form-group" style="margin-bottom: 0; display: none;">

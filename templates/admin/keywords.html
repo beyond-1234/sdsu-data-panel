@@ -12,8 +12,7 @@
         </p>
     </div>
     <div style="display: flex; gap: 10px;">
-        <!-- 一键清理孤立未关联标签 -->
-        <form method="POST" action="{{ url_for('admin_keywords') }}" onsubmit="return confirm('确定要清理所有未关联任何数据集的孤立关键词吗？');">
+        <form method="POST" action="{{ url_for('admin_keywords') }}" onsubmit="return confirm('Clean all orphan tags that are not attached to any dataset?');">
             <input type="hidden" name="action" value="cleanup_orphan">
             <button type="submit" class="btn btn-outline btn-sm" style="color: #64748b;">{{ t('btn_cleanup_orphans') }}</button>
         </form>
@@ -21,7 +20,7 @@
     </div>
 </div>
 
-<!-- 数据集主列表与对应的关键词维护 -->
+<!-- Datasets List and Keywords Governance -->
 <div style="display: flex; flex-direction: column; gap: 20px;">
     {% for ds in datasets %}
     <div class="card" style="margin-bottom: 0;">
@@ -49,13 +48,13 @@
                 {{ t('mounted_keywords', ds.keywords|length) }}
             </div>
 
-            <!-- 当前数据集标签列表，支持单项移除 -->
+            <!-- Attached tags list with detaching support -->
             <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;">
                 {% if ds.keywords %}
                     {% for kw in ds.keywords %}
                     <span class="badge" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; background: #ffffff; border: 1px solid #cbd5e1;">
                         <strong># {{ kw.name }}</strong>
-                        <form method="POST" action="{{ url_for('manage_dataset_keyword', dataset_id=ds.id) }}" style="display: inline;" onsubmit="return confirm('确定解绑此关键词？');">
+                        <form method="POST" action="{{ url_for('manage_dataset_keyword', dataset_id=ds.id) }}" style="display: inline;" onsubmit="return confirm('Detach this keyword?');">
                             <input type="hidden" name="action" value="remove">
                             <input type="hidden" name="keyword_id" value="{{ kw.id }}">
                             <input type="hidden" name="redirect_to" value="admin_keywords">
@@ -68,13 +67,12 @@
                 {% endif %}
             </div>
 
-            <!-- 为该数据集关联/新增关键词 -->
+            <!-- Attach or add tag to dataset -->
             <form method="POST" action="{{ url_for('manage_dataset_keyword', dataset_id=ds.id) }}" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                 <input type="hidden" name="action" value="add">
                 <input type="hidden" name="redirect_to" value="admin_keywords">
                 
-                <!-- 从系统已有词库快捷挑选关联 -->
-                <select name="existing_keyword_id" class="form-control" style="width: 220px; font-size: 0.85rem; padding: 6px 10px;">
+                <select name="existing_keyword_id" class="form-control" style="width: 260px; font-size: 0.85rem; padding: 6px 10px;">
                     <option value="">{{ t('select_from_existing') }}</option>
                     {% for all_kw in all_keywords %}
                         {% if all_kw not in ds.keywords %}
@@ -84,7 +82,7 @@
                 </select>
 
                 <span style="font-size: 0.82rem; color: var(--text-muted);">{{ t('or_enter_new') }}</span>
-                <input type="text" name="keyword_name" class="form-control" style="width: 200px; font-size: 0.85rem; padding: 6px 10px;" placeholder="e.g., arctic_wetland">
+                <input type="text" name="keyword_name" class="form-control" style="width: 220px; font-size: 0.85rem; padding: 6px 10px;" placeholder="e.g. soil_doc">
 
                 <button type="submit" class="btn btn-primary btn-sm">{{ t('mount_btn') }}</button>
             </form>
@@ -93,7 +91,7 @@
     {% endfor %}
 </div>
 
-<!-- 底部统计与全局词库概览 -->
+<!-- Global Taxonomy Overview -->
 <div class="card" style="margin-top: 24px;">
     <div class="card-title">{{ t('global_keywords_summary', all_keywords|length) }}</div>
     <div style="display: flex; flex-wrap: wrap; gap: 8px;">

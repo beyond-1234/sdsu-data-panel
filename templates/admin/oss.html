@@ -13,14 +13,14 @@
 </div>
 
 <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
-    <!-- OSS 核心配置表单 -->
+    <!-- Storage Configuration Form -->
     <div class="card">
         <div class="card-title">
-            <span>⚙️ 存储桶与鉴权凭据配置</span>
+            <span>⚙️ Storage Bucket & Credentials</span>
             {% if oss_config and oss_config.is_active %}
-                <span class="badge badge-primary">服务生效中 (Active)</span>
+                <span class="badge badge-primary">Active</span>
             {% else %}
-                <span class="badge" style="background: #fee2e2; color: #b91c1c;">未生效 / 未启用</span>
+                <span class="badge" style="background: #fee2e2; color: #b91c1c;">Inactive</span>
             {% endif %}
         </div>
 
@@ -28,9 +28,9 @@
             <div class="form-group">
                 <label class="form-label" for="provider">{{ t('oss_provider_label') }}</label>
                 <select id="provider" name="provider" class="form-control">
-                    <option value="aliyun_oss" {% if oss_config and oss_config.provider == 'aliyun_oss' %}selected{% endif %}>阿里云对象存储 (Aliyun OSS)</option>
+                    <option value="aliyun_oss" {% if oss_config and oss_config.provider == 'aliyun_oss' %}selected{% endif %}>Aliyun Object Storage (OSS)</option>
+                    <option value="minio" {% if oss_config and oss_config.provider == 'minio' %}selected{% endif %}>Local/Private MinIO Object Storage</option>
                     <option value="aws_s3" {% if oss_config and oss_config.provider == 'aws_s3' %}selected{% endif %}>Amazon S3 / S3-Compatible API</option>
-                    <option value="minio" {% if oss_config and oss_config.provider == 'minio' %}selected{% endif %}>自建 MinIO 高性能对象存储</option>
                 </select>
             </div>
 
@@ -39,15 +39,15 @@
                     <label class="form-label" for="endpoint">{{ t('oss_endpoint_label') }}</label>
                     <input type="text" id="endpoint" name="endpoint" class="form-control" 
                            value="{{ oss_config.endpoint if oss_config else '' }}" 
-                           placeholder="oss-cn-beijing.aliyuncs.com" required>
-                    <small style="color: var(--text-muted); font-size: 0.75rem;">无需包含 http:// 或 https://</small>
+                           placeholder="oss-cn-beijing.aliyuncs.com or 127.0.0.1:9000" required>
+                    <small style="color: var(--text-muted); font-size: 0.75rem;">No http:// or https:// prefix needed</small>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="bucket_name">{{ t('oss_bucket_label') }}</label>
                     <input type="text" id="bucket_name" name="bucket_name" class="form-control" 
                            value="{{ oss_config.bucket_name if oss_config else '' }}" 
-                           placeholder="clm-microbe-datasets" required>
+                           placeholder="sdsu-microbial-data-bucket" required>
                 </div>
             </div>
 
@@ -56,7 +56,7 @@
                     <label class="form-label" for="access_key_id">{{ t('oss_ak_label') }}</label>
                     <input type="text" id="access_key_id" name="access_key_id" class="form-control" 
                            value="{{ oss_config.access_key_id if oss_config else '' }}" 
-                           placeholder="LTAI5t..." required>
+                           placeholder="LTAI5t... or minioadmin" required>
                 </div>
 
                 <div class="form-group">
@@ -71,7 +71,7 @@
                 <label class="form-label" for="custom_domain">{{ t('oss_custom_domain_label') }}</label>
                 <input type="text" id="custom_domain" name="custom_domain" class="form-control" 
                        value="{{ oss_config.custom_domain if oss_config and oss_config.custom_domain else '' }}" 
-                       placeholder="https://data-cdn.sdsu-clm.org">
+                       placeholder="https://data-cdn.sdsu-microbe.org">
             </div>
 
             <div class="form-group">
@@ -87,29 +87,29 @@
         </form>
     </div>
 
-    <!-- 右侧：当前状态与使用指南 -->
+    <!-- Active Status -->
     <div>
         <div class="card" style="background: #f8fafc;">
             <div class="card-title">{{ t('oss_current_status') }}</div>
             {% if oss_config %}
                 <div style="font-size: 0.85rem; line-height: 1.8; color: #334155;">
-                    <div><strong>服务提供商:</strong> {{ oss_config.provider }}</div>
-                    <div><strong>地域节点:</strong> <code>{{ oss_config.endpoint }}</code></div>
-                    <div><strong>存储空间:</strong> <code>{{ oss_config.bucket_name }}</code></div>
-                    <div><strong>自定义域名:</strong> {{ oss_config.custom_domain or '默认阿里云OSS域名' }}</div>
-                    <div><strong>更新时间:</strong> {{ oss_config.updated_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                    <div><strong>Provider:</strong> {{ oss_config.provider }}</div>
+                    <div><strong>Endpoint:</strong> <code>{{ oss_config.endpoint }}</code></div>
+                    <div><strong>Bucket:</strong> <code>{{ oss_config.bucket_name }}</code></div>
+                    <div><strong>CDN Domain:</strong> {{ oss_config.custom_domain or 'Default Provider Endpoint' }}</div>
+                    <div><strong>Last Updated:</strong> {{ oss_config.updated_at.strftime('%Y-%m-%d %H:%M') }}</div>
                 </div>
             {% else %}
                 <p style="font-size: 0.85rem; color: var(--text-muted);">
-                    尚未保存任何 OSS 配置，请在左侧表单中录入。
+                    No object storage configuration found.
                 </p>
             {% endif %}
         </div>
 
         <div class="card">
-            <h4 style="font-family: var(--font-serif); font-size: 1rem; margin-bottom: 8px;">💡 科学数据对象存储规范</h4>
+            <h4 style="font-family: var(--font-serif); font-size: 1rem; margin-bottom: 8px;">💡 Scientific Data Distribution</h4>
             <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
-                配置完成后，科研人员在提交上传大容量 NetCDF 或高频通量数据时，系统将直接分发 OSS 云端直链，实现全球科学用户的高速并发下载。
+                When configured, large NetCDF or spatial matrices submitted via the OSS channel are securely dispatched with presigned or CDN links for accelerated global access.
             </p>
         </div>
     </div>

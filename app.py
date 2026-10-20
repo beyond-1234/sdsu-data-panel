@@ -17,11 +17,11 @@ from services.i18n import TRANSLATIONS
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# 初始化插件
+# Initialize extensions
 db.init_app(app)
 login_manager = LoginManager()
 login_manager.login_view = 'login'
-login_manager.login_message = '请先登录科研账号以进行此项操作'
+login_manager.login_message = 'Please sign in to access this feature.'
 login_manager.login_message_category = 'info'
 login_manager.init_app(app)
 
@@ -29,16 +29,14 @@ login_manager.init_app(app)
 def load_user(user_id):
     return db.session.get(User, int(user_id))
 
-# ----------------- 国际化 i18n 注入与切换 -----------------
+# ----------------- Pure English Localization Context -----------------
 @app.context_processor
 def inject_i18n():
-    current_lang = session.get('lang', 'zh')
-    if current_lang not in ('zh', 'en'):
-        current_lang = 'zh'
+    current_lang = 'en'
     
     def t(key, *args):
-        lang_dict = TRANSLATIONS.get(current_lang, TRANSLATIONS['zh'])
-        val = lang_dict.get(key, TRANSLATIONS['zh'].get(key, key))
+        lang_dict = TRANSLATIONS.get('en', {})
+        val = lang_dict.get(key, key)
         if args:
             try:
                 return val.format(*args)
@@ -53,24 +51,22 @@ def inject_i18n():
 
 @app.route('/set-language/<lang>')
 def set_language(lang):
-    if lang in ('zh', 'en'):
-        session['lang'] = lang
     next_page = request.referrer or url_for('index')
     return redirect(next_page)
 
-# ----------------- 数据库初始化与初始数据 Seed -----------------
+# ----------------- Database Initialization and Seed Data -----------------
 def seed_database():
     with app.app_context():
         db.create_all()
 
-        # 1. 确保基础管理员与默认科研用户存在
+        # 1. Ensure administrator and default researcher accounts
         admin_user = User.query.filter_by(username='admin').first()
         if not admin_user:
             admin = User(
                 username='admin',
                 email='admin@sdsu.edu',
                 role='admin',
-                institution='SDSU Ecohydrology Lab'
+                institution='SDSU EMAIL Lab'
             )
             admin.set_password('admin123')
             db.session.add(admin)
@@ -88,7 +84,7 @@ def seed_database():
 
         db.session.commit()
 
-        # 2. 初始预置关键词 (对标 MicrobialDataSystem 与土壤微生物生态学术语)
+        # 2. Seed taxonomy keywords (aligned with MicrobialDataSystem)
         default_keywords = [
             'soil_microbial_biomass',
             'microbial_biomass_c',
@@ -116,29 +112,29 @@ def seed_database():
             kw_map[kw_name] = kw_obj
         db.session.commit()
 
-        # 2.1 初始预置标准化科学变量指标字典 (对标 MicrobialDataSystem 真实表头与变量)
+        # 2.1 Standardized Scientific Variables (MicrobialDataSystem & Soil Ecology)
         default_variables = [
-            # 微生物生物量与化学计量比 (Microbial Biomass & Stoichiometry)
-            ('MBC', '土壤微生物量碳 (Microbial Biomass C)', 'Soil Microbial Biomass Carbon', 'Microbial Pool', 'mmol kg-1', '土壤活体微生物细胞碳总储量 (Chloroform fumigation extraction)', 'Total living microbial biomass carbon in soil'),
-            ('MBN', '土壤微生物量氮 (Microbial Biomass N)', 'Soil Microbial Biomass Nitrogen', 'Microbial Pool', 'mmol kg-1', '土壤活体微生物细胞氮总储量', 'Total living microbial biomass nitrogen in soil'),
-            ('MBP', '土壤微生物量磷 (Microbial Biomass P)', 'Soil Microbial Biomass Phosphorus', 'Microbial Pool', 'mmol kg-1', '土壤活体微生物细胞磷总储量', 'Total living microbial biomass phosphorus in soil'),
-            ('FBC', '真菌生物量碳 (Fungal Biomass C)', 'Fungal Biomass Carbon', 'Microbial Pool', 'g C m-2', '土壤活跃真菌菌丝碳储量', 'Explicit active fungal mycelial carbon pool'),
-            ('BBC', '细菌生物量碳 (Bacterial Biomass C)', 'Bacterial Biomass Carbon', 'Microbial Pool', 'g C m-2', '土壤活跃细菌细胞碳储量', 'Explicit active bacterial carbon pool'),
-            ('Q_MET', '微生物代谢商 (Metabolic Quotient, qCO2)', 'Microbial Metabolic Quotient (qCO2)', 'Microbial Pool', 'mg C g-1 MBC h-1', '单位微生物生物量的呼吸消耗速率', 'Specific soil respiration rate per unit microbial biomass'),
+            # Microbial Biomass & Stoichiometry
+            ('MBC', 'Soil Microbial Biomass Carbon', 'Soil Microbial Biomass Carbon', 'Microbial Pool', 'mmol kg-1', 'Total living microbial biomass carbon in soil (Chloroform fumigation extraction)', 'Total living microbial biomass carbon in soil'),
+            ('MBN', 'Soil Microbial Biomass Nitrogen', 'Soil Microbial Biomass Nitrogen', 'Microbial Pool', 'mmol kg-1', 'Total living microbial biomass nitrogen in soil', 'Total living microbial biomass nitrogen in soil'),
+            ('MBP', 'Soil Microbial Biomass Phosphorus', 'Soil Microbial Biomass Phosphorus', 'Microbial Pool', 'mmol kg-1', 'Total living microbial biomass phosphorus in soil', 'Total living microbial biomass phosphorus in soil'),
+            ('FBC', 'Fungal Biomass Carbon', 'Fungal Biomass Carbon', 'Microbial Pool', 'g C m-2', 'Explicit active fungal mycelial carbon pool', 'Explicit active fungal mycelial carbon pool'),
+            ('BBC', 'Bacterial Biomass Carbon', 'Bacterial Biomass Carbon', 'Microbial Pool', 'g C m-2', 'Explicit active bacterial carbon pool', 'Explicit active bacterial carbon pool'),
+            ('Q_MET', 'Microbial Metabolic Quotient (qCO2)', 'Microbial Metabolic Quotient (qCO2)', 'Microbial Pool', 'mg C g-1 MBC h-1', 'Specific soil respiration rate per unit microbial biomass', 'Specific soil respiration rate per unit microbial biomass'),
 
-            # 土壤碳氮理化 (Soil Chemistry & Physics)
-            ('SOC', '土壤有机碳 (Soil Organic Carbon)', 'Soil Organic Carbon', 'Soil Physics', 'mmol kg-1', '土壤固相总有机碳含量', 'Total organic carbon content in soil matrix'),
-            ('TN', '全氮 (Total Nitrogen)', 'Total Soil Nitrogen', 'Soil Physics', 'mmol kg-1', '土壤全氮素含量', 'Total nitrogen content in soil matrix'),
-            ('TOP', '土壤全有机磷 (Total Organic Phosphorus)', 'Total Organic Phosphorus', 'Soil Physics', 'mmol kg-1', '土壤总有机磷储量', 'Total organic phosphorus pool in soil'),
-            ('DOC', '土壤可溶性有机碳 (Dissolved Organic C)', 'Soil Dissolved Organic Carbon', 'Soil Physics', 'mg C kg-1', '可被微生物直接吸收利用的可溶性有机碳', 'Dissolved organic carbon readily bioavailable to microbes'),
-            ('PH', '土壤酸碱度 (Soil pH)', 'Soil pH', 'Soil Physics', 'pH units', '土壤溶液氢离子活度指标', 'Soil reaction in water/CaCl2 suspension'),
-            ('MAT', '年均温 (Mean Annual Temperature)', 'Mean Annual Temperature', 'Soil Physics', '°C', '采样点长周期气候年均温', 'Long-term mean annual air temperature'),
-            ('MAP', '年降水量 (Mean Annual Precipitation)', 'Mean Annual Precipitation', 'Soil Physics', 'mm', '采样点长周期年均降水总量', 'Long-term mean annual precipitation sum'),
-            ('TSOI', '土壤剖面温度 (Soil Temperature)', 'Soil Profile Temperature', 'Soil Physics', '°C', '采样层土壤热动力学状态观测', 'Layered soil profile thermal temperature'),
+            # Soil Chemistry & Physical Properties
+            ('SOC', 'Soil Organic Carbon', 'Soil Organic Carbon', 'Soil Physics', 'mmol kg-1', 'Total organic carbon content in soil matrix', 'Total organic carbon content in soil matrix'),
+            ('TN', 'Total Soil Nitrogen', 'Total Soil Nitrogen', 'Soil Physics', 'mmol kg-1', 'Total nitrogen content in soil matrix', 'Total nitrogen content in soil matrix'),
+            ('TOP', 'Total Organic Phosphorus', 'Total Organic Phosphorus', 'Soil Physics', 'mmol kg-1', 'Total organic phosphorus pool in soil', 'Total organic phosphorus pool in soil'),
+            ('DOC', 'Soil Dissolved Organic Carbon', 'Soil Dissolved Organic Carbon', 'Soil Physics', 'mg C kg-1', 'Dissolved organic carbon readily bioavailable to microbes', 'Dissolved organic carbon readily bioavailable to microbes'),
+            ('PH', 'Soil pH', 'Soil pH', 'Soil Physics', 'pH units', 'Soil reaction in water/CaCl2 suspension', 'Soil reaction in water/CaCl2 suspension'),
+            ('MAT', 'Mean Annual Temperature', 'Mean Annual Temperature', 'Soil Physics', '°C', 'Long-term mean annual air temperature', 'Long-term mean annual air temperature'),
+            ('MAP', 'Mean Annual Precipitation', 'Mean Annual Precipitation', 'Soil Physics', 'mm', 'Long-term mean annual precipitation sum', 'Long-term mean annual precipitation sum'),
+            ('TSOI', 'Soil Profile Temperature', 'Soil Profile Temperature', 'Soil Physics', '°C', 'Layered soil profile thermal temperature', 'Layered soil profile thermal temperature'),
 
-            # 气体通量 (Gas Fluxes)
-            ('HR', '土壤异养呼吸 (Heterotrophic Respiration)', 'Heterotrophic Respiration', 'Gas Flux', 'g C m-2 d-1', '微生物有机质分解碳释放', 'Microbial heterotrophic decomposition carbon flux'),
-            ('CH4_FLUX', '甲烷净通量 (CH4 Net Surface Flux)', 'Net Methane Surface Flux', 'Gas Flux', 'mg C m-2 d-1', '地表甲烷净排放通量', 'Net surface methane exchange flux')
+            # Gas Fluxes
+            ('HR', 'Heterotrophic Respiration', 'Heterotrophic Respiration', 'Gas Flux', 'g C m-2 d-1', 'Microbial heterotrophic decomposition carbon flux', 'Microbial heterotrophic decomposition carbon flux'),
+            ('CH4_FLUX', 'Net Methane Surface Flux', 'Net Methane Surface Flux', 'Gas Flux', 'mg C m-2 d-1', 'Net surface methane exchange flux', 'Net surface methane exchange flux')
         ]
         var_map = {}
         for code, dname, dname_en, cat, unit, desc, desc_en in default_variables:
@@ -165,14 +161,14 @@ def seed_database():
             var_map[code] = var_obj
         db.session.commit()
 
-        # 2.2 初始预置全球生态样点/区域
+        # 2.2 Global Ecological Sites
         default_sites = [
-            ('Global-Terrestrial', 'Global Terrestrial Ecosystems (全球陆地生态系统样点集)', 'Global', 20.0, 0.0, 300.0, 'Global / Multi-Biome'),
-            ('US-Atq', 'Atqasuk Tundra Research Site (阿拉斯加北极苔原站)', 'United States', 70.47, -157.41, 15.0, 'Tundra'),
-            ('US-Brw', 'Barrow Environmental Observatory (巴罗北极环境观测站)', 'United States', 71.32, -156.61, 4.0, 'Tundra'),
-            ('US-SPR', 'SPRUCE Peatland (明尼苏达云杉泥炭湿地加热实验站)', 'United States', 47.50, -93.45, 418.0, 'Peatland/Boreal Bog'),
-            ('CN-Sanjiang', '三江平原沼泽湿地生态试验站 (Sanjiang Wetland)', 'China', 47.58, 133.52, 55.0, 'Wetland'),
-            ('SE-St1', 'Stordalen Mire (瑞典亚北极多年冻土泥炭沼泽站)', 'Sweden', 68.35, 19.05, 360.0, 'Peatland/Permafrost')
+            ('Global-Terrestrial', 'Global Terrestrial Ecosystems (Xu et al. 2013)', 'Global', 20.0, 0.0, 300.0, 'Global / Multi-Biome'),
+            ('US-Atq', 'Atqasuk Tundra Research Site', 'United States', 70.47, -157.41, 15.0, 'Tundra'),
+            ('US-Brw', 'Barrow Environmental Observatory', 'United States', 71.32, -156.61, 4.0, 'Tundra'),
+            ('US-SPR', 'SPRUCE Peatland (Peatland Heating Experiment)', 'United States', 47.50, -93.45, 418.0, 'Peatland/Boreal Bog'),
+            ('CN-Sanjiang', 'Sanjiang Mire Wetland Research Station', 'China', 47.58, 133.52, 55.0, 'Wetland'),
+            ('SE-St1', 'Stordalen Mire (Subarctic Permafrost Peatland)', 'Sweden', 68.35, 19.05, 360.0, 'Peatland/Permafrost')
         ]
         site_map = {}
         for scode, sname, country, lat, lon, elev, biome in default_sites:
@@ -192,11 +188,11 @@ def seed_database():
             site_map[scode] = s_obj
         db.session.commit()
 
-        # 3. 初始数据存储目录
+        # 3. Uploads directory setup
         data_dir = os.path.join(app.config['UPLOAD_FOLDER'])
         os.makedirs(data_dir, exist_ok=True)
 
-        # 4. 预置默认 OSS 配置样例
+        # 4. Storage configuration sample
         if StorageConfig.query.count() == 0:
             default_oss = StorageConfig(
                 provider='aliyun_oss',
@@ -210,17 +206,17 @@ def seed_database():
             db.session.add(default_oss)
             db.session.commit()
 
-        # 5. 预置真实 MicrobialDataSystem 数据集
+        # 5. Seed Demonstration Datasets (MicrobialDataSystem)
         if Dataset.query.count() == 0:
             from datetime import date
             
-            # 数据集 1: 全球土壤微生物量碳/氮/磷空间观测数据集 (真实 CSV 对应)
+            # Dataset 1: Global Soil Microbial Biomass C/N/P Spatial Observation Dataset
             ds1 = Dataset(
-                title='Global Soil Microbial Biomass C/N/P Spatial Observation Dataset (全球土壤微生物量碳氮磷空间实测数据集)',
+                title='Global Soil Microbial Biomass C/N/P Spatial Observation Dataset',
                 year=2020,
                 author='Xiaofeng Xu, P. E. Thornton, W. M. Post, et al. (SDSU & ORNL)',
                 doi='10.1111/geb.12029',
-                description='基于 email-clm/MicrobialDataSystem 仓库核心数据文件 Soil_Microbial_Biomass_C_N_P_spatial.csv。汇总全球各大生物群系（森林、草原、农田、苔原、荒漠）顶层及剖面土壤微生物量碳 (MBC)、氮 (MBN)、磷 (MBP)、有机碳 (SOC)、全氮 (TN) 及 pH 实测样点数据。',
+                description='Compiled based on email-clm/MicrobialDataSystem core file Soil_Microbial_Biomass_C_N_P_spatial.csv. Aggregates in-situ field observations of soil microbial biomass carbon (MBC), nitrogen (MBN), phosphorus (MBP), organic carbon (SOC), total nitrogen (TN), and pH across global terrestrial biomes.',
                 data_source_type='github',
                 github_url='https://raw.githubusercontent.com/email-clm/MicrobialDataSystem/master/Soil_Microbial_Biomass_C_N_P_spatial.csv',
                 local_file_path='Soil_Microbial_Biomass_C_N_P_spatial.csv',
@@ -255,13 +251,13 @@ def seed_database():
                 var_map['MAP']
             ])
 
-            # 数据集 2: 全球土壤微生物生物量碳氮网格化模拟集 (对应 Global_Soil_Microbial_BiomassCN.nc)
+            # Dataset 2: Global Soil Microbial Biomass Carbon & Nitrogen Gridded Dataset
             ds2 = Dataset(
-                title='Global Soil Microbial Biomass Carbon & Nitrogen Gridded Dataset (全球土壤微生物生物量碳氮网格化模拟集)',
+                title='Global Soil Microbial Biomass Carbon & Nitrogen Gridded Dataset',
                 year=2021,
                 author='Xiaofeng Xu, D. Hui, A. W. King, et al. (SDSU & CAS)',
                 doi='10.1038/srep17445',
-                description='对应 email-clm/MicrobialDataSystem 仓库文件 Global_Soil_Microbial_BiomassCN.nc。包含全球 0.5° × 0.5° 空间网格分辨率下表层及底层土壤微生物碳氮生物地理分布、碳氮磷化学计量趋同性模拟矩阵。',
+                description='Linked directly to Global_Soil_Microbial_BiomassCN.nc in email-clm/MicrobialDataSystem. Delivers gridded 0.5-degree spatial simulations of topsoil and subsoil microbial carbon and nitrogen pools and stoichiometric convergence matrices.',
                 data_source_type='github',
                 github_url='https://raw.githubusercontent.com/email-clm/MicrobialDataSystem/master/Global_Soil_Microbial_BiomassCN.nc',
                 local_file_path='Global_Soil_Microbial_BiomassCN.nc',
@@ -292,13 +288,13 @@ def seed_database():
                 var_map['MAP']
             ])
 
-            # 数据集 3: 全球表层土壤真菌与细菌生物量碳生物地理学分布集
+            # Dataset 3: Global Topsoil Fungal & Bacterial Biomass Carbon Biogeography
             ds3 = Dataset(
-                title='Global Biogeography of Fungal and Bacterial Biomass Carbon in Topsoil (全球表层土壤真菌与细菌碳分布集)',
+                title='Global Biogeography of Fungal and Bacterial Biomass Carbon in Topsoil',
                 year=2020,
                 author='Liyuan He, J. L. M. Rodrigues, Xiaofeng Xu, et al. (Soil Biology & Biochemistry)',
                 doi='10.1016/j.soilbio.2020.108024',
-                description='集成全球各大经纬度生态系统表层土壤真菌生物量碳 (FBC) 与细菌生物量碳 (BBC) 实测数据，剖析真菌/细菌比例 (F:B ratio) 随环境温度、湿度与植被类型梯度的宏观空间分异特征。',
+                description='Integrates global empirical topsoil fungal biomass carbon (FBC) and bacterial biomass carbon (BBC) observations to evaluate the fungal-to-bacterial ratio along macroclimatic and vegetative gradients.',
                 data_source_type='github',
                 github_url='https://github.com/email-clm/MicrobialDataSystem',
                 local_file_path='Soil_Microbial_Biomass_C_N_P_spatial.csv',
@@ -327,13 +323,13 @@ def seed_database():
                 var_map['PH']
             ])
 
-            # 数据集 4: 全球陆地生态系统土壤可溶性有机碳 (DOC) 储量与控制因素集
+            # Dataset 4: Soil Dissolved Organic Carbon in Terrestrial Ecosystems
             ds4 = Dataset(
-                title='Soil Dissolved Organic Carbon in Terrestrial Ecosystems (全球土壤可溶性有机碳DOC空间分布集)',
+                title='Soil Dissolved Organic Carbon in Terrestrial Ecosystems: Global Budget & Distribution',
                 year=2020,
                 author='Ziyu Guo, Y. Wang, Liyuan He, Xiaofeng Xu, et al. (Global Ecology & Biogeography)',
                 doi='10.1111/geb.13184',
-                description='涵盖全球各大纬度带森林、草地、湿地及苔原土壤可溶性有机碳 (DOC) 空间格局与控制因素，探讨土壤微生物活动与水解产物对溶解性碳库的周转驱动机制。',
+                description='Synthesizes soil dissolved organic carbon (DOC) content, stocks, and controls across global forest, grassland, wetland, and tundra ecosystems, providing benchmark validation for microbial decomposition models.',
                 data_source_type='oss',
                 github_url=None,
                 local_file_path='Soil_Microbial_Biomass_C_N_P_spatial.csv',
@@ -361,13 +357,13 @@ def seed_database():
                 var_map['PH']
             ])
 
-            # 数据集 5: 全球土壤微生物代谢商 (qCO2) 时合格局与微生态调控数据集
+            # Dataset 5: Global Pattern and Controls of Soil Microbial Metabolic Quotient (qCO2)
             ds5 = Dataset(
-                title='Global Pattern and Controls of Soil Microbial Metabolic Quotient (qCO2) (全球土壤微生物代谢商格局集)',
+                title='Global Pattern and Controls of Soil Microbial Metabolic Quotient (qCO2)',
                 year=2017,
                 author='Xiaofeng Xu, J. P. Schimel, I. A. Janssens, et al. (Ecological Monographs)',
                 doi='10.1002/ecm.1258',
-                description='记录单位土壤微生物量碳释放 CO2 的效率指标（代谢商 qCO2），揭示从热带到北极苔原在增温和养分胁迫下微生物群落碳利用效率 (CUE) 的生理生化适应机制。',
+                description='Documents microbial respiration per unit biomass (metabolic quotient qCO2) across global climates, quantifying microbial carbon use efficiency and thermodynamic responses under varying temperatures and nutrient stoichiometry.',
                 data_source_type='github',
                 github_url='https://github.com/email-clm/MicrobialDataSystem',
                 local_file_path='Soil_Microbial_Biomass_C_N_P_spatial.csv',
@@ -400,7 +396,7 @@ def seed_database():
             db.session.add_all([ds1, ds2, ds3, ds4, ds5])
             db.session.commit()
 
-            # 插入审计日志
+            # Seed Audit Logs
             log1 = DownloadLog(
                 user_id=admin_user.id if admin_user else 1,
                 dataset_id=ds1.id,
@@ -431,43 +427,43 @@ def seed_database():
             db.session.add_all([log1, log2, log3])
             db.session.commit()
 
-# ----------------- 路由逻辑 -----------------
+# ----------------- Application Routes -----------------
 
 @app.route('/')
 def index():
-    # 1. 基础全文检索 (标题、描述、作者、样点名称)
+    # 1. Full-text search
     query_str = request.args.get('q', '').strip()
 
-    # 2. 时间跨度切片 (覆盖区间包含，StartA <= EndB and EndA >= StartB)
+    # 2. Temporal coverage slicing
     start_year = request.args.get('start_year', type=int)
     end_year = request.args.get('end_year', type=int)
     temp_res = request.args.get('temp_res', '').strip()
 
-    # 3. 空间与生态区维度
+    # 3. Spatial and Biome dimension
     selected_biomes = request.args.getlist('biome')
     selected_site = request.args.get('site', '').strip()
     spatial_scale = request.args.get('spatial_scale', '').strip()
     min_lat = request.args.get('min_lat', type=float)
     max_lat = request.args.get('max_lat', type=float)
 
-    # 4. 指标变量多选 (要求数据集包含所选变量)
+    # 4. Standardized scientific variables checklist
     selected_vars = request.args.getlist('var')
 
-    # 5. 实验工况与数据类型
+    # 5. Experimental context & data types
     data_type = request.args.get('data_type', '').strip()
     scenario = request.args.get('scenario', '').strip()
 
-    # 6. 土层深度范围 (m)
+    # 6. Soil depth range (m)
     depth_max_filter = request.args.get('depth_max', type=float)
 
-    # 7. 关键词快捷标引
+    # 7. Taxonomy tag
     keyword_str = request.args.get('keyword', '').strip()
 
-    # 构造动态查询
+    # Build SQLAlchemy dynamic query
     query = Dataset.query.join(Dataset.site, isouter=True)
 
     if query_str:
-        # 智能复合匹配：标题、描述、作者、样点名称、挂载变量代码、挂载关键词
+        # Multi-field combined fuzzy search
         query = query.filter(
             (Dataset.title.ilike(f'%{query_str}%')) | 
             (Dataset.description.ilike(f'%{query_str}%')) |
@@ -480,7 +476,7 @@ def index():
             (Dataset.keywords.any(Keyword.name.ilike(f'%{query_str}%')))
         )
 
-    # 时间跨度过滤
+    # Temporal range filtering
     if start_year:
         query = query.filter(
             (db.func.strftime('%Y', Dataset.end_date) >= str(start_year)) |
@@ -494,7 +490,7 @@ def index():
     if temp_res:
         query = query.filter(Dataset.temporal_resolution == temp_res)
 
-    # 生态群系与样点
+    # Biome & site
     if selected_biomes:
         query = query.filter(SiteLocation.biome.in_(selected_biomes))
     if selected_site:
@@ -504,29 +500,29 @@ def index():
     if min_lat is not None and max_lat is not None:
         query = query.filter(SiteLocation.latitude.between(min_lat, max_lat))
 
-    # 指标变量过滤 (交集匹配)
+    # Variable intersection filtering
     if selected_vars:
         for v_code in selected_vars:
             query = query.filter(Dataset.variables.any(VariableDefinition.code == v_code))
 
-    # 数据类型与情景
+    # Data type & scenario
     if data_type:
         query = query.filter(Dataset.data_type == data_type)
     if scenario:
         query = query.filter(Dataset.scenario == scenario)
 
-    # 垂直土层深度
+    # Soil depth filtering
     if depth_max_filter is not None:
         query = query.filter(Dataset.max_depth <= depth_max_filter)
 
-    # 关键词
+    # Keyword tag
     if keyword_str:
         query = query.filter(Dataset.keywords.any(Keyword.name == keyword_str))
 
     datasets = query.order_by(Dataset.created_at.desc()).all()
     keywords = Keyword.query.order_by(Keyword.name.asc()).all()
 
-    # 供给切片器的维度选项
+    # Slicer dimension options
     all_variables = VariableDefinition.query.order_by(VariableDefinition.category.asc(), VariableDefinition.code.asc()).all()
     all_biomes = [r[0] for r in db.session.query(SiteLocation.biome).distinct().filter(SiteLocation.biome != None).all()]
     all_sites = SiteLocation.query.order_by(SiteLocation.site_code.asc()).all()
@@ -556,7 +552,7 @@ def index():
 def detail(dataset_id):
     dataset = Dataset.query.get_or_404(dataset_id)
     
-    # 读取绑定的 CSV 文件解析给前端
+    # Read attached CSV file for client telemetry and table snapshots
     ts_file = os.path.join(app.config['UPLOAD_FOLDER'], dataset.local_file_path or 'Soil_Microbial_Biomass_C_N_P_spatial.csv')
     ts_data = parse_dataset_timeseries(ts_file)
     depth_data = get_depth_profile_data()
@@ -572,7 +568,7 @@ def detail(dataset_id):
 
 @app.route('/analysis')
 def analysis():
-    flash('交互式模型分析模块目前维护升级中，暂未开放访问', 'info')
+    flash('Interactive model diagnostics module is undergoing maintenance and upgrades.', 'info')
     return redirect(url_for('index'))
 
 @app.route('/upload', methods=['GET', 'POST'])
@@ -587,7 +583,7 @@ def upload():
         start_date_str = request.form.get('start_date', '').strip()
         end_date_str = request.form.get('end_date', '').strip()
         temporal_resolution = request.form.get('temporal_resolution', 'Daily')
-        data_type = request.form.get('data_type', 'Model Simulation')
+        data_type = request.form.get('data_type', 'Field Observation')
         scenario = request.form.get('scenario', 'Control')
         min_depth = request.form.get('min_depth', type=float) or 0.0
         max_depth = request.form.get('max_depth', type=float) or 1.0
@@ -599,10 +595,10 @@ def upload():
         var_ids = request.form.getlist('variables')
 
         if not title or not author or not description:
-            flash('请完整填写数据集标题、第一作者与摘要描述', 'error')
+            flash('Please fill in dataset title, lead author, and scientific abstract.', 'error')
             return redirect(url_for('upload'))
 
-        # 解析时间跨度日期
+        # Parse temporal range dates
         from datetime import date
         s_date = None
         e_date = None
@@ -620,7 +616,7 @@ def upload():
         if not e_date:
             e_date = date(yr_val, 12, 31)
 
-        # 处理文件或 GitHub / OSS 来源
+        # Handle file source: GitHub, Local, or OSS
         local_filename = None
         if data_source_type == 'oss':
             file = request.files.get('oss_file') or request.files.get('file')
@@ -682,7 +678,7 @@ def upload():
         db.session.add(new_dataset)
         db.session.flush()
 
-        # 关联多维变量指标 (支持已有勾选 + 动态手写录入新指标)
+        # Relationships: variables (existing + dynamic custom)
         if var_ids:
             for vid in var_ids:
                 if str(vid).isdigit():
@@ -692,8 +688,8 @@ def upload():
 
         new_custom_vars = request.form.get('custom_variables', '').strip()
         if new_custom_vars:
-            # 格式例如: "MBC:mg C kg-1, MBN:mg N kg-1" 或 "PHOSPHATASE"
-            raw_v_items = [v.strip() for v in new_custom_vars.replace('，', ',').split(',') if v.strip()]
+            # Format: "CODE:UNIT" or "CODE", comma-separated
+            raw_v_items = [v.strip() for v in new_custom_vars.replace(',', ' ').split() if v.strip()]
             for item in raw_v_items:
                 parts = item.split(':')
                 v_code = parts[0].strip().upper()
@@ -714,7 +710,7 @@ def upload():
                 if v_obj not in new_dataset.variables:
                     new_dataset.variables.append(v_obj)
 
-        # 关联关键词 (支持从已有词库挑选绑定 + 录入新词，自动纳管)
+        # Relationships: keywords (existing checked + dynamic custom)
         selected_kw_ids = request.form.getlist('keyword_ids')
         if selected_kw_ids:
             for kid in selected_kw_ids:
@@ -724,7 +720,7 @@ def upload():
                         new_dataset.keywords.append(k_obj)
 
         if keywords_str:
-            raw_kws = [k.strip().lower() for k in keywords_str.replace('，', ',').split(',') if k.strip()]
+            raw_kws = [k.strip().lower() for k in keywords_str.replace(',', ' ').split() if k.strip()]
             for k_name in raw_kws:
                 kw_obj = Keyword.query.filter_by(name=k_name).first()
                 if not kw_obj:
@@ -735,7 +731,7 @@ def upload():
                     new_dataset.keywords.append(kw_obj)
 
         db.session.commit()
-        flash('科研数据集已成功录入，并已挂载时空与变量多维属性！', 'success')
+        flash('Scientific dataset submitted successfully with multi-dimensional variables and spatio-temporal properties.', 'success')
         return redirect(url_for('detail', dataset_id=new_dataset.id))
 
     all_sites = SiteLocation.query.order_by(SiteLocation.site_code.asc()).all()
@@ -743,17 +739,17 @@ def upload():
     all_keywords = Keyword.query.order_by(Keyword.name.asc()).all()
     return render_template('upload.html', all_sites=all_sites, all_variables=all_variables, all_keywords=all_keywords)
 
-# ----------------- 埋点下载与分发中转路由 -----------------
+# ----------------- Usage Audit & Download Dispatch Route -----------------
 @app.route('/dataset/<int:dataset_id>/download', methods=['POST'])
 def trigger_download(dataset_id):
     dataset = Dataset.query.get_or_404(dataset_id)
     
-    # 1. 获取前端填报的埋点审计信息
+    # 1. Retrieve telemetry audit payload from client
     data = request.get_json() or {}
-    institution = data.get('institution', '未注明单位')
+    institution = data.get('institution', 'Unspecified Institution')
     purpose = data.get('purpose', 'Academic Research')
 
-    # 2. 写入审计日志埋点表
+    # Record audit log
     dl_type = 'github_redirect'
     if dataset.data_source_type == 'oss':
         dl_type = 'oss_download'
@@ -773,9 +769,8 @@ def trigger_download(dataset_id):
     db.session.add(log)
     db.session.commit()
 
-    # 3. 分发数据：支持 GitHub 仓库直连、OSS 云端分发 或 本地文件传输
+    # Dispatch: GitHub repository / direct file, OSS presigned/CDN, or local stream
     if dataset.data_source_type == 'github':
-        # 如果配置了具体的 github_url 则优先使用，否则默认指向 MicrobialDataSystem 主仓库
         target_gh_url = dataset.github_url or 'https://github.com/email-clm/MicrobialDataSystem'
         return jsonify({'status': 'success', 'download_url': target_gh_url})
     elif dataset.data_source_type == 'oss':
@@ -785,13 +780,13 @@ def trigger_download(dataset_id):
     elif dataset.local_file_path:
         return jsonify({'status': 'success', 'download_url': url_for('download_file', filename=dataset.local_file_path)})
     else:
-        return jsonify({'status': 'error', 'message': '目标数据源文件不存在'}), 404
+        return jsonify({'status': 'error', 'message': 'Requested data file not found on server.'}), 404
 
 @app.route('/files/<filename>')
 def download_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
 
-# ----------------- 认证系统 -----------------
+# ----------------- User Authentication -----------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
@@ -807,24 +802,20 @@ def login():
             email = request.form.get('email', '').strip()
             institution = request.form.get('institution', '').strip()
 
-            current_lang = session.get('lang', 'zh')
-            lang_dict = TRANSLATIONS.get(current_lang, TRANSLATIONS['zh'])
-
             if not username or not password or not email or not confirm_password:
-                flash(lang_dict.get('form_email', '请完整填写注册信息'), 'error')
+                flash('Please complete all required registration fields.', 'error')
                 return redirect(url_for('login'))
 
             if password != confirm_password:
-                flash(lang_dict.get('password_mismatch', '两次输入的密码不一致，请重新输入'), 'error')
+                flash('Passwords do not match. Please re-enter.', 'error')
                 return redirect(url_for('login'))
 
             if len(password) < 6:
-                flash(lang_dict.get('password_too_weak', '密码强度不足，请至少设置6位字符'), 'error')
+                flash('Password must contain at least 6 characters.', 'error')
                 return redirect(url_for('login'))
 
             if User.query.filter_by(username=username).first():
-                msg = '用户名已存在，请换一个名称' if current_lang == 'zh' else 'Username already taken, please choose another.'
-                flash(msg, 'error')
+                flash('Username already taken. Please choose another.', 'error')
                 return redirect(url_for('login'))
             
             user = User(username=username, email=email, institution=institution, role='user')
@@ -832,19 +823,16 @@ def login():
             db.session.add(user)
             db.session.commit()
             login_user(user)
-            succ_msg = '恭喜，科研账号注册成功并已自动登录！' if current_lang == 'zh' else 'Registration successful! You are now signed in.'
-            flash(succ_msg, 'success')
+            flash('Registration successful! You are now signed in.', 'success')
             return redirect(url_for('index'))
         else:
             user = User.query.filter_by(username=username).first()
             if user and user.check_password(password):
                 login_user(user)
-                succ_msg = f'欢迎回来，{user.username}！' if session.get('lang', 'zh') == 'zh' else f'Welcome back, {user.username}!'
-                flash(succ_msg, 'success')
+                flash(f'Welcome back, {user.username}!', 'success')
                 next_page = request.args.get('next')
                 return redirect(next_page or url_for('index'))
-            err_msg = '用户名或密码有误，请重新核对' if session.get('lang', 'zh') == 'zh' else 'Invalid username or password.'
-            flash(err_msg, 'error')
+            flash('Invalid username or password.', 'error')
             return redirect(url_for('login'))
 
     return render_template('login.html')
@@ -853,26 +841,26 @@ def login():
 @login_required
 def logout():
     logout_user()
-    flash('您已安全退出当前会话', 'info')
+    flash('You have safely signed out.', 'info')
     return redirect(url_for('index'))
 
-# ----------------- 后台管理系统 -----------------
+# ----------------- Admin Dashboard -----------------
 @app.route('/admin/dashboard')
 @login_required
 def admin_dashboard():
     if current_user.role != 'admin':
-        flash('权限不足，仅管理员可访问后台埋点与管理系统', 'error')
+        flash('Access denied. Administrator privileges required.', 'error')
         return redirect(url_for('index'))
 
     summary = get_dashboard_summary()
     return render_template('admin/dashboard.html', summary=summary)
 
-# ----------------- 以数据为主数据的关键词管理 -----------------
+# ----------------- Data-Driven Keywords Governance -----------------
 @app.route('/dataset/<int:dataset_id>/keywords', methods=['POST'])
 @login_required
 def manage_dataset_keyword(dataset_id):
     if current_user.role != 'admin':
-        flash('权限不足，仅管理员可维护关键词', 'error')
+        flash('Access denied. Administrator privileges required.', 'error')
         return redirect(url_for('detail', dataset_id=dataset_id))
 
     dataset = Dataset.query.get_or_404(dataset_id)
@@ -897,11 +885,11 @@ def manage_dataset_keyword(dataset_id):
             if target_kw not in dataset.keywords:
                 dataset.keywords.append(target_kw)
                 db.session.commit()
-                flash(f'已成功为数据集关联关键词 "#{target_kw.name}"', 'success')
+                flash(f'Successfully attached keyword "#{target_kw.name}" to dataset.', 'success')
             else:
-                flash(f'该数据集已挂载过关键词 "#{target_kw.name}"', 'info')
+                flash(f'Dataset already has keyword "#{target_kw.name}".', 'info')
         else:
-            flash('请指定有效的新关键词或从已有词库选择', 'error')
+            flash('Please specify a valid keyword term.', 'error')
 
     elif action == 'remove':
         kw_id = request.form.get('keyword_id')
@@ -910,7 +898,7 @@ def manage_dataset_keyword(dataset_id):
             if kw and kw in dataset.keywords:
                 dataset.keywords.remove(kw)
                 db.session.commit()
-                flash(f'已解除数据集与关键词 "#{kw.name}" 的关联', 'info')
+                flash(f'Detached keyword "#{kw.name}" from dataset.', 'info')
 
     if redirect_to == 'admin_keywords':
         return redirect(url_for('admin_keywords'))
@@ -921,31 +909,34 @@ def manage_dataset_keyword(dataset_id):
 @login_required
 def admin_keywords():
     if current_user.role != 'admin':
-        flash('权限不足', 'error')
+        flash('Access denied.', 'error')
         return redirect(url_for('index'))
 
     if request.method == 'POST':
         action = request.form.get('action')
         if action == 'cleanup_orphan':
-            # 清理没有任何数据集关联的孤立关键词
             orphans = Keyword.query.filter(~Keyword.datasets.any()).all()
             count = len(orphans)
             for kw in orphans:
                 db.session.delete(kw)
             db.session.commit()
-            flash(f'已成功清理 {count} 个未关联任何数据集的孤立关键词', 'success')
+            flash(f'Cleaned {count} orphan keywords successfully.', 'success')
             return redirect(url_for('admin_keywords'))
 
     datasets = Dataset.query.order_by(Dataset.created_at.desc()).all()
     all_keywords = Keyword.query.order_by(Keyword.name.asc()).all()
     return render_template('admin/keywords.html', datasets=datasets, all_keywords=all_keywords)
 
-# ----------------- 后台 OSS 对象存储配置管理 -----------------
+    datasets = Dataset.query.order_by(Dataset.created_at.desc()).all()
+    all_keywords = Keyword.query.order_by(Keyword.name.asc()).all()
+    return render_template('admin/keywords.html', datasets=datasets, all_keywords=all_keywords)
+
+# ----------------- Admin Cloud Storage (OSS/MinIO) Configuration -----------------
 @app.route('/admin/oss', methods=['GET', 'POST'])
 @login_required
 def admin_oss():
     if current_user.role != 'admin':
-        flash('权限不足，仅管理员可配置对象存储', 'error')
+        flash('Access denied. Administrator privileges required.', 'error')
         return redirect(url_for('index'))
 
     oss_config = StorageConfig.query.first()
@@ -960,7 +951,7 @@ def admin_oss():
         is_active = bool(request.form.get('is_active'))
 
         if not endpoint or not bucket_name or not access_key_id or not access_key_secret:
-            flash('请完整填写 OSS 地域节点、Bucket 及访问凭证', 'error')
+            flash('Please complete all required storage credentials.', 'error')
             return redirect(url_for('admin_oss'))
 
         if not oss_config:
@@ -984,17 +975,17 @@ def admin_oss():
             oss_config.is_active = is_active
 
         db.session.commit()
-        flash('OSS 对象存储配置已更新并成功启用！', 'success')
+        flash('Storage configuration successfully updated and active.', 'success')
         return redirect(url_for('admin_oss'))
 
     return render_template('admin/oss.html', oss_config=oss_config)
 
-# ----------------- 后台科研数据集综合管理 (CRUD) -----------------
+# ----------------- Admin Dataset Management (CRUD) -----------------
 @app.route('/admin/datasets')
 @login_required
 def admin_datasets():
     if current_user.role != 'admin':
-        flash('权限不足，仅管理员可管理数据集', 'error')
+        flash('Access denied.', 'error')
         return redirect(url_for('index'))
 
     datasets = Dataset.query.order_by(Dataset.created_at.desc()).all()
@@ -1004,7 +995,7 @@ def admin_datasets():
 @login_required
 def admin_edit_dataset(dataset_id):
     if current_user.role != 'admin':
-        flash('权限不足', 'error')
+        flash('Access denied.', 'error')
         return redirect(url_for('index'))
 
     dataset = Dataset.query.get_or_404(dataset_id)
@@ -1019,7 +1010,7 @@ def admin_edit_dataset(dataset_id):
         start_date_str = request.form.get('start_date', '').strip()
         end_date_str = request.form.get('end_date', '').strip()
         temporal_resolution = request.form.get('temporal_resolution', 'Daily').strip()
-        data_type = request.form.get('data_type', 'Model Simulation').strip()
+        data_type = request.form.get('data_type', 'Field Observation').strip()
         scenario = request.form.get('scenario', 'Control').strip()
         min_depth = request.form.get('min_depth', type=float) or 0.0
         max_depth = request.form.get('max_depth', type=float) or 1.0
@@ -1029,7 +1020,7 @@ def admin_edit_dataset(dataset_id):
         description = request.form.get('description', '').strip()
 
         if not title or not author or not description:
-            flash('标题、作者及描述不能为空', 'error')
+            flash('Title, author, and description are required.', 'error')
             return redirect(url_for('admin_edit_dataset', dataset_id=dataset.id))
 
         from datetime import date
@@ -1051,7 +1042,7 @@ def admin_edit_dataset(dataset_id):
         elif site_code:
             target_site = SiteLocation.query.filter_by(site_code=site_code).first()
 
-        # 更新基本字段
+        # Update dataset attributes
         dataset.title = title
         dataset.author = author
         dataset.year = yr_val
@@ -1072,7 +1063,7 @@ def admin_edit_dataset(dataset_id):
         dataset.github_url = github_url if data_source_type == 'github' else None
         dataset.description = description
 
-        # 重新挂载所选的标准化变量
+        # Update variable associations
         var_ids = request.form.getlist('variables')
         dataset.variables.clear()
         for vid in var_ids:
@@ -1083,7 +1074,7 @@ def admin_edit_dataset(dataset_id):
 
         new_custom_vars = request.form.get('custom_variables', '').strip()
         if new_custom_vars:
-            raw_v_items = [v.strip() for v in new_custom_vars.replace('，', ',').split(',') if v.strip()]
+            raw_v_items = [v.strip() for v in new_custom_vars.replace(',', ' ').split() if v.strip()]
             for item in raw_v_items:
                 parts = item.split(':')
                 v_code = parts[0].strip().upper()
@@ -1104,7 +1095,7 @@ def admin_edit_dataset(dataset_id):
                 if v_obj not in dataset.variables:
                     dataset.variables.append(v_obj)
 
-        # 重新同步关联关键词
+        # Update keyword associations
         kw_ids = request.form.getlist('keyword_ids')
         dataset.keywords.clear()
         for kid in kw_ids:
@@ -1113,10 +1104,9 @@ def admin_edit_dataset(dataset_id):
                 if k_obj:
                     dataset.keywords.append(k_obj)
 
-        # 追加新手写关键词
         extra_kws = request.form.get('keywords', '').strip()
         if extra_kws:
-            raw_kws = [k.strip().lower() for k in extra_kws.replace('，', ',').split(',') if k.strip()]
+            raw_kws = [k.strip().lower() for k in extra_kws.replace(',', ' ').split() if k.strip()]
             for k_name in raw_kws:
                 kw_obj = Keyword.query.filter_by(name=k_name).first()
                 if not kw_obj:
@@ -1127,7 +1117,7 @@ def admin_edit_dataset(dataset_id):
                     dataset.keywords.append(kw_obj)
 
         db.session.commit()
-        flash(f'数据集 #{dataset.id} 更新成功！', 'success')
+        flash(f'Dataset #{dataset.id} updated successfully.', 'success')
         return redirect(url_for('admin_datasets'))
 
     all_sites = SiteLocation.query.order_by(SiteLocation.site_code.asc()).all()
@@ -1139,13 +1129,12 @@ def admin_edit_dataset(dataset_id):
 @login_required
 def admin_delete_dataset(dataset_id):
     if current_user.role != 'admin':
-        flash('权限不足', 'error')
+        flash('Access denied.', 'error')
         return redirect(url_for('index'))
 
     dataset = Dataset.query.get_or_404(dataset_id)
     ds_title = dataset.title
 
-    # 清理关联的审计下载日志与关联多对多
     DownloadLog.query.filter_by(dataset_id=dataset.id).delete()
     dataset.keywords.clear()
     dataset.variables.clear()
@@ -1153,15 +1142,15 @@ def admin_delete_dataset(dataset_id):
     db.session.delete(dataset)
     db.session.commit()
 
-    flash(f'数据集 #{dataset_id} "{ds_title[:20]}..." 已成功从系统中彻底删除！', 'info')
+    flash(f'Dataset #{dataset_id} "{ds_title[:20]}..." was permanently deleted.', 'info')
     return redirect(url_for('admin_datasets'))
 
-# ----------------- 后台标准化观测指标字典管理 (CRUD) -----------------
+# ----------------- Admin Standardized Variables Dictionary (CRUD) -----------------
 @app.route('/admin/variables', methods=['GET', 'POST'])
 @login_required
 def admin_variables():
     if current_user.role != 'admin':
-        flash('权限不足，仅管理员可维护指标字典', 'error')
+        flash('Access denied.', 'error')
         return redirect(url_for('index'))
 
     edit_id = request.args.get('edit_id', type=int)
@@ -1180,11 +1169,11 @@ def admin_variables():
             description_en = request.form.get('description_en', '').strip()
 
             if not code or not display_name or not unit:
-                flash('指标代码、显示名称与单位不能为空', 'error')
+                flash('Variable code, display name, and physical unit are required.', 'error')
                 return redirect(url_for('admin_variables'))
 
             if VariableDefinition.query.filter_by(code=code).first():
-                flash(f'指标代码 "{code}" 已存在，请勿重复定义', 'error')
+                flash(f'Variable code "{code}" already exists.', 'error')
                 return redirect(url_for('admin_variables'))
 
             new_v = VariableDefinition(
@@ -1198,7 +1187,7 @@ def admin_variables():
             )
             db.session.add(new_v)
             db.session.commit()
-            flash(f'科学指标 "{code}" 添加发布成功！', 'success')
+            flash(f'Scientific variable "{code}" published successfully.', 'success')
             return redirect(url_for('admin_variables'))
 
         elif action == 'update':
@@ -1212,7 +1201,7 @@ def admin_variables():
                 v_obj.description = request.form.get('description', '').strip()
                 v_obj.description_en = request.form.get('description_en', '').strip()
                 db.session.commit()
-                flash(f'指标 "{v_obj.code}" 信息已成功更新！', 'success')
+                flash(f'Variable "{v_obj.code}" updated successfully.', 'success')
             return redirect(url_for('admin_variables'))
 
     variables = VariableDefinition.query.order_by(VariableDefinition.category.asc(), VariableDefinition.code.asc()).all()
@@ -1222,7 +1211,7 @@ def admin_variables():
 @login_required
 def admin_delete_variable(var_id):
     if current_user.role != 'admin':
-        flash('权限不足', 'error')
+        flash('Access denied.', 'error')
         return redirect(url_for('index'))
 
     v_obj = db.session.get(VariableDefinition, var_id)
@@ -1230,7 +1219,7 @@ def admin_delete_variable(var_id):
         v_code = v_obj.code
         db.session.delete(v_obj)
         db.session.commit()
-        flash(f'科学指标 "{v_code}" 已从词典中删除', 'info')
+        flash(f'Variable "{v_code}" deleted from dictionary.', 'info')
 
     return redirect(url_for('admin_variables'))
 

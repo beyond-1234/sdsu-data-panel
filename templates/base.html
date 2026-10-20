@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ current_lang }}">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +9,7 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <!-- 左侧竖向导航栏 -->
+    <!-- Sidebar -->
     <aside class="sidebar">
         <div class="brand">
             <span>🌿</span> MicrobialData
@@ -22,10 +22,10 @@
                     <span>🔍</span> {{ t('nav_overview') }}
                 </a>
             </li>
-            <!-- 交互式模型分析页签（已按需禁用） -->
+            <!-- Interactive Analysis (Temporarily Disabled) -->
             <li>
-                <a href="javascript:void(0);" style="opacity: 0.45; cursor: not-allowed; pointer-events: none; text-decoration: none;" title="该功能模块维护升级中 (Disabled)">
-                    <span>📈</span> {{ t('nav_analysis') }} <small style="font-size: 0.68rem; background: rgba(255,255,255,0.12); padding: 1px 6px; border-radius: 4px; margin-left: 6px;">待开放</small>
+                <a href="javascript:void(0);" style="opacity: 0.45; cursor: not-allowed; pointer-events: none; text-decoration: none;" title="Module undergoing maintenance (Disabled)">
+                    <span>📈</span> {{ t('nav_analysis') }} <small style="font-size: 0.68rem; background: rgba(255,255,255,0.12); padding: 1px 6px; border-radius: 4px; margin-left: 6px;">Disabled</small>
                 </a>
             </li>
             <li>
@@ -42,27 +42,10 @@
             {% endif %}
         </ul>
 
-        <!-- 语言切换器 (I18n Switcher) -->
-        <div style="margin-top: 24px; padding: 10px 14px; background: rgba(0,0,0,0.18); border-radius: 6px;">
-            <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
-                🌐 {{ t('lang_switch') }}
-            </div>
-            <div style="display: flex; gap: 8px;">
-                <a href="{{ url_for('set_language', lang='zh') }}" 
-                   style="flex: 1; text-align: center; padding: 4px; border-radius: 4px; font-size: 0.8rem; text-decoration: none; font-weight: 500; {% if current_lang == 'zh' %}background: var(--primary); color: #fff;{% else %}color: #cbd5e1; background: rgba(255,255,255,0.06);{% endif %}">
-                   中文
-                </a>
-                <a href="{{ url_for('set_language', lang='en') }}" 
-                   style="flex: 1; text-align: center; padding: 4px; border-radius: 4px; font-size: 0.8rem; text-decoration: none; font-weight: 500; {% if current_lang == 'en' %}background: var(--primary); color: #fff;{% else %}color: #cbd5e1; background: rgba(255,255,255,0.06);{% endif %}">
-                   English
-                </a>
-            </div>
-        </div>
-
         <div class="sidebar-footer">
             {% if current_user.is_authenticated %}
                 <div style="font-weight: 600; color: #fff;">{{ current_user.username }} <small style="color: #94a3b8;">({{ current_user.role }})</small></div>
-                <div style="font-size: 0.78rem;">{{ current_user.institution or '未登记机构' }}</div>
+                <div style="font-size: 0.78rem;">{{ current_user.institution or 'Institutional Researcher' }}</div>
                 <div><a href="{{ url_for('logout') }}">{{ t('logout') }}</a></div>
             {% else %}
                 <div>{{ t('guest_mode') }}</div>
@@ -75,7 +58,7 @@
         </div>
     </aside>
 
-    <!-- 右侧主体内容 -->
+    <!-- Main Content Area -->
     <div class="main-wrapper">
         <header class="top-header">
             <div class="breadcrumbs">
@@ -83,7 +66,7 @@
             </div>
             <div class="header-user-status">
                 {% if current_user.is_authenticated %}
-                    <span>{{ t('welcome') }}，<strong>{{ current_user.username }}</strong></span>
+                    <span>{{ t('welcome') }}, <strong>{{ current_user.username }}</strong></span>
                     <a href="{{ url_for('logout') }}" class="btn btn-outline btn-sm">{{ t('logout_btn') }}</a>
                 {% else %}
                     <a href="{{ url_for('login') }}" class="btn btn-outline btn-sm">{{ t('login_btn') }}</a>
@@ -108,12 +91,12 @@
                 <strong>{{ t('footer_rights') }}</strong>
             </div>
             <div>
-                DOI: <a href="https://doi.org/10.5281/zenodo.clm-microbe" target="_blank" style="color: var(--primary);">10.5281/zenodo.clm-microbe</a>
+                Repository: <a href="https://github.com/email-clm/MicrobialDataSystem" target="_blank" style="color: var(--primary);">email-clm/MicrobialDataSystem</a>
             </div>
         </footer>
     </div>
 
-    <!-- 全局科研下载用途登记模态框 (埋点) -->
+    <!-- Usage Audit Modal -->
     <div class="modal-overlay" id="downloadModal">
         <div class="modal-card">
             <div class="modal-header">
@@ -131,7 +114,7 @@
                     <label class="form-label" for="modalInstitution">{{ t('modal_inst_label') }}</label>
                     <input type="text" id="modalInstitution" class="form-control" 
                            value="{% if current_user.is_authenticated %}{{ current_user.institution or '' }}{% endif %}" 
-                           placeholder="e.g., CAS IGSNRR / SDSU" required>
+                           placeholder="e.g., San Diego State University / CAS" required>
                 </div>
 
                 <div class="form-group">

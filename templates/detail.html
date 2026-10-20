@@ -41,7 +41,7 @@
         </div>
     </div>
 
-    <!-- 多维学术属性条 (时空覆盖、样点、垂直深度、实验情景) -->
+    <!-- Multi-dimensional Scientific Attribute Strip -->
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 14px 18px; margin-top: 14px; font-size: 0.88rem;">
         <div>
             <div style="font-size: 0.75rem; text-transform: uppercase; color: #64748b; font-weight: 600;">{{ t('dim_coverage_label') }}</div>
@@ -52,7 +52,7 @@
                     {{ t('year_base', dataset.year) }}
                 {% endif %}
             </strong>
-            <span style="color: #94a3b8; font-size: 0.8rem;">({{ dataset.temporal_resolution or 'Daily' }})</span>
+            <span style="color: #94a3b8; font-size: 0.8rem;">({{ dataset.temporal_resolution or 'Yearly' }})</span>
         </div>
 
         <div>
@@ -61,10 +61,10 @@
                 {% if dataset.site %}
                     {{ dataset.site.site_code }} ({{ dataset.site.latitude }}°N, {{ dataset.site.longitude }}°E)
                 {% else %}
-                    {{ dataset.site_code or 'CLM-Global' }}
+                    {{ dataset.site_code or 'Global-Terrestrial' }}
                 {% endif %}
             </strong>
-            <div style="color: #64748b; font-size: 0.8rem;">{{ dataset.site.biome if dataset.site else 'Tundra Ecosystem' }}</div>
+            <div style="color: #64748b; font-size: 0.8rem;">{{ dataset.site.biome if dataset.site else 'Terrestrial Ecosystem' }}</div>
         </div>
 
         <div>
@@ -80,14 +80,14 @@
         </div>
     </div>
 
-    <!-- 挂载的标准指标变量体系 -->
+    <!-- Managed Variables Strip -->
     {% if dataset.variables %}
     <div style="margin-top: 14px; padding: 12px 16px; background: #ffffff; border: 1px solid var(--border-color); border-radius: 8px;">
         <div style="font-size: 0.8rem; font-weight: bold; color: #475569; margin-bottom: 8px;">{{ t('dataset_variables_title') }}</div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
             {% for v in dataset.variables %}
                 <span class="badge" style="padding: 6px 10px; background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1; font-size: 0.8rem;">
-                    <strong>{{ v.code }}</strong> - {{ v.get_name(current_lang) }} 
+                    <strong>{{ v.code }}</strong> - {{ v.get_name('en') }} 
                     <span style="color: var(--primary); font-weight: bold; margin-left: 4px;">[{{ v.unit }}]</span>
                 </span>
             {% endfor %}
@@ -107,7 +107,7 @@
                 <span class="badge" style="display: inline-flex; align-items: center; gap: 4px;">
                     <a href="{{ url_for('index', keyword=kw.name) }}" style="color: inherit; text-decoration: none;"># {{ kw.name }}</a>
                     {% if current_user.is_authenticated and current_user.role == 'admin' %}
-                        <form method="POST" action="{{ url_for('manage_dataset_keyword', dataset_id=dataset.id) }}" style="display: inline;" onsubmit="return confirm('确定从该数据集移除此关键词吗？');">
+                        <form method="POST" action="{{ url_for('manage_dataset_keyword', dataset_id=dataset.id) }}" style="display: inline;" onsubmit="return confirm('{{ t('confirm_remove_kw') }}');">
                             <input type="hidden" name="action" value="remove">
                             <input type="hidden" name="keyword_id" value="{{ kw.id }}">
                             <button type="submit" style="background: none; border: none; cursor: pointer; color: #94a3b8; font-size: 0.9rem; line-height: 1; padding: 0 2px;">&times;</button>
@@ -118,7 +118,6 @@
         </div>
 
         {% if current_user.is_authenticated and current_user.role == 'admin' %}
-            <!-- 针对当前数据集直接维护/追加关键词 -->
             <form method="POST" action="{{ url_for('manage_dataset_keyword', dataset_id=dataset.id) }}" style="display: flex; gap: 6px; align-items: center;">
                 <input type="hidden" name="action" value="add">
                 <input type="text" name="keyword_name" class="form-control" style="padding: 4px 8px; font-size: 0.82rem; width: 170px;" placeholder="{{ t('add_tag_placeholder') }}" required>
@@ -128,7 +127,7 @@
     </div>
 </div>
 
-<!-- 交互式时序与通量可视化（LeafWeb 风格） -->
+<!-- Time-Series Dynamics -->
 <div class="card">
     <div class="card-title">
         <span>{{ t('timeseries_title') }}</span>
@@ -140,11 +139,10 @@
         {{ t('timeseries_desc') }}
     </p>
 
-    <!-- 图表容器 -->
     <div id="timeseriesChart" style="width: 100%; height: 420px;"></div>
 </div>
 
-<!-- 垂向土壤剖面与微生态对比 -->
+<!-- Soil Depth Profile & Kinetics -->
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
     <div class="card">
         <div class="card-title">{{ t('depth_chart_title') }}</div>
@@ -159,7 +157,7 @@
     </div>
 </div>
 
-<!-- 样本数据表截取预览 -->
+<!-- Sample Data Table Snapshot -->
 {% if ts_data and ts_data.records %}
 <div class="card">
     <div class="card-title">
@@ -170,7 +168,7 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    {% for col in ts_data.columns %}
+                    {% for col in ts_data.columns[:10] %}
                         <th>{{ col }}</th>
                     {% endfor %}
                 </tr>
@@ -178,7 +176,7 @@
             <tbody>
                 {% for row in ts_data.records[:10] %}
                     <tr>
-                        {% for col in ts_data.columns %}
+                        {% for col in ts_data.columns[:10] %}
                             <td>{{ row[col] }}</td>
                         {% endfor %}
                     </tr>
@@ -194,9 +192,7 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const isZh = '{{ current_lang }}' === 'zh';
-
-    // 1. 初始化时序折线图
+    // 1. Line Chart
     const tsDom = document.getElementById('timeseriesChart');
     if (tsDom) {
         const tsChart = echarts.init(tsDom);
@@ -208,35 +204,35 @@ document.addEventListener('DOMContentLoaded', function () {
         const tList = tsData ? tsData.soil_temp : [];
         const mList = tsData ? tsData.soil_moisture : [];
 
-        const l1 = isZh ? '土壤异养呼吸 (HR, g C/m²/d)' : 'Heterotrophic Respiration (HR, g C/m²/d)';
-        const l2 = isZh ? 'CH₄ 净通量 (mg C/m²/d)' : 'Net CH₄ Flux (mg C/m²/d)';
-        const l3 = isZh ? '土壤10cm温度 (℃)' : 'Soil Temp 10cm (°C)';
-        const l4 = isZh ? '土壤10cm湿度 (m³/m³)' : 'Soil Moisture 10cm (m³/m³)';
+        const l1 = 'Microbial Biomass C (MBC) / HR';
+        const l2 = 'Microbial Biomass N (MBN) / Flux';
+        const l3 = 'Soil Temperature 10cm (°C)';
+        const l4 = 'Soil Moisture 10cm (m³/m³)';
 
         const option = {
             tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
             legend: { data: [l1, l2, l3, l4], top: 0 },
             grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
             dataZoom: [
-                { type: 'slider', show: true, xAxisIndex: [0], start: 15, end: 85, bottom: 5 },
+                { type: 'slider', show: true, xAxisIndex: [0], start: 0, end: 85, bottom: 5 },
                 { type: 'inside', xAxisIndex: [0] }
             ],
             xAxis: {
                 type: 'category',
                 boundaryGap: false,
-                data: doyList.map(d => 'DOY ' + d),
-                name: 'Day of Year'
+                data: doyList.map(d => 'Index ' + d),
+                name: 'Index / Time'
             },
             yAxis: [
                 {
                     type: 'value',
-                    name: isZh ? '碳通量 (HR / CH4)' : 'Carbon Flux',
+                    name: 'Microbial Pools',
                     position: 'left',
                     axisLine: { show: true, lineStyle: { color: '#245d3e' } }
                 },
                 {
                     type: 'value',
-                    name: isZh ? '环境水热 (T / Moisture)' : 'Temp & Moisture',
+                    name: 'Thermal & Moisture',
                     position: 'right',
                     axisLine: { show: true, lineStyle: { color: '#8d6e63' } }
                 }
@@ -252,15 +248,15 @@ document.addEventListener('DOMContentLoaded', function () {
         window.addEventListener('resize', () => tsChart.resize());
     }
 
-    // 2. 初始化土壤垂向剖面图
+    // 2. Depth Profile
     const depthDom = document.getElementById('depthChart');
     if (depthDom) {
         const depthChart = echarts.init(depthDom);
         const depthData = {{ depth_data|tojson }};
 
-        const legFbc = isZh ? '真菌生物量 (FBC)' : 'Fungal Biomass (FBC)';
-        const legBbc = isZh ? '细菌生物量 (BBC)' : 'Bacterial Biomass (BBC)';
-        const legSoc = isZh ? '土壤有机碳 (SOC)' : 'Soil Organic Carbon (SOC)';
+        const legFbc = 'Fungal Biomass Carbon (FBC)';
+        const legBbc = 'Bacterial Biomass Carbon (BBC)';
+        const legSoc = 'Soil Organic Carbon (SOC)';
 
         const depthOption = {
             tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
@@ -269,7 +265,7 @@ document.addEventListener('DOMContentLoaded', function () {
             xAxis: { type: 'value', name: 'g C / m²' },
             yAxis: {
                 type: 'category',
-                name: isZh ? '深度' : 'Depth',
+                name: 'Depth',
                 inverse: true,
                 data: depthData.depth_labels
             },
@@ -283,7 +279,7 @@ document.addEventListener('DOMContentLoaded', function () {
         window.addEventListener('resize', () => depthChart.resize());
     }
 
-    // 3. 动力学拟合图
+    // 3. Kinetics
     const kinDom = document.getElementById('kineticsChart');
     if (kinDom) {
         const kinChart = echarts.init(kinDom);
@@ -294,15 +290,15 @@ document.addEventListener('DOMContentLoaded', function () {
             grid: { left: '4%', right: '5%', bottom: '8%', containLabel: true },
             xAxis: {
                 type: 'category',
-                name: isZh ? '底物浓度 [S] (g C/m³)' : 'Substrate [S]',
+                name: 'Substrate [S] (g C/m³)',
                 data: kinData.substrate
             },
             yAxis: {
                 type: 'value',
-                name: isZh ? '速率 V (g C/m³/h)' : 'Rate V'
+                name: 'Decomposition Rate V (g C/m³/h)'
             },
             series: [{
-                name: isZh ? 'Michaelis-Menten 拟合曲线' : 'Michaelis-Menten Fit',
+                name: 'Michaelis-Menten Kinetics',
                 type: 'line',
                 smooth: true,
                 data: kinData.rate,

@@ -11,7 +11,7 @@
     </p>
 </div>
 
-<!-- 交互参数调节工作台 (LeafWeb Kinetics Playground) -->
+<!-- Kinetics Playground -->
 <div class="card">
     <div class="card-title">
         <span>{{ t('kinetics_simulator_title') }}</span>
@@ -21,7 +21,7 @@
         \( V = \frac{V_{max}(T) \cdot [S]}{K_m + [S]} \), \( V_{max}(T) = V_{max0} \cdot Q_{10}^{(T - 20)/10} \)
     </p>
 
-    <!-- 交互控制器 -->
+    <!-- Controllers -->
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; background: #f8fafc; padding: 18px; border-radius: 8px; margin-bottom: 20px;">
         <div>
             <label class="form-label" style="display: flex; justify-content: space-between;">
@@ -59,7 +59,7 @@
     <div id="interactiveKineticsChart" style="width: 100%; height: 380px;"></div>
 </div>
 
-<!-- 剖面深层诊断与多变量散点 (Scatter correlation) -->
+<!-- Depth Profiles & Scatter Correlation -->
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
     <div class="card">
         <div class="card-title">{{ t('profile_multi_title') }}</div>
@@ -78,9 +78,7 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const isZh = '{{ current_lang }}' === 'zh';
-
-    // 1. 动力学滑块交互计算与图表
+    // 1. Kinetics Slider Chart
     const kinDom = document.getElementById('interactiveKineticsChart');
     const kinChart = echarts.init(kinDom);
 
@@ -106,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         document.getElementById('vmaxVal').innerText = vmax.toFixed(1);
         document.getElementById('kmVal').innerText = km.toFixed(1);
-        document.getElementById('tempVal').innerText = temp.toFixed(1) + ' ℃';
+        document.getElementById('tempVal').innerText = temp.toFixed(1) + ' °C';
         document.getElementById('q10Val').innerText = q10.toFixed(1);
 
         const data = calcKinetics(vmax, km, temp, q10);
@@ -116,15 +114,15 @@ document.addEventListener('DOMContentLoaded', function () {
             grid: { left: '4%', right: '4%', bottom: '10%', containLabel: true },
             xAxis: {
                 type: 'category',
-                name: isZh ? '底物浓度 [S] (g C/m³)' : 'Substrate [S]',
+                name: 'Substrate [S] (g C/m³)',
                 data: data.substrate
             },
             yAxis: {
                 type: 'value',
-                name: isZh ? '分解速率 V (g C/m³/h)' : 'Decomposition Rate V'
+                name: 'Decomposition Rate V (g C/m³/h)'
             },
             series: [{
-                name: isZh ? '反应速率' : 'Reaction Rate',
+                name: 'Reaction Rate',
                 type: 'line',
                 smooth: true,
                 data: data.rate,
@@ -141,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         yAxis: data.vmaxAdj,
                         name: 'Vmax(T)',
                         lineStyle: { color: '#b91c1c', type: 'dashed' },
-                        label: { formatter: isZh ? '校正 Vmax = {c}' : 'Adjusted Vmax = {c}' }
+                        label: { formatter: 'Adjusted Vmax = {c}' }
                     }]
                 }
             }]
@@ -155,35 +153,31 @@ document.addEventListener('DOMContentLoaded', function () {
     updateKineticsChart();
     window.addEventListener('resize', () => kinChart.resize());
 
-    // 2. 垂向剖面图
+    // 2. Depth Profile Chart
     const profDom = document.getElementById('profileMultiChart');
     const profChart = echarts.init(profDom);
     const depthData = {{ depth_data|tojson }};
 
-    const legF = isZh ? '真菌 (FBC)' : 'Fungi (FBC)';
-    const legB = isZh ? '细菌 (BBC)' : 'Bacteria (BBC)';
-    const legS = isZh ? '土壤有机碳 (SOC)' : 'Soil Organic Carbon (SOC)';
-
     profChart.setOption({
         tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
-        legend: { data: [legF, legB, legS], top: 0 },
+        legend: { data: ['Fungi (FBC)', 'Bacteria (BBC)', 'Soil Organic Carbon (SOC)'], top: 0 },
         grid: { left: '4%', right: '5%', bottom: '8%', containLabel: true },
         xAxis: { type: 'value', name: 'g C / m²' },
         yAxis: {
             type: 'category',
-            name: isZh ? '剖面深度' : 'Depth',
+            name: 'Depth',
             inverse: true,
             data: depthData.depth_labels
         },
         series: [
-            { name: legF, type: 'bar', data: depthData.fbc, itemStyle: { color: '#8d6e63' } },
-            { name: legB, type: 'bar', data: depthData.bbc, itemStyle: { color: '#2e7d32' } },
-            { name: legS, type: 'line', smooth: true, data: depthData.soc, itemStyle: { color: '#d97706' } }
+            { name: 'Fungi (FBC)', type: 'bar', data: depthData.fbc, itemStyle: { color: '#8d6e63' } },
+            { name: 'Bacteria (BBC)', type: 'bar', data: depthData.bbc, itemStyle: { color: '#2e7d32' } },
+            { name: 'Soil Organic Carbon (SOC)', type: 'line', smooth: true, data: depthData.soc, itemStyle: { color: '#d97706' } }
         ]
     });
     window.addEventListener('resize', () => profChart.resize());
 
-    // 3. 散点图
+    // 3. Scatter Plot
     const scatterDom = document.getElementById('scatterChart');
     const scatterChart = echarts.init(scatterDom);
     
@@ -198,14 +192,14 @@ document.addEventListener('DOMContentLoaded', function () {
     scatterChart.setOption({
         tooltip: {
             formatter: function (param) {
-                return 'DOY: ' + param.data[3] + '<br/>' + (isZh ? '温度: ' : 'Temp: ') + param.data[0] + ' ℃<br/>' + (isZh ? '异养呼吸: ' : 'HR: ') + param.data[1] + ' g C/m²/d<br/>' + (isZh ? '湿度: ' : 'Moisture: ') + param.data[2];
+                return 'Index: ' + param.data[3] + '<br/>Temp: ' + param.data[0] + ' °C<br/>Respiration: ' + param.data[1] + ' g C/m²/d<br/>Moisture: ' + param.data[2];
             }
         },
         grid: { left: '4%', right: '5%', bottom: '8%', containLabel: true },
-        xAxis: { type: 'value', name: isZh ? '土壤温度 (℃)' : 'Soil Temperature (°C)' },
-        yAxis: { type: 'value', name: isZh ? '异养呼吸 HR (g C/m²/d)' : 'HR Flux (g C/m²/d)' },
+        xAxis: { type: 'value', name: 'Soil Temperature (°C)' },
+        yAxis: { type: 'value', name: 'Respiration Flux (g C/m²/d)' },
         series: [{
-            name: isZh ? '散点响应' : 'Scatter',
+            name: 'Scatter Response',
             type: 'scatter',
             symbolSize: function (val) { return val[2] * 28; },
             data: scatterPoints,

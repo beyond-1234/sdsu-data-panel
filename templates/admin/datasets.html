@@ -21,12 +21,12 @@
             <thead>
                 <tr>
                     <th style="width: 50px;">ID</th>
-                    <th>标题与摘要</th>
-                    <th>样点 / 尺度</th>
-                    <th>时间覆盖</th>
-                    <th>数据类型 / 渠道</th>
-                    <th style="text-align: center;">下载量</th>
-                    <th style="text-align: right; min-width: 140px;">操作</th>
+                    <th>Title & Variables</th>
+                    <th>Site / Scale</th>
+                    <th>Coverage</th>
+                    <th>Data Type / Channel</th>
+                    <th style="text-align: center;">Downloads</th>
+                    <th style="text-align: right; min-width: 140px;">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -40,20 +40,20 @@
                             </a>
                         </div>
                         <div style="font-size: 0.78rem; color: #64748b; margin-bottom: 4px;">
-                            作者: <strong>{{ ds.author }}</strong> {% if ds.doi %}| DOI: {{ ds.doi }}{% endif %}
+                            Author: <strong>{{ ds.author }}</strong> {% if ds.doi %}| DOI: {{ ds.doi }}{% endif %}
                         </div>
                         <div style="display: flex; gap: 4px; flex-wrap: wrap;">
-                            {% for v in ds.variables[:4] %}
+                            {% for v in ds.variables[:5] %}
                                 <span class="badge" style="font-size: 0.7rem; padding: 2px 6px;">{{ v.code }}</span>
                             {% endfor %}
-                            {% if ds.variables|length > 4 %}
-                                <span class="badge" style="font-size: 0.7rem; padding: 2px 6px;">+{{ ds.variables|length - 4 }}</span>
+                            {% if ds.variables|length > 5 %}
+                                <span class="badge" style="font-size: 0.7rem; padding: 2px 6px;">+{{ ds.variables|length - 5 }}</span>
                             {% endif %}
                         </div>
                     </td>
                     <td>
                         <div style="font-weight: 500;">{{ ds.site_code or (ds.site.site_code if ds.site else 'N/A') }}</div>
-                        <small style="color: #64748b;">{{ ds.spatial_scale or 'Point' }}</small>
+                        <small style="color: #64748b;">{{ ds.spatial_scale or 'Global' }}</small>
                     </td>
                     <td>
                         <div style="font-size: 0.8rem;">
@@ -63,7 +63,7 @@
                                 {{ ds.year }}
                             {% endif %}
                         </div>
-                        <small style="color: #64748b;">{{ ds.temporal_resolution or 'Daily' }}</small>
+                        <small style="color: #64748b;">{{ ds.temporal_resolution or 'Yearly' }}</small>
                     </td>
                     <td>
                         <div style="font-size: 0.8rem; font-weight: 500;">{{ ds.data_type }}</div>
@@ -79,7 +79,7 @@
                             <a href="{{ url_for('admin_edit_dataset', dataset_id=ds.id) }}" class="btn btn-outline btn-sm">
                                 ✏️ {{ t('btn_edit') }}
                             </a>
-                            <form method="POST" action="{{ url_for('admin_delete_dataset', dataset_id=ds.id) }}" style="display: inline;" onsubmit="return confirm('确定彻底删除该数据集及其全部关联历史吗？此操作不可撤销！');">
+                            <form method="POST" action="{{ url_for('admin_delete_dataset', dataset_id=ds.id) }}" style="display: inline;" onsubmit="return confirm('Permanently delete this dataset? This action cannot be undone.');">
                                 <button type="submit" class="btn btn-outline btn-sm" style="color: #b91c1c; border-color: #fca5a5;">
                                     🗑️ {{ t('btn_delete') }}
                                 </button>

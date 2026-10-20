@@ -8,7 +8,7 @@ def get_dashboard_summary():
     total_keywords = Keyword.query.count()
     total_logs = DownloadLog.query.count()
 
-    # 近7日下载走势
+    # 7-Day download telemetry trend
     now = datetime.utcnow()
     seven_days_ago = now - timedelta(days=6)
     
@@ -25,17 +25,17 @@ def get_dashboard_summary():
         trend_labels.append(day_str)
         trend_values.append(date_dict.get(day_str, 0))
 
-    # 用途分布 (Purpose)
+    # Research purpose distribution
     purposes = db.session.query(
         DownloadLog.purpose,
         func.count(DownloadLog.id)
     ).group_by(DownloadLog.purpose).all()
-    purpose_data = [{'name': p or '未标注', 'value': c} for p, c in purposes]
+    purpose_data = [{'name': p or 'Unspecified', 'value': c} for p, c in purposes]
 
-    # 热门数据集 Top 5
+    # Top 5 requested datasets
     top_datasets = Dataset.query.order_by(Dataset.download_count.desc()).limit(5).all()
 
-    # 最近下载审计日志
+    # Latest audit logs
     recent_logs = DownloadLog.query.order_by(DownloadLog.timestamp.desc()).limit(15).all()
 
     return {

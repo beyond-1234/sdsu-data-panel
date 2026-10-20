@@ -1,4 +1,4 @@
-// SDSU CLM-Microbe Data Platform
+// SDSU MicrobialDataSystem Platform
 // Client-side interactions and download audit modal handling
 
 let currentDatasetId = null;
@@ -11,7 +11,7 @@ function openDownloadModal(datasetId, title, sourceType) {
     
     if (modalTitle) modalTitle.innerText = title;
     if (sourceInfo) {
-        sourceInfo.innerText = sourceType === 'github' ? 'GitHub 远端仓库 / Release' : 'SDSU 本地服务器存储归档';
+        sourceInfo.innerText = sourceType === 'github' ? 'GitHub Repository / Direct Stream' : 'SDSU Server Local/Cloud Storage';
     }
     
     if (modal) {
@@ -27,18 +27,18 @@ function closeDownloadModal() {
     currentDatasetId = null;
 }
 
-// 提交下载审计登记并触发分发
+// Submit download tracking telemetry and trigger download
 async function submitDownloadTracking(event) {
     if (event) event.preventDefault();
     if (!currentDatasetId) return;
 
-    const institution = document.getElementById('modalInstitution')?.value || '未注明单位';
+    const institution = document.getElementById('modalInstitution')?.value || 'Unspecified Institution';
     const purpose = document.getElementById('modalPurpose')?.value || 'Academic Research';
     const submitBtn = document.getElementById('modalSubmitBtn');
 
     if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.innerText = '正在记录并分发...';
+        submitBtn.innerText = 'Registering & Dispatching...';
     }
 
     try {
@@ -57,30 +57,30 @@ async function submitDownloadTracking(event) {
 
         if (response.ok && result.status === 'success') {
             closeDownloadModal();
-            // 在新标签页或当前页面触发下载
+            // Trigger download or repository view
             window.location.href = result.download_url;
             
-            // 稍后刷新当前下载计数显示（如果有）
+            // Refresh counter if present
             const countEl = document.getElementById(`dl-count-${currentDatasetId}`);
             if (countEl) {
                 const cur = parseInt(countEl.innerText) || 0;
                 countEl.innerText = cur + 1;
             }
         } else {
-            alert(result.message || '下载处理遇到问题，请重试');
+            alert(result.message || 'Error processing download request.');
         }
     } catch (err) {
         console.error('Download tracking error:', err);
-        alert('网络通信异常，请重试');
+        alert('Network communication error, please try again.');
     } finally {
         if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.innerText = '确认用途并开始下载';
+            submitBtn.innerText = 'Confirm Purpose & Start Download';
         }
     }
 }
 
-// 点击模态框背景关闭
+// Close modal when clicking backdrop
 window.addEventListener('click', function(e) {
     const modal = document.getElementById('downloadModal');
     if (e.target === modal) {

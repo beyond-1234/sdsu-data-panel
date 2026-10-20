@@ -12,13 +12,12 @@
             <p style="font-size: 0.85rem; color: var(--text-muted);">{{ t('auth_subtitle') }}</p>
         </div>
 
-        <!-- 切换登录与注册 Tab -->
         <div style="display: flex; border-bottom: 2px solid var(--border-color); margin-bottom: 24px;">
             <button id="tabLogin" class="btn" style="flex: 1; border-radius: 0; border-bottom: 2px solid var(--primary); font-weight: bold; color: var(--primary);" onclick="showAuthTab('login')">{{ t('tab_login') }}</button>
             <button id="tabRegister" class="btn" style="flex: 1; border-radius: 0; border-bottom: 2px solid transparent; color: var(--text-muted);" onclick="showAuthTab('register')">{{ t('tab_register') }}</button>
         </div>
 
-        <!-- 登录表单 -->
+        <!-- Login Form -->
         <form id="loginForm" method="POST" action="{{ url_for('login') }}">
             <input type="hidden" name="action" value="login">
             <div class="form-group">
@@ -37,7 +36,7 @@
             </div>
         </form>
 
-        <!-- 注册表单 -->
+        <!-- Register Form -->
         <form id="registerForm" method="POST" action="{{ url_for('login') }}" style="display: none;">
             <input type="hidden" name="action" value="register">
             <div class="form-group">
@@ -52,7 +51,7 @@
 
             <div class="form-group">
                 <label class="form-label" for="reg_institution">{{ t('form_institution') }}</label>
-                <input type="text" id="reg_institution" name="institution" class="form-control" placeholder="CAS / SDSU">
+                <input type="text" id="reg_institution" name="institution" class="form-control" placeholder="e.g. San Diego State University">
             </div>
 
             <div class="form-group">
@@ -103,7 +102,6 @@ function showAuthTab(tab) {
     }
 }
 
-// 前端实时密码一致性校验
 document.addEventListener('DOMContentLoaded', function() {
     const pwd = document.getElementById('reg_password');
     const cpwd = document.getElementById('reg_confirm_password');

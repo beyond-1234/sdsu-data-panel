@@ -2,35 +2,30 @@ import os
 import pandas as pd
 import numpy as np
 
-def generate_sample_clm_timeseries(filepath: str, year: int = 2021, site: str = 'US-Atq'):
+def generate_sample_clm_timeseries(filepath: str, year: int = 2021, site: str = 'Global-Terrestrial'):
     """
-    生成模拟的 CLM-Microbe 日尺度/半小时驱动与模拟输出时间序列 CSV:
-    DOY, T_soil_10cm, Moisture_10cm, FBC, BBC, HR (Heterotrophic Respiration), CH4_flux, GPP
+    Generates synthetic daily time-series CSV for demonstration when raw files are not uploaded:
+    DOY, Soil_Temp_10cm, Soil_Moisture_10cm, FBC, BBC, HR, CH4_Flux, GPP
     """
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
     days = 365
     doy = np.arange(1, days + 1)
     
-    # 模拟季节周期（北极/北方寒冷湿地苔原 US-Atq）
     temp_seasonal = 10.0 * np.sin(2 * np.pi * (doy - 105) / 365) + 2.0 + np.random.normal(0, 1.2, days)
     moisture = 0.35 + 0.15 * np.sin(2 * np.pi * (doy - 80) / 365) + np.random.normal(0, 0.03, days)
     moisture = np.clip(moisture, 0.1, 0.8)
     
-    # 微生物量：真菌生物量碳 FBC (g C/m2), 细菌生物量碳 BBC (g C/m2)
     fbc = 18.0 + 8.0 * np.sin(2 * np.pi * (doy - 120) / 365) + np.random.normal(0, 0.8, days)
     bbc = 32.0 + 14.0 * np.sin(2 * np.pi * (doy - 110) / 365) + np.random.normal(0, 1.1, days)
     fbc = np.clip(fbc, 5.0, 45.0)
     bbc = np.clip(bbc, 10.0, 70.0)
     
-    # 土壤异养呼吸 HR (g C m-2 d-1) - 指数温敏与底物驱动
     hr = 0.5 + 2.8 * np.exp(0.08 * temp_seasonal) * (bbc / 40.0) * moisture + np.random.normal(0, 0.15, days)
     hr = np.clip(hr, 0.05, 12.0)
     
-    # 甲烷净通量 CH4 (mg CH4-C m-2 d-1)
     ch4 = 5.0 + 25.0 * np.exp(0.07 * temp_seasonal) * (moisture ** 2) + np.random.normal(0, 1.8, days)
     ch4 = np.clip(ch4, 0.0, 85.0)
 
-    # GPP (g C m-2 d-1)
     gpp = np.maximum(0, 8.5 * np.sin(np.pi * (doy - 120) / 120)) + np.random.normal(0, 0.3, days)
     gpp = np.where((doy < 120) | (doy > 240), 0.0, gpp)
 
@@ -48,7 +43,10 @@ def generate_sample_clm_timeseries(filepath: str, year: int = 2021, site: str = 
     return filepath
 
 def parse_dataset_timeseries(filepath: str):
-    """读取 CSV 并返回适用于前端 ECharts 与表格渲染的字典，兼容 utf-8 与 latin1 编码"""
+    """
+    Reads CSV and returns dictionary for ECharts and data table snapshot.
+    Supports utf-8 and latin1 encodings.
+    """
     if not os.path.exists(filepath):
         return None
     try:
@@ -59,14 +57,14 @@ def parse_dataset_timeseries(filepath: str):
     except Exception:
         return None
 
-    # 如果是带有单位行(第二行是 Character 等)的微生物大表，自动过滤
+    # Filter out metadata type description row if present
     if 'Country' in df.columns and len(df) > 1 and df.iloc[0]['Country'] == 'Character':
         df = df.iloc[1:].copy()
 
     columns = list(df.columns)
     records = df.head(50).to_dict(orient='records')
 
-    # 提取通量/理化列 (如果有)
+    # Extract time series columns if present
     doy = df['DOY'].tolist() if 'DOY' in df.columns else list(range(1, min(len(df) + 1, 366)))
     hr = df['HR'].tolist() if 'HR' in df.columns else []
     ch4 = df['CH4_Flux'].tolist() if 'CH4_Flux' in df.columns else []
@@ -75,7 +73,7 @@ def parse_dataset_timeseries(filepath: str):
     fbc = df['FBC'].tolist() if 'FBC' in df.columns else []
     bbc = df['BBC'].tolist() if 'BBC' in df.columns else []
 
-    # 如果是 MicrobialDataSystem 的空间表 (Soil_microbial_biomass_carbon 等)，提取对应数值序列
+    # Map microbial biomass columns if spatial table
     if not hr and 'Soil_microbial_biomass_carbon' in df.columns:
         mbc_clean = pd.to_numeric(df['Soil_microbial_biomass_carbon'], errors='coerce').dropna().head(100).tolist()
         mbn_clean = pd.to_numeric(df['Soil_microbial_biomass_nitrogen'], errors='coerce').dropna().head(100).tolist() if 'Soil_microbial_biomass_nitrogen' in df.columns else []
@@ -97,12 +95,11 @@ def parse_dataset_timeseries(filepath: str):
 
 def get_depth_profile_data():
     """
-    提供土壤垂向剖面分层微生物与有机碳数据 (0 ~ 1.5m 深度，共 10 层)
+    Soil vertical depth profile gradient data (0 ~ 1.5m, 10 layers).
     """
     depths = [0.02, 0.05, 0.10, 0.20, 0.35, 0.55, 0.80, 1.10, 1.35, 1.50]
     depth_labels = [f"{d*100:.0f}cm" for d in depths]
     
-    # 随深度递减的真菌与细菌生物量及土壤有机碳 (SOC)
     fbc_profile = [35.2, 28.4, 19.8, 12.3, 7.1, 3.8, 1.9, 0.8, 0.4, 0.2]
     bbc_profile = [54.8, 48.6, 38.2, 29.5, 21.0, 14.2, 8.5, 4.3, 2.1, 1.0]
     soc_profile = [85.0, 72.0, 58.0, 42.0, 31.0, 22.0, 15.0, 9.5, 6.0, 4.2] # kg C/m3
@@ -119,11 +116,10 @@ def get_depth_profile_data():
 
 def calculate_kinetics_curve(vmax=12.5, km=25.0, temp=15.0, q10=2.2):
     """
-    LeafWeb 风格：底物-反应动力学拟合（Michaelis-Menten 叠加温敏 Q10 因子）
+    Substrate kinetics and thermal response calculation:
     V = (Vmax(T) * [S]) / (Km + [S])
     """
     substrate = np.linspace(0.5, 150.0, 60)
-    # 温度校正因子 (参考温度 20 degC)
     t_factor = q10 ** ((temp - 20.0) / 10.0)
     vmax_adj = vmax * t_factor
     rates = (vmax_adj * substrate) / (km + substrate)
