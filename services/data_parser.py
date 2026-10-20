@@ -48,25 +48,56 @@ def generate_sample_clm_timeseries(filepath: str, year: int = 2021, site: str = 
     return filepath
 
 def parse_dataset_timeseries(filepath: str):
-    """读取 CSV 并返回适用于前端 ECharts 渲染的字典"""
+    """读取 CSV 并返回适用于前端 ECharts 与表格渲染的字典，兼容 utf-8 与 latin1 编码"""
     if not os.path.exists(filepath):
         return None
-    df = pd.read_csv(filepath)
+    try:
+        try:
+            df = pd.read_csv(filepath, encoding='utf-8')
+        except UnicodeDecodeError:
+            df = pd.read_csv(filepath, encoding='latin1')
+    except Exception:
+        return None
+
+    # 如果是带有单位行(第二行是 Character 等)的微生物大表，自动过滤
+    if 'Country' in df.columns and len(df) > 1 and df.iloc[0]['Country'] == 'Character':
+        df = df.iloc[1:].copy()
+
+    columns = list(df.columns)
+    records = df.head(50).to_dict(orient='records')
+
+    # 提取通量/理化列 (如果有)
+    doy = df['DOY'].tolist() if 'DOY' in df.columns else list(range(1, min(len(df) + 1, 366)))
+    hr = df['HR'].tolist() if 'HR' in df.columns else []
+    ch4 = df['CH4_Flux'].tolist() if 'CH4_Flux' in df.columns else []
+    soil_temp = df['Soil_Temp_10cm'].tolist() if 'Soil_Temp_10cm' in df.columns else []
+    soil_moisture = df['Soil_Moisture_10cm'].tolist() if 'Soil_Moisture_10cm' in df.columns else []
+    fbc = df['FBC'].tolist() if 'FBC' in df.columns else []
+    bbc = df['BBC'].tolist() if 'BBC' in df.columns else []
+
+    # 如果是 MicrobialDataSystem 的空间表 (Soil_microbial_biomass_carbon 等)，提取对应数值序列
+    if not hr and 'Soil_microbial_biomass_carbon' in df.columns:
+        mbc_clean = pd.to_numeric(df['Soil_microbial_biomass_carbon'], errors='coerce').dropna().head(100).tolist()
+        mbn_clean = pd.to_numeric(df['Soil_microbial_biomass_nitrogen'], errors='coerce').dropna().head(100).tolist() if 'Soil_microbial_biomass_nitrogen' in df.columns else []
+        hr = mbc_clean
+        ch4 = mbn_clean
+        doy = list(range(1, len(mbc_clean) + 1))
+
     return {
-        'columns': list(df.columns),
-        'records': df.to_dict(orient='records'),
-        'doy': df['DOY'].tolist() if 'DOY' in df.columns else list(range(1, len(df) + 1)),
-        'hr': df['HR'].tolist() if 'HR' in df.columns else [],
-        'ch4': df['CH4_Flux'].tolist() if 'CH4_Flux' in df.columns else [],
-        'soil_temp': df['Soil_Temp_10cm'].tolist() if 'Soil_Temp_10cm' in df.columns else [],
-        'soil_moisture': df['Soil_Moisture_10cm'].tolist() if 'Soil_Moisture_10cm' in df.columns else [],
-        'fbc': df['FBC'].tolist() if 'FBC' in df.columns else [],
-        'bbc': df['BBC'].tolist() if 'BBC' in df.columns else []
+        'columns': columns,
+        'records': records,
+        'doy': doy,
+        'hr': hr,
+        'ch4': ch4,
+        'soil_temp': soil_temp,
+        'soil_moisture': soil_moisture,
+        'fbc': fbc,
+        'bbc': bbc
     }
 
 def get_depth_profile_data():
     """
-    提供 CLM-Microbe 土壤垂向剖面分层模拟数据 (0 ~ 1.5m 深度，共 10 层)
+    提供土壤垂向剖面分层微生物与有机碳数据 (0 ~ 1.5m 深度，共 10 层)
     """
     depths = [0.02, 0.05, 0.10, 0.20, 0.35, 0.55, 0.80, 1.10, 1.35, 1.50]
     depth_labels = [f"{d*100:.0f}cm" for d in depths]

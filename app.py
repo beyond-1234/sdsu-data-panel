@@ -192,27 +192,19 @@ def seed_database():
             site_map[scode] = s_obj
         db.session.commit()
 
-        # 3. 初始生成模拟数据文件
+        # 3. 初始数据存储目录
         data_dir = os.path.join(app.config['UPLOAD_FOLDER'])
         os.makedirs(data_dir, exist_ok=True)
-
-        sample_csv_1 = os.path.join(data_dir, 'clm_microbe_us_atq_2021.csv')
-        if not os.path.exists(sample_csv_1):
-            generate_sample_clm_timeseries(sample_csv_1, year=2021, site='US-Atq')
-
-        sample_csv_2 = os.path.join(data_dir, 'clm_microbe_arctic_permafrost_2022.csv')
-        if not os.path.exists(sample_csv_2):
-            generate_sample_clm_timeseries(sample_csv_2, year=2022, site='US-Atq')
 
         # 4. 预置默认 OSS 配置样例
         if StorageConfig.query.count() == 0:
             default_oss = StorageConfig(
                 provider='aliyun_oss',
                 endpoint='oss-cn-beijing.aliyuncs.com',
-                bucket_name='sdsu-clm-microbe-bucket',
+                bucket_name='sdsu-microbial-data-bucket',
                 access_key_id='LTAI5tDemoAccessKeyId2026',
                 access_key_secret='DemoSecretAccessKeySecret987654321',
-                custom_domain='https://data-cdn.sdsu-clm.org',
+                custom_domain='https://data-cdn.sdsu-microbe.org',
                 is_active=True
             )
             db.session.add(default_oss)
@@ -272,7 +264,7 @@ def seed_database():
                 description='对应 email-clm/MicrobialDataSystem 仓库文件 Global_Soil_Microbial_BiomassCN.nc。包含全球 0.5° × 0.5° 空间网格分辨率下表层及底层土壤微生物碳氮生物地理分布、碳氮磷化学计量趋同性模拟矩阵。',
                 data_source_type='github',
                 github_url='https://raw.githubusercontent.com/email-clm/MicrobialDataSystem/master/Global_Soil_Microbial_BiomassCN.nc',
-                local_file_path='clm_microbe_us_atq_2021.csv',
+                local_file_path='Global_Soil_Microbial_BiomassCN.nc',
                 download_count=92,
                 site_code='Global-Terrestrial',
                 site=site_map.get('Global-Terrestrial'),
@@ -309,7 +301,7 @@ def seed_database():
                 description='集成全球各大经纬度生态系统表层土壤真菌生物量碳 (FBC) 与细菌生物量碳 (BBC) 实测数据，剖析真菌/细菌比例 (F:B ratio) 随环境温度、湿度与植被类型梯度的宏观空间分异特征。',
                 data_source_type='github',
                 github_url='https://github.com/email-clm/MicrobialDataSystem',
-                local_file_path='clm_microbe_arctic_permafrost_2022.csv',
+                local_file_path='Soil_Microbial_Biomass_C_N_P_spatial.csv',
                 download_count=76,
                 site_code='US-SPR',
                 site=site_map.get('US-SPR'),
@@ -378,7 +370,7 @@ def seed_database():
                 description='记录单位土壤微生物量碳释放 CO2 的效率指标（代谢商 qCO2），揭示从热带到北极苔原在增温和养分胁迫下微生物群落碳利用效率 (CUE) 的生理生化适应机制。',
                 data_source_type='github',
                 github_url='https://github.com/email-clm/MicrobialDataSystem',
-                local_file_path='clm_microbe_us_atq_2021.csv',
+                local_file_path='Soil_Microbial_Biomass_C_N_P_spatial.csv',
                 download_count=38,
                 site_code='US-Atq',
                 site=site_map.get('US-Atq'),
@@ -565,7 +557,7 @@ def detail(dataset_id):
     dataset = Dataset.query.get_or_404(dataset_id)
     
     # 读取绑定的 CSV 文件解析给前端
-    ts_file = os.path.join(app.config['UPLOAD_FOLDER'], dataset.local_file_path or 'clm_microbe_us_atq_2021.csv')
+    ts_file = os.path.join(app.config['UPLOAD_FOLDER'], dataset.local_file_path or 'Soil_Microbial_Biomass_C_N_P_spatial.csv')
     ts_data = parse_dataset_timeseries(ts_file)
     depth_data = get_depth_profile_data()
     kinetics_data = calculate_kinetics_curve()
@@ -658,7 +650,7 @@ def upload():
                 generate_sample_clm_timeseries(save_path, year=yr_val)
                 local_filename = fname
         else:
-            local_filename = 'clm_microbe_us_atq_2021.csv'
+            local_filename = 'Soil_Microbial_Biomass_C_N_P_spatial.csv'
 
         target_site = None
         if site_id:
