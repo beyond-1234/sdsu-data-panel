@@ -8,7 +8,7 @@ snapshot plus an ECharts bundle.
 
 ```
 docs/
-  index.html            single-page shell (home / detail / admin views)
+  index.html            single-page shell (home / detail views)
   .nojekyll             disables Jekyll processing on GitHub Pages
   assets/
     css/style.css       portal styles
@@ -24,13 +24,13 @@ docs/
 | `#/` | Data discovery, multi-dimensional slicer, dataset cards |
 | `#/dataset/1` | CSV observation dataset detail page with real charts |
 | `#/dataset/2` | NetCDF gridded dataset detail page with real charts |
-| `#/admin` | Catalogue, variable, and taxonomy telemetry |
 
 ## Scope of the static build
 
 This build intentionally omits download counters, user authentication, registration, and
 dataset submission. Download buttons link straight to the archived source files, and the
-admin view only reports catalogue metadata (datasets, variables, and taxonomy tags).
+sidebar exposes a single page: Data Discovery & Slicer. Dataset detail pages open from the
+catalogue cards.
 
 All future updates to the static site should be made inside this `docs/` folder.
 

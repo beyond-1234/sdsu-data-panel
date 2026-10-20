@@ -79,16 +79,12 @@
         if (hash.indexOf('#/dataset/') === 0) {
             return { name: 'detail', id: parseInt(hash.replace('#/dataset/', ''), 10) };
         }
-        if (hash === '#/admin') return { name: 'admin' };
         return { name: 'home' };
     }
 
     function setActiveNav(name) {
-        var map = { home: 'navOverview', admin: 'navAdmin' };
-        ['navOverview', 'navAdmin'].forEach(function (id) {
-            var el = document.getElementById(id);
-            if (el) el.classList.toggle('active', map[name] === id);
-        });
+        var el = document.getElementById('navOverview');
+        if (el) el.classList.toggle('active', name === 'home' || name === 'detail');
     }
 
     function setBreadcrumb(parts) {
@@ -107,7 +103,7 @@
     }
 
     function showView(name) {
-        ['viewHome', 'viewDetail', 'viewAdmin'].forEach(function (id) {
+        ['viewHome', 'viewDetail'].forEach(function (id) {
             var el = document.getElementById(id);
             if (el) el.classList.toggle('active', id === 'view' + name.charAt(0).toUpperCase() + name.slice(1));
         });
@@ -132,15 +128,6 @@
                 { label: ds.title.length > 48 ? ds.title.slice(0, 48) + '...' : ds.title }
             ]);
             renderDetail(ds);
-            scrollTop();
-            return;
-        }
-
-        if (route.name === 'admin') {
-            showView('admin');
-            setActiveNav('admin');
-            setBreadcrumb([{ label: 'Admin Dashboard & Telemetry' }]);
-            renderAdmin();
             scrollTop();
             return;
         }
@@ -706,79 +693,6 @@
                 }]
             });
             charts.push(kinChart);
-        }
-    }
-
-    /* --------------------------------------------------------- admin view */
-
-    function renderAdmin() {
-        function setText(id, value) {
-            var el = document.getElementById(id);
-            if (el) el.textContent = value;
-        }
-
-        setText('adminStatDatasets', DATA.datasets.length);
-        setText('adminStatVariables', DATA.variables.length);
-        setText('adminStatTags', DATA.keywords.length);
-
-        if (typeof echarts === 'undefined') return;
-
-        var barDom = document.getElementById('adminTrendChart');
-        if (barDom) {
-            var categoryCounts = {};
-            DATA.variables.forEach(function (variable) {
-                var key = variable.category || 'Unspecified';
-                categoryCounts[key] = (categoryCounts[key] || 0) + 1;
-            });
-            var categories = Object.keys(categoryCounts);
-
-            var barChart = echarts.init(barDom);
-            barChart.setOption({
-                tooltip: { trigger: 'axis' },
-                grid: { left: '3%', right: '6%', bottom: '6%', containLabel: true },
-                xAxis: {
-                    type: 'category',
-                    data: categories,
-                    axisLabel: { interval: 0, fontSize: 11 }
-                },
-                yAxis: { type: 'value', name: 'Variables', minInterval: 1 },
-                series: [{
-                    name: 'Managed Variables',
-                    type: 'bar',
-                    barMaxWidth: 80,
-                    data: categories.map(function (key) { return categoryCounts[key]; }),
-                    itemStyle: { color: '#2e7d32', borderRadius: [6, 6, 0, 0] }
-                }]
-            });
-            charts.push(barChart);
-        }
-
-        var pieDom = document.getElementById('adminPurposeChart');
-        if (pieDom) {
-            var counts = {};
-            DATA.datasets.forEach(function (ds) {
-                var key = ds.data_type || 'Unspecified';
-                counts[key] = (counts[key] || 0) + 1;
-            });
-            var pieChart = echarts.init(pieDom);
-            pieChart.setOption({
-                tooltip: { trigger: 'item', formatter: '{b}: {c} dataset(s) ({d}%)' },
-                legend: { bottom: 0 },
-                series: [{
-                    name: 'Data Type',
-                    type: 'pie',
-                    radius: ['42%', '68%'],
-                    avoidLabelOverlap: true,
-                    itemStyle: { borderColor: '#fff', borderWidth: 2 },
-                    label: { formatter: '{d}%' },
-                    labelLine: { length: 10, length2: 8 },
-                    data: Object.keys(counts).map(function (key) {
-                        return { name: key, value: counts[key] };
-                    }),
-                    color: ['#2e7d32', '#1565c0', '#d97706', '#7c3aed']
-                }]
-            });
-            charts.push(pieChart);
         }
     }
 

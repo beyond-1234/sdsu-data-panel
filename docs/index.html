@@ -28,16 +28,6 @@
                     <span>🔍</span> Data Discovery & Slicer
                 </a>
             </li>
-            <li>
-                <a href="javascript:void(0);" style="opacity: 0.45; cursor: not-allowed; pointer-events: none; text-decoration: none;" title="Module undergoing maintenance (Disabled)">
-                    <span>📈</span> Interactive Diagnostics <small style="font-size: 0.68rem; background: rgba(255,255,255,0.12); padding: 1px 6px; border-radius: 4px; margin-left: 6px;">Disabled</small>
-                </a>
-            </li>
-            <li>
-                <a href="#/admin" id="navAdmin">
-                    <span>📊</span> Admin Dashboard & Telemetry
-                </a>
-            </li>
         </ul>
 
         <div class="sidebar-footer">
@@ -57,9 +47,6 @@
                 <a href="#/" style="color: inherit; text-decoration: none; font-weight: 500;">MicrobialData</a>
                 <span style="color: #94a3b8; margin: 0 2px;">/</span>
                 <span id="breadcrumbCurrent">Data Discovery & Slicer</span>
-            </div>
-            <div class="header-user-status">
-                <a href="https://github.com/email-clm/MicrobialDataSystem" target="_blank" class="btn btn-outline btn-sm">GitHub Repository ↗</a>
             </div>
         </header>
 
@@ -165,42 +152,6 @@
             <!-- 2. VIEW: Dataset Detail -->
             <div id="viewDetail" class="page-view">
                 <div id="detailContent"></div>
-            </div>
-
-            <!-- 3. VIEW: Admin Dashboard -->
-            <div id="viewAdmin" class="page-view">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
-                    <div>
-                        <h1 style="font-family: var(--font-serif); font-size: 1.5rem; color: #1a202c;">Catalogue Management & Collection Telemetry</h1>
-                        <p style="font-size: 0.88rem; color: var(--text-muted);">Live metadata on archived datasets, standardized variables, and scientific taxonomy.</p>
-                    </div>
-                </div>
-
-                <div class="stats-grid">
-                    <div class="stat-box">
-                        <div class="stat-label">Managed Datasets</div>
-                        <div class="stat-num" id="adminStatDatasets">2</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">Managed Variables</div>
-                        <div class="stat-num" id="adminStatVariables" style="color: var(--primary);">16</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">Active Subject Tags</div>
-                        <div class="stat-num" id="adminStatTags" style="color: var(--secondary);">15</div>
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 24px;">
-                    <div class="card">
-                        <div class="card-title">Managed Variables by Scientific Category</div>
-                        <div id="adminTrendChart" style="width: 100%; height: 320px;"></div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Archived Dataset Composition by Data Type</div>
-                        <div id="adminPurposeChart" style="width: 100%; height: 320px;"></div>
-                    </div>
-                </div>
             </div>
         </main>
 
