@@ -62,7 +62,9 @@
     <div class="main-wrapper">
         <header class="top-header">
             <div class="breadcrumbs">
-                MicrobialData / <span>{% block breadcrumb %}Data Space{% endblock %}</span>
+                <a href="{{ url_for('index') }}" style="color: inherit; text-decoration: none; font-weight: 500;">MicrobialData</a>
+                <span style="color: #94a3b8; margin: 0 2px;">/</span>
+                {% block breadcrumb %}<span>Data Space</span>{% endblock %}
             </div>
             <div class="header-user-status">
                 {% if current_user.is_authenticated %}

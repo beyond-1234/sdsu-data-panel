@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}{{ dataset.title }} - {{ t('dataset_detail') }}{% endblock %}
-{% block breadcrumb %}<a href="{{ url_for('index') }}" style="color: inherit; text-decoration: none;">{{ t('nav_overview') }}</a> / <span>{{ dataset.title[:30] }}...</span>{% endblock %}
+{% block breadcrumb %}<a href="{{ url_for('index') }}">{{ t('nav_overview') }}</a> <span style="color: #94a3b8; margin: 0 2px;">/</span> <span>{{ dataset.title[:38] }}...</span>{% endblock %}
 
 {% block content %}
 <div class="card">
