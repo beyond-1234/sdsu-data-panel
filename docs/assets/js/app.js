@@ -8,6 +8,7 @@
     'use strict';
 
     var DATA = window.PORTAL_DATA || { datasets: [], variables: [], keywords: [], sites: [] };
+    var GITHUB_REPO_URL = 'https://github.com/email-clm/MicrobialDataSystem';
 
     var state = {
         query: '',
@@ -457,10 +458,10 @@
             '</div></div>' +
             '<div style="text-align:right;min-width:200px;">' +
             '<a href="' + esc(rawFileUrl(ds)) + '" target="_blank" rel="noopener" ' +
-            'class="btn btn-primary" style="display:block;width:100%;box-sizing:border-box;">Download Dataset</a>' +
+            'class="btn btn-primary" style="width:100%;">Download Dataset</a>' +
             (ds.github_url ? '<div style="margin-top:8px;font-size:0.75rem;">' +
-                '<a href="' + esc(ds.github_url) + '" target="_blank" rel="noopener" style="color:#64748b;text-decoration:none;">' +
-                'View GitHub Source</a></div>' : '') +
+                '<a href="' + GITHUB_REPO_URL + '" target="_blank" rel="noopener" style="color:#64748b;text-decoration:none;">' +
+                'View GitHub Repository</a></div>' : '') +
             '</div></div>' +
 
             '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;' +
