@@ -8,12 +8,12 @@ snapshot plus an ECharts bundle.
 
 ```
 docs/
-  index.html            single-page shell (home / detail / upload / admin views)
+  index.html            single-page shell (home / detail / admin views)
   .nojekyll             disables Jekyll processing on GitHub Pages
   assets/
     css/style.css       portal styles
     js/data.js          data snapshot exported from the Flask database
-    js/app.js           hash router, slicer, detail charts, admin telemetry
+    js/app.js           hash router, slicer, detail charts, catalogue telemetry
     js/echarts.min.js   charting library
 ```
 
@@ -24,8 +24,15 @@ docs/
 | `#/` | Data discovery, multi-dimensional slicer, dataset cards |
 | `#/dataset/1` | CSV observation dataset detail page with real charts |
 | `#/dataset/2` | NetCDF gridded dataset detail page with real charts |
-| `#/upload` | Read-only submission form (disabled in the static build) |
-| `#/admin` | Catalogue and distribution telemetry |
+| `#/admin` | Catalogue, variable, and taxonomy telemetry |
+
+## Scope of the static build
+
+This build intentionally omits download counters, user authentication, registration, and
+dataset submission. Download buttons link straight to the archived source files, and the
+admin view only reports catalogue metadata (datasets, variables, and taxonomy tags).
+
+All future updates to the static site should be made inside this `docs/` folder.
 
 ## Publish with GitHub Pages
 

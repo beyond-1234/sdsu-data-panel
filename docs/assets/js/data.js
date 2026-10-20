@@ -26,7 +26,6 @@ window.PORTAL_DATA = {
       "data_source_type": "github",
       "github_url": "https://raw.githubusercontent.com/email-clm/MicrobialDataSystem/master/Soil_Microbial_Biomass_C_N_P_spatial.csv",
       "local_file_path": "Soil_Microbial_Biomass_C_N_P_spatial.csv",
-      "download_count": 4,
       "keywords": [
         "soil_microbial_biomass",
         "microbial_biomass_c",
@@ -489,7 +488,6 @@ window.PORTAL_DATA = {
       "data_source_type": "github",
       "github_url": "https://raw.githubusercontent.com/email-clm/MicrobialDataSystem/master/Global_Soil_Microbial_BiomassCN.nc",
       "local_file_path": "Global_Soil_Microbial_BiomassCN.nc",
-      "download_count": 1,
       "keywords": [
         "soil_microbial_biomass",
         "microbial_biomass_c",

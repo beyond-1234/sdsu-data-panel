@@ -17,8 +17,7 @@
         dataType: '',
         biomes: {},
         variables: {},
-        tagsExpanded: false,
-        pendingDownload: null
+        tagsExpanded: false
     };
 
     var charts = [];
@@ -47,12 +46,6 @@
         if (ds.github_url) return ds.github_url;
         return 'https://raw.githubusercontent.com/email-clm/MicrobialDataSystem/master/' +
             encodeURIComponent(ds.local_file_path || '');
-    }
-
-    function totalDistributions() {
-        return DATA.datasets.reduce(function (sum, ds) {
-            return sum + (ds.download_count || 0);
-        }, 0);
     }
 
     function showToast(message) {
@@ -86,14 +79,13 @@
         if (hash.indexOf('#/dataset/') === 0) {
             return { name: 'detail', id: parseInt(hash.replace('#/dataset/', ''), 10) };
         }
-        if (hash === '#/upload') return { name: 'upload' };
         if (hash === '#/admin') return { name: 'admin' };
         return { name: 'home' };
     }
 
     function setActiveNav(name) {
-        var map = { home: 'navOverview', upload: 'navUpload', admin: 'navAdmin' };
-        ['navOverview', 'navUpload', 'navAdmin'].forEach(function (id) {
+        var map = { home: 'navOverview', admin: 'navAdmin' };
+        ['navOverview', 'navAdmin'].forEach(function (id) {
             var el = document.getElementById(id);
             if (el) el.classList.toggle('active', map[name] === id);
         });
@@ -115,7 +107,7 @@
     }
 
     function showView(name) {
-        ['viewHome', 'viewDetail', 'viewUpload', 'viewAdmin'].forEach(function (id) {
+        ['viewHome', 'viewDetail', 'viewAdmin'].forEach(function (id) {
             var el = document.getElementById(id);
             if (el) el.classList.toggle('active', id === 'view' + name.charAt(0).toUpperCase() + name.slice(1));
         });
@@ -140,14 +132,6 @@
                 { label: ds.title.length > 48 ? ds.title.slice(0, 48) + '...' : ds.title }
             ]);
             renderDetail(ds);
-            scrollTop();
-            return;
-        }
-
-        if (route.name === 'upload') {
-            showView('upload');
-            setActiveNav('upload');
-            setBreadcrumb([{ label: 'Data Submission' }]);
             scrollTop();
             return;
         }
@@ -391,14 +375,12 @@
                 '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' + keywords + '</div>' +
                 '</div>' +
                 '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px;min-width:170px;">' +
-                '<div style="font-size:0.82rem;color:var(--text-muted);">Downloads <strong style="color:var(--primary);">' +
-                esc(ds.download_count || 0) + '</strong> times</div>' +
                 '<div style="font-size:0.78rem;color:#718096;">Channel <span style="color:#0366d6;">' +
                 esc(ds.data_source_type === 'github' ? 'GitHub Mirror' : (ds.data_source_type === 'oss' ? 'OSS Channel' : 'Local Archive')) +
                 '</span></div>' +
                 '<div style="display:flex;gap:8px;margin-top:8px;">' +
                 '<a href="#/dataset/' + ds.id + '" class="btn btn-outline btn-sm">Preview</a>' +
-                '<button type="button" class="btn btn-primary btn-sm" onclick="App.openDownload(' + ds.id + ')">Download</button>' +
+                '<a href="' + esc(rawFileUrl(ds)) + '" target="_blank" rel="noopener" class="btn btn-primary btn-sm">Download</a>' +
                 '</div></div></div></div>';
         }).join('');
     }
@@ -487,10 +469,8 @@
                 'style="color:var(--primary);">' + esc(ds.doi) + '</a>' : '') +
             '</div></div>' +
             '<div style="text-align:right;min-width:200px;">' +
-            '<div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:8px;">' +
-            'Downloads <strong style="font-size:1.2rem;color:var(--primary);">' + esc(ds.download_count || 0) + '</strong> times</div>' +
-            '<button type="button" class="btn btn-primary" style="width:100%;" onclick="App.openDownload(' + ds.id + ')">' +
-            'Request Download</button>' +
+            '<a href="' + esc(rawFileUrl(ds)) + '" target="_blank" rel="noopener" ' +
+            'class="btn btn-primary" style="display:block;width:100%;box-sizing:border-box;">Download Dataset</a>' +
             (ds.github_url ? '<div style="margin-top:8px;font-size:0.75rem;">' +
                 '<a href="' + esc(ds.github_url) + '" target="_blank" rel="noopener" style="color:#64748b;text-decoration:none;">' +
                 'View GitHub Source</a></div>' : '') +
@@ -737,33 +717,36 @@
             if (el) el.textContent = value;
         }
 
-        var total = totalDistributions();
         setText('adminStatDatasets', DATA.datasets.length);
-        setText('adminStatDownloads', total);
-        setText('adminStatRecords', total);
+        setText('adminStatVariables', DATA.variables.length);
         setText('adminStatTags', DATA.keywords.length);
 
         if (typeof echarts === 'undefined') return;
 
         var barDom = document.getElementById('adminTrendChart');
         if (barDom) {
+            var categoryCounts = {};
+            DATA.variables.forEach(function (variable) {
+                var key = variable.category || 'Unspecified';
+                categoryCounts[key] = (categoryCounts[key] || 0) + 1;
+            });
+            var categories = Object.keys(categoryCounts);
+
             var barChart = echarts.init(barDom);
             barChart.setOption({
                 tooltip: { trigger: 'axis' },
                 grid: { left: '3%', right: '6%', bottom: '6%', containLabel: true },
                 xAxis: {
                     type: 'category',
-                    data: DATA.datasets.map(function (ds) {
-                        return ds.title.length > 26 ? ds.title.slice(0, 26) + '...' : ds.title;
-                    }),
-                    axisLabel: { interval: 0, rotate: 12, fontSize: 10 }
+                    data: categories,
+                    axisLabel: { interval: 0, fontSize: 11 }
                 },
-                yAxis: { type: 'value', name: 'Distributions' },
+                yAxis: { type: 'value', name: 'Variables', minInterval: 1 },
                 series: [{
-                    name: 'Distributions',
+                    name: 'Managed Variables',
                     type: 'bar',
-                    barMaxWidth: 70,
-                    data: DATA.datasets.map(function (ds) { return ds.download_count || 0; }),
+                    barMaxWidth: 80,
+                    data: categories.map(function (key) { return categoryCounts[key]; }),
                     itemStyle: { color: '#2e7d32', borderRadius: [6, 6, 0, 0] }
                 }]
             });
@@ -799,56 +782,6 @@
         }
     }
 
-    /* -------------------------------------------------------------- upload */
-
-    function submitStaticUpload() {
-        showToast('This GitHub Pages build is a read-only archive. Dataset submission is disabled here; ' +
-            'please open a pull request against email-clm/MicrobialDataSystem.');
-        setTimeout(function () {
-            window.location.hash = '#/';
-        }, 1400);
-    }
-
-    /* ------------------------------------------------------------ downloads */
-
-    function openDownload(datasetId) {
-        var ds = DATA.datasets.filter(function (d) { return d.id === datasetId; })[0];
-        if (!ds) return;
-        state.pendingDownload = ds;
-
-        var modal = document.getElementById('downloadModal');
-        var titleEl = document.getElementById('modalDatasetTitle');
-        var sourceEl = document.getElementById('modalSourceType');
-        var instEl = document.getElementById('modalInstitution');
-        var purposeEl = document.getElementById('modalPurpose');
-
-        if (titleEl) titleEl.textContent = ds.title;
-        if (sourceEl) sourceEl.textContent = ds.data_source_type === 'github' ? 'GitHub Stream' : ds.data_source_type;
-        if (instEl) instEl.value = '';
-        if (purposeEl) purposeEl.selectedIndex = 0;
-        if (modal) modal.classList.add('active');
-    }
-
-    function closeDownload() {
-        var modal = document.getElementById('downloadModal');
-        if (modal) modal.classList.remove('active');
-        state.pendingDownload = null;
-    }
-
-    function confirmDownload() {
-        var ds = state.pendingDownload;
-        var instEl = document.getElementById('modalInstitution');
-        if (!ds) return;
-        if (instEl && !instEl.value.trim()) {
-            instEl.focus();
-            return;
-        }
-        window.open(rawFileUrl(ds), '_blank', 'noopener');
-        closeDownload();
-        showToast('Download started from the GitHub archive. Distribution counters reflect the ' +
-            'server-side audit log snapshot and are not modified by this static build.');
-    }
-
     /* --------------------------------------------------------------- exports */
 
     window.App = {
@@ -876,32 +809,22 @@
                 renderDatasetCards();
             }
             showToast('Filtered by taxonomy tag: ' + tag);
-        },
-        openDownload: openDownload,
-        closeDownload: closeDownload,
-        confirmDownload: confirmDownload,
-        submitStaticUpload: submitStaticUpload
+        }
     };
 
     /* Backwards-compatible global handlers used by the static markup. */
     window.applySlicerFilters = applySlicerFilters;
     window.resetFilters = resetFilters;
     window.toggleMoreKeywords = window.App.toggleTags;
-    window.openDownloadModal = function (id) { openDownload(id); };
-    window.closeDownloadModal = closeDownload;
-    window.confirmModalDownload = confirmDownload;
-    window.submitStaticUpload = submitStaticUpload;
 
     /* ----------------------------------------------------------------- boot */
 
     document.addEventListener('DOMContentLoaded', function () {
         var datasetCount = document.getElementById('statBadgeDatasets');
-        var downloadCount = document.getElementById('statBadgeDownloads');
         var keywordCount = document.getElementById('statBadgeKeywords');
         var variableCount = document.getElementById('statBadgeVariables');
 
         if (datasetCount) datasetCount.textContent = 'Managed Datasets: ' + DATA.datasets.length;
-        if (downloadCount) downloadCount.textContent = 'Total Distributions: ' + totalDistributions();
         if (keywordCount) keywordCount.textContent = 'Scientific Taxonomy Tags: ' + DATA.keywords.length;
         if (variableCount) variableCount.textContent = 'Variables: ' + DATA.variables.length;
 

@@ -34,11 +34,6 @@
                 </a>
             </li>
             <li>
-                <a href="#/upload" id="navUpload">
-                    <span>📤</span> Data Submission
-                </a>
-            </li>
-            <li>
                 <a href="#/admin" id="navAdmin">
                     <span>📊</span> Admin Dashboard & Telemetry
                 </a>
@@ -78,7 +73,6 @@
                     </p>
                     <div style="margin-top: 18px; display: flex; gap: 12px; flex-wrap: wrap;">
                         <span class="badge" id="statBadgeDatasets" style="background: rgba(255,255,255,0.2); color: #fff; border: none;">Managed Datasets: 2</span>
-                        <span class="badge" id="statBadgeDownloads" style="background: rgba(255,255,255,0.2); color: #fff; border: none;">Total Distributions: 3</span>
                         <span class="badge" id="statBadgeKeywords" style="background: rgba(255,255,255,0.2); color: #fff; border: none;">Scientific Taxonomy Tags: 15</span>
                         <span class="badge" id="statBadgeVariables" style="background: rgba(255,255,255,0.2); color: #fff; border: none;">Variables: 16</span>
                     </div>
@@ -173,53 +167,12 @@
                 <div id="detailContent"></div>
             </div>
 
-            <!-- 3. VIEW: Upload Form (Simulated Static Form) -->
-            <div id="viewUpload" class="page-view">
-                <div class="card" style="max-width: 900px; margin: 0 auto;">
-                    <div class="card-title">
-                        <span>📤 Ingest & Share Scientific Dataset</span>
-                        <span class="badge badge-primary">GitHub & Local File & Cloud</span>
-                    </div>
-                    <p class="card-subtitle">
-                        In accordance with scientific data sharing standards, please enter accurate metadata. Submissions will be indexed and cataloged automatically.
-                    </p>
-                    <form onsubmit="event.preventDefault(); submitStaticUpload();">
-                        <div class="form-group">
-                            <label class="form-label">Dataset Title / Research Publication Name *</label>
-                            <input type="text" id="uploadTitle" class="form-control" placeholder="e.g., Global Soil Microbial Biomass Carbon and Nitrogen Dataset" required>
-                        </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                            <div class="form-group">
-                                <label class="form-label">Lead Author / Responsible Group *</label>
-                                <input type="text" id="uploadAuthor" class="form-control" placeholder="e.g., Xiaofeng Xu et al. (SDSU)" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Base Year *</label>
-                                <input type="number" id="uploadYear" class="form-control" value="2026" required>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Detailed Description & Scientific Background *</label>
-                            <textarea id="uploadDesc" class="form-control" rows="4" placeholder="Experimental design, sampling methods, geographical scope..." required></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">GitHub Repository / Direct Download Link</label>
-                            <input type="url" id="uploadUrl" class="form-control" value="https://github.com/email-clm/MicrobialDataSystem">
-                        </div>
-                        <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px;">
-                            <a href="#/" class="btn btn-outline">Cancel</a>
-                            <button type="submit" class="btn btn-primary">Submit & Ingest to Portal</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- 4. VIEW: Admin Dashboard -->
+            <!-- 3. VIEW: Admin Dashboard -->
             <div id="viewAdmin" class="page-view">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
                     <div>
-                        <h1 style="font-family: var(--font-serif); font-size: 1.5rem; color: #1a202c;">Platform Management & Scientific Audit Telemetry</h1>
-                        <p style="font-size: 0.88rem; color: var(--text-muted);">Real-time telemetry on dataset distributions, research purposes, and data taxonomy.</p>
+                        <h1 style="font-family: var(--font-serif); font-size: 1.5rem; color: #1a202c;">Catalogue Management & Collection Telemetry</h1>
+                        <p style="font-size: 0.88rem; color: var(--text-muted);">Live metadata on archived datasets, standardized variables, and scientific taxonomy.</p>
                     </div>
                 </div>
 
@@ -229,12 +182,8 @@
                         <div class="stat-num" id="adminStatDatasets">2</div>
                     </div>
                     <div class="stat-box">
-                        <div class="stat-label">Total Distributions</div>
-                        <div class="stat-num" id="adminStatDownloads" style="color: var(--primary);">3</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">Recorded Distributions</div>
-                        <div class="stat-num" id="adminStatRecords">3</div>
+                        <div class="stat-label">Managed Variables</div>
+                        <div class="stat-num" id="adminStatVariables" style="color: var(--primary);">16</div>
                     </div>
                     <div class="stat-box">
                         <div class="stat-label">Active Subject Tags</div>
@@ -244,7 +193,7 @@
 
                 <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 24px;">
                     <div class="card">
-                        <div class="card-title">Distribution Volume by Dataset</div>
+                        <div class="card-title">Managed Variables by Scientific Category</div>
                         <div id="adminTrendChart" style="width: 100%; height: 320px;"></div>
                     </div>
                     <div class="card">
@@ -263,48 +212,6 @@
                 Repository: <a href="https://github.com/email-clm/MicrobialDataSystem" target="_blank" style="color: var(--primary);">email-clm/MicrobialDataSystem</a>
             </div>
         </footer>
-    </div>
-
-    <!-- Download Modal -->
-    <div class="modal-overlay" id="downloadModal">
-        <div class="modal-card">
-            <div class="modal-header">
-                <div class="modal-title">Scientific Data Access & Usage Registration</div>
-                <button class="modal-close" onclick="closeDownloadModal()">&times;</button>
-            </div>
-            <form onsubmit="event.preventDefault(); confirmModalDownload();">
-                <div style="margin-bottom: 16px; font-size: 0.9rem; color: var(--text-muted);">
-                    You are requesting to access dataset:<br>
-                    <strong id="modalDatasetTitle" style="color: var(--text-dark);">-</strong>
-                    <div style="margin-top: 4px; font-size: 0.82rem;">Distribution Channel: <span id="modalSourceType">GitHub Stream</span></div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="modalInstitution">Your Research Institution / University *</label>
-                    <input type="text" id="modalInstitution" class="form-control" placeholder="e.g., San Diego State University / CAS" required>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="modalPurpose">Research Purpose & Application Context *</label>
-                    <select id="modalPurpose" class="form-control" required>
-                        <option value="Academic Research" selected>Academic Research & Peer-Reviewed Publications</option>
-                        <option value="Model Calibration & Validation">Microbial & Land Model Calibration/Validation</option>
-                        <option value="Teaching & Education">Graduate / University Course Teaching</option>
-                        <option value="Cross-site Synthesis">Global Synthesis & Meta-analysis</option>
-                        <option value="General Exploration">General Scientific Exploration & Evaluation</option>
-                    </select>
-                </div>
-
-                <div style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 18px; line-height: 1.4;">
-                    * Governed by scientific data sharing policies. Purpose and institutional affiliations are recorded in the audit log for provenance and citation tracking.
-                </div>
-
-                <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                    <button type="button" class="btn btn-outline" onclick="closeDownloadModal()">Cancel</button>
-                    <button type="submit" id="modalSubmitBtn" class="btn btn-primary">Confirm Purpose & Start Download</button>
-                </div>
-            </form>
-        </div>
     </div>
 
     <!-- Static Application Script -->
