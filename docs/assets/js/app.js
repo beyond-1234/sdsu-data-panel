@@ -734,7 +734,7 @@
 
     /* ----------------------------------------------------------------- boot */
 
-    document.addEventListener('DOMContentLoaded', function () {
+    function boot() {
         var datasetCount = document.getElementById('statBadgeDatasets');
         var keywordCount = document.getElementById('statBadgeKeywords');
         var variableCount = document.getElementById('statBadgeVariables');
@@ -754,5 +754,11 @@
         });
 
         renderRoute();
-    });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot);
+    } else {
+        boot();
+    }
 })();

@@ -44,6 +44,14 @@ All future updates to the static site should be made inside this `docs/` folder.
 All asset paths are relative, so the build works from a project sub-path as well as a
 custom domain. Hash routing avoids any server-side rewrite rules.
 
+## Cache busting
+
+Each page load creates an access timestamp (`window.__ACCESS_TS__`). The stylesheet,
+`data.js`, and `app.js` are requested as `...?t=<timestamp>`, so browsers and the GitHub
+Pages CDN always fetch the current build instead of a stale cached copy. `echarts.min.js`
+is version-pinned and intentionally left cacheable. To refresh the HTML document itself,
+open the site with an extra query parameter, for example `?t=202610202200`.
+
 ## Updating the data snapshot
 
 `assets/js/data.js` is exported from the Flask database and contains the dataset metadata,

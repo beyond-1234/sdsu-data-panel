@@ -5,9 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Global Soil Microbial Data System (MicrobialDataSystem)</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link id="appStyles" rel="stylesheet" href="assets/css/style.css">
+    <script>
+        /* Access timestamp used to bust stale browser/CDN caches for first-party assets. */
+        (function () {
+            var accessTs = Date.now();
+            window.__ACCESS_TS__ = accessTs;
+            var styles = document.getElementById('appStyles');
+            if (styles) styles.href = 'assets/css/style.css?t=' + accessTs;
+        })();
+    </script>
     <script src="assets/js/echarts.min.js"></script>
-    <script src="assets/js/data.js"></script>
     <style>
         .page-view { display: none; }
         .page-view.active { display: block; }
@@ -165,7 +173,21 @@
         </footer>
     </div>
 
-    <!-- Static Application Script -->
-    <script src="assets/js/app.js"></script>
+    <!-- Static Application Scripts (loaded in order with the access timestamp) -->
+    <script>
+        (function () {
+            var accessTs = window.__ACCESS_TS__ || Date.now();
+            function loadScript(src, onDone) {
+                var script = document.createElement('script');
+                script.src = src + '?t=' + accessTs;
+                script.onload = onDone;
+                script.onerror = onDone;
+                document.body.appendChild(script);
+            }
+            loadScript('assets/js/data.js', function () {
+                loadScript('assets/js/app.js');
+            });
+        })();
+    </script>
 </body>
 </html>
