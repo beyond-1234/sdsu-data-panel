@@ -206,21 +206,21 @@ def seed_database():
             db.session.add(default_oss)
             db.session.commit()
 
-        # 5. Seed Demonstration Datasets (MicrobialDataSystem)
+        # 5. Seed Demonstration Datasets (MicrobialDataSystem - 2 Real Physical Datasets)
         if Dataset.query.count() == 0:
             from datetime import date
             
-            # Dataset 1: Global Soil Microbial Biomass C/N/P Spatial Observation Dataset
+            # Dataset 1: Soil_Microbial_Biomass_C_N_P_spatial.csv
             ds1 = Dataset(
-                title='Global Soil Microbial Biomass C/N/P Spatial Observation Dataset',
+                title='Global Terrestrial Soil Microbial Biomass C/N/P In-situ Spatial Observation Dataset',
                 year=2020,
-                author='Xiaofeng Xu, P. E. Thornton, W. M. Post, et al. (SDSU & ORNL)',
+                author='Xiaofeng Xu, P. E. Thornton, W. M. Post, et al. (SDSU, CAS, Minzu Univ & ORNL)',
                 doi='10.1111/geb.12029',
-                description='Compiled based on email-clm/MicrobialDataSystem core file Soil_Microbial_Biomass_C_N_P_spatial.csv. Aggregates in-situ field observations of soil microbial biomass carbon (MBC), nitrogen (MBN), phosphorus (MBP), organic carbon (SOC), total nitrogen (TN), and pH across global terrestrial biomes.',
+                description='Physical file: Soil_Microbial_Biomass_C_N_P_spatial.csv archived in email-clm/MicrobialDataSystem. Synthesizes 3,400+ in-situ empirical observations across 50 countries, covering global terrestrial biomes. Measures soil microbial biomass carbon (MBC), nitrogen (MBN), phosphorus (MBP), soil organic carbon (SOC), total nitrogen (TN), total organic phosphorus (TOP), pH, MAT, and MAP along depth profiles. References: Xu et al. (2013 GEB), Xu et al. (2015 Sci Rep), Xu et al. (2017 Ecol Monogr), He et al. (2020 SBB), and Guo et al. (2020 GEB).',
                 data_source_type='github',
                 github_url='https://raw.githubusercontent.com/email-clm/MicrobialDataSystem/master/Soil_Microbial_Biomass_C_N_P_spatial.csv',
                 local_file_path='Soil_Microbial_Biomass_C_N_P_spatial.csv',
-                download_count=128,
+                download_count=168,
                 site_code='Global-Terrestrial',
                 site=site_map.get('Global-Terrestrial'),
                 spatial_scale='Global',
@@ -246,22 +246,23 @@ def seed_database():
                 var_map['MBP'],
                 var_map['SOC'],
                 var_map['TN'],
+                var_map['TOP'],
                 var_map['PH'],
                 var_map['MAT'],
                 var_map['MAP']
             ])
 
-            # Dataset 2: Global Soil Microbial Biomass Carbon & Nitrogen Gridded Dataset
+            # Dataset 2: Global_Soil_Microbial_BiomassCN.nc
             ds2 = Dataset(
-                title='Global Soil Microbial Biomass Carbon & Nitrogen Gridded Dataset',
+                title='Global Soil Microbial Biomass Carbon & Nitrogen 0.5-Degree Gridded Simulation Dataset',
                 year=2021,
                 author='Xiaofeng Xu, D. Hui, A. W. King, et al. (SDSU & CAS)',
                 doi='10.1038/srep17445',
-                description='Linked directly to Global_Soil_Microbial_BiomassCN.nc in email-clm/MicrobialDataSystem. Delivers gridded 0.5-degree spatial simulations of topsoil and subsoil microbial carbon and nitrogen pools and stoichiometric convergence matrices.',
+                description='Physical file: Global_Soil_Microbial_BiomassCN.nc (NetCDF) archived in email-clm/MicrobialDataSystem. Delivers continuous 0.5° × 0.5° gridded simulations of global topsoil and subsoil microbial biomass carbon and nitrogen distribution, stoichiometric convergence, and microbial assimilation of carbon, nitrogen, phosphorus, and sulfur across global terrestrial ecosystems.',
                 data_source_type='github',
                 github_url='https://raw.githubusercontent.com/email-clm/MicrobialDataSystem/master/Global_Soil_Microbial_BiomassCN.nc',
                 local_file_path='Global_Soil_Microbial_BiomassCN.nc',
-                download_count=92,
+                download_count=114,
                 site_code='Global-Terrestrial',
                 site=site_map.get('Global-Terrestrial'),
                 spatial_scale='Global',
@@ -277,123 +278,22 @@ def seed_database():
                 kw_map['soil_microbial_biomass'],
                 kw_map['microbial_biomass_c'],
                 kw_map['microbial_biomass_n'],
-                kw_map['microbial_stoichiometry']
+                kw_map['microbial_stoichiometry'],
+                kw_map['fungal_biomass'],
+                kw_map['bacterial_biomass']
             ])
             ds2.variables.extend([
                 var_map['MBC'],
                 var_map['MBN'],
+                var_map['FBC'],
+                var_map['BBC'],
                 var_map['SOC'],
                 var_map['TN'],
                 var_map['MAT'],
                 var_map['MAP']
             ])
 
-            # Dataset 3: Global Topsoil Fungal & Bacterial Biomass Carbon Biogeography
-            ds3 = Dataset(
-                title='Global Biogeography of Fungal and Bacterial Biomass Carbon in Topsoil',
-                year=2020,
-                author='Liyuan He, J. L. M. Rodrigues, Xiaofeng Xu, et al. (Soil Biology & Biochemistry)',
-                doi='10.1016/j.soilbio.2020.108024',
-                description='Integrates global empirical topsoil fungal biomass carbon (FBC) and bacterial biomass carbon (BBC) observations to evaluate the fungal-to-bacterial ratio along macroclimatic and vegetative gradients.',
-                data_source_type='github',
-                github_url='https://github.com/email-clm/MicrobialDataSystem',
-                local_file_path='Soil_Microbial_Biomass_C_N_P_spatial.csv',
-                download_count=76,
-                site_code='US-SPR',
-                site=site_map.get('US-SPR'),
-                spatial_scale='Global',
-                start_date=date(2010, 1, 1),
-                end_date=date(2020, 12, 31),
-                temporal_resolution='Yearly',
-                data_type='Hybrid',
-                scenario='Control',
-                min_depth=0.0,
-                max_depth=0.2
-            )
-            ds3.keywords.extend([
-                kw_map['fungal_biomass'],
-                kw_map['bacterial_biomass'],
-                kw_map['fungal_bacterial_ratio'],
-                kw_map['forest_soil']
-            ])
-            ds3.variables.extend([
-                var_map['FBC'],
-                var_map['BBC'],
-                var_map['SOC'],
-                var_map['PH']
-            ])
-
-            # Dataset 4: Soil Dissolved Organic Carbon in Terrestrial Ecosystems
-            ds4 = Dataset(
-                title='Soil Dissolved Organic Carbon in Terrestrial Ecosystems: Global Budget & Distribution',
-                year=2020,
-                author='Ziyu Guo, Y. Wang, Liyuan He, Xiaofeng Xu, et al. (Global Ecology & Biogeography)',
-                doi='10.1111/geb.13184',
-                description='Synthesizes soil dissolved organic carbon (DOC) content, stocks, and controls across global forest, grassland, wetland, and tundra ecosystems, providing benchmark validation for microbial decomposition models.',
-                data_source_type='oss',
-                github_url=None,
-                local_file_path='Soil_Microbial_Biomass_C_N_P_spatial.csv',
-                download_count=45,
-                site_code='CN-Sanjiang',
-                site=site_map.get('CN-Sanjiang'),
-                spatial_scale='Regional',
-                start_date=date(2005, 1, 1),
-                end_date=date(2020, 12, 31),
-                temporal_resolution='Monthly',
-                data_type='Field Observation',
-                scenario='Control',
-                min_depth=0.0,
-                max_depth=1.0
-            )
-            ds4.keywords.extend([
-                kw_map['soil_doc'],
-                kw_map['soil_respiration'],
-                kw_map['peatland_wetland']
-            ])
-            ds4.variables.extend([
-                var_map['DOC'],
-                var_map['SOC'],
-                var_map['TN'],
-                var_map['PH']
-            ])
-
-            # Dataset 5: Global Pattern and Controls of Soil Microbial Metabolic Quotient (qCO2)
-            ds5 = Dataset(
-                title='Global Pattern and Controls of Soil Microbial Metabolic Quotient (qCO2)',
-                year=2017,
-                author='Xiaofeng Xu, J. P. Schimel, I. A. Janssens, et al. (Ecological Monographs)',
-                doi='10.1002/ecm.1258',
-                description='Documents microbial respiration per unit biomass (metabolic quotient qCO2) across global climates, quantifying microbial carbon use efficiency and thermodynamic responses under varying temperatures and nutrient stoichiometry.',
-                data_source_type='github',
-                github_url='https://github.com/email-clm/MicrobialDataSystem',
-                local_file_path='Soil_Microbial_Biomass_C_N_P_spatial.csv',
-                download_count=38,
-                site_code='US-Atq',
-                site=site_map.get('US-Atq'),
-                spatial_scale='Global',
-                start_date=date(2000, 1, 1),
-                end_date=date(2017, 12, 31),
-                temporal_resolution='Daily',
-                data_type='Hybrid',
-                scenario='Warming',
-                min_depth=0.0,
-                max_depth=0.5
-            )
-            ds5.keywords.extend([
-                kw_map['metabolic_quotient'],
-                kw_map['soil_respiration'],
-                kw_map['soil_microbial_biomass'],
-                kw_map['arctic_tundra']
-            ])
-            ds5.variables.extend([
-                var_map['Q_MET'],
-                var_map['MBC'],
-                var_map['HR'],
-                var_map['SOC'],
-                var_map['TSOI']
-            ])
-
-            db.session.add_all([ds1, ds2, ds3, ds4, ds5])
+            db.session.add_all([ds1, ds2])
             db.session.commit()
 
             # Seed Audit Logs
