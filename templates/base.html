@@ -9,10 +9,10 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <!-- 左侧竖向导航栏 (GRooT 质感) -->
+    <!-- 左侧竖向导航栏 -->
     <aside class="sidebar">
         <div class="brand">
-            <span>🌿</span> CLM-Microbe
+            <span>🌿</span> MicrobialData
         </div>
         <div class="sub-brand">{{ t('sub_brand') }}</div>
         
@@ -69,8 +69,8 @@
                 <div><a href="{{ url_for('login') }}">{{ t('login_register') }}</a></div>
             {% endif %}
             <div style="margin-top: 10px; font-size: 0.75rem; color: #64748b;">
-                SDSU Ecohydrology Lab © 2026<br>
-                CLM-Microbe & LeafWeb
+                SDSU EMAIL Lab © 2026<br>
+                MicrobialDataSystem
             </div>
         </div>
     </aside>
@@ -79,7 +79,7 @@
     <div class="main-wrapper">
         <header class="top-header">
             <div class="breadcrumbs">
-                CLM-Microbe / <span>{% block breadcrumb %}Data Space{% endblock %}</span>
+                MicrobialData / <span>{% block breadcrumb %}Data Space{% endblock %}</span>
             </div>
             <div class="header-user-status">
                 {% if current_user.is_authenticated %}

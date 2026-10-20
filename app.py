@@ -88,20 +88,23 @@ def seed_database():
 
         db.session.commit()
 
-        # 2. 初始预置关键词 (对标 CLM-Microbe Fortran 机制模块与真实科研生态学术语)
+        # 2. 初始预置关键词 (对标 MicrobialDataSystem 与土壤微生物生态学术语)
         default_keywords = [
-            'methanogenesis',
-            'methanotrophy',
+            'soil_microbial_biomass',
+            'microbial_biomass_c',
+            'microbial_biomass_n',
+            'microbial_biomass_p',
             'fungal_biomass',
             'bacterial_biomass',
+            'fungal_bacterial_ratio',
+            'soil_doc',
             'soil_respiration',
+            'metabolic_quotient',
+            'microbial_stoichiometry',
             'arctic_tundra',
-            'peatland_permafrost',
-            'spruce_bog',
-            'q10_temperature_sensitivity',
-            'acetogenesis',
-            'aom_anaerobic_oxidation',
-            'subsurface_permafrost'
+            'peatland_wetland',
+            'forest_soil',
+            'soil_ph'
         ]
         kw_map = {}
         for kw_name in default_keywords:
@@ -113,27 +116,29 @@ def seed_database():
             kw_map[kw_name] = kw_obj
         db.session.commit()
 
-        # 2.1 初始预置标准化科学变量指标字典 (对标 CLM-Microbe 源码 ch4Mod/microbeMod 与 NetCDF 驱动)
+        # 2.1 初始预置标准化科学变量指标字典 (对标 MicrobialDataSystem 真实表头与变量)
         default_variables = [
-            # 气体通量 (Fluxes)
-            ('CH4_FLUX', '甲烷净通量 (CH4 Net Surface Flux)', 'Net Methane Surface Flux', 'Gas Flux', 'mg C m-2 d-1', '地表甲烷净排放通量 (Net surface methane emissions)', 'Net surface methane exchange flux'),
-            ('HR', '土壤异养呼吸 (Heterotrophic Respiration)', 'Heterotrophic Respiration', 'Gas Flux', 'g C m-2 d-1', '微生物分解有机质与土壤碳库异养呼吸通量', 'Microbial heterotrophic decomposition carbon flux'),
-            ('NEE', '净生态系统碳交换 (Net Ecosystem Exchange)', 'Net Ecosystem Exchange', 'Gas Flux', 'g C m-2 d-1', '生态系统与大气净二氧化碳交换率', 'Net CO2 ecosystem exchange rate'),
-            ('GPP', '总初级生产力 (Gross Primary Productivity)', 'Gross Primary Productivity', 'Gas Flux', 'g C m-2 d-1', '植被冠层光合碳同化速率', 'Gross canopy photosynthetic carbon assimilation'),
-            ('FSR', '土壤总呼吸 (Total Soil Respiration)', 'Total Soil Respiration', 'Gas Flux', 'g C m-2 d-1', '土壤异养与根系自养总呼吸通量', 'Combined autotrophic and heterotrophic soil respiration'),
-            
-            # 微生物库与反应动力学 (Microbial Pools & Kinetics)
-            ('BBC', '细菌生物量碳 (Bacterial Biomass C)', 'Bacterial Biomass Carbon', 'Microbial Pool', 'g C m-2', 'CLM-Microbe 显式土壤活跃细菌群落碳储量', 'Explicit active bacterial carbon pool in CLM-Microbe'),
-            ('FBC', '真菌生物量碳 (Fungal Biomass C)', 'Fungal Biomass Carbon', 'Microbial Pool', 'g C m-2', 'CLM-Microbe 显式土壤活跃真菌菌丝碳储量', 'Explicit active fungal mycelial carbon pool in CLM-Microbe'),
-            ('VMAX_CH4', '产甲烷与氧化反应最大速率 (Vmax_CH4)', 'Max Methane Reaction Rate (Vmax)', 'Microbial Pool', 'g C m-3 h-1', '底物饱和下的 Michaelis-Menten 反应峰值速率', 'Substrate-saturated maximum Michaelis-Menten kinetics rate'),
-            ('KM_CH4', '米氏反应常数 (Km_CH4)', 'Half-Saturation Constant (Km)', 'Microbial Pool', 'g C m-3', '酶促半饱和底物浓度', 'Enzymatic half-saturation substrate concentration'),
-            ('AOM_RATE', '厌氧甲烷氧化速率 (AOM Rate)', 'Anaerobic Methane Oxidation Rate', 'Microbial Pool', 'mg C m-3 d-1', '厌氧电子受体驱动的甲烷反硝化/硫酸盐氧化', 'Anaerobic methane oxidation mediated by alternative electron acceptors'),
+            # 微生物生物量与化学计量比 (Microbial Biomass & Stoichiometry)
+            ('MBC', '土壤微生物量碳 (Microbial Biomass C)', 'Soil Microbial Biomass Carbon', 'Microbial Pool', 'mmol kg-1', '土壤活体微生物细胞碳总储量 (Chloroform fumigation extraction)', 'Total living microbial biomass carbon in soil'),
+            ('MBN', '土壤微生物量氮 (Microbial Biomass N)', 'Soil Microbial Biomass Nitrogen', 'Microbial Pool', 'mmol kg-1', '土壤活体微生物细胞氮总储量', 'Total living microbial biomass nitrogen in soil'),
+            ('MBP', '土壤微生物量磷 (Microbial Biomass P)', 'Soil Microbial Biomass Phosphorus', 'Microbial Pool', 'mmol kg-1', '土壤活体微生物细胞磷总储量', 'Total living microbial biomass phosphorus in soil'),
+            ('FBC', '真菌生物量碳 (Fungal Biomass C)', 'Fungal Biomass Carbon', 'Microbial Pool', 'g C m-2', '土壤活跃真菌菌丝碳储量', 'Explicit active fungal mycelial carbon pool'),
+            ('BBC', '细菌生物量碳 (Bacterial Biomass C)', 'Bacterial Biomass Carbon', 'Microbial Pool', 'g C m-2', '土壤活跃细菌细胞碳储量', 'Explicit active bacterial carbon pool'),
+            ('Q_MET', '微生物代谢商 (Metabolic Quotient, qCO2)', 'Microbial Metabolic Quotient (qCO2)', 'Microbial Pool', 'mg C g-1 MBC h-1', '单位微生物生物量的呼吸消耗速率', 'Specific soil respiration rate per unit microbial biomass'),
 
-            # 水热与土壤理化 (Abiotic Drivers)
-            ('TSOI', '土壤剖面温度 (Soil Temperature)', 'Soil Profile Temperature', 'Soil Physics', '°C', 'CLM 分层土壤热动力学状态观测/驱动', 'Layered soil profile thermal thermodynamic state'),
-            ('H2OSOI', '土壤体积含水量 (Soil Moisture)', 'Soil Volumetric Moisture', 'Soil Physics', 'm3 m-3', '分层土壤水分饱和度与孔隙含水量', 'Layered volumetric water content and matric potential'),
-            ('SOC', '土壤有机碳储量 (Soil Organic Carbon)', 'Soil Organic Carbon', 'Soil Physics', 'kg C m-3', '垂直剖面分层活跃与顽固碳库储量', 'Vertical profile active and recalcitrant organic carbon pools'),
-            ('FROST_TABLE', '多年冻土活动层融化深度 (Thaw Depth)', 'Permafrost Thaw Depth', 'Soil Physics', 'm', '活动层季节性融深与冻土界面', 'Seasonal active layer thaw depth and permafrost boundary')
+            # 土壤碳氮理化 (Soil Chemistry & Physics)
+            ('SOC', '土壤有机碳 (Soil Organic Carbon)', 'Soil Organic Carbon', 'Soil Physics', 'mmol kg-1', '土壤固相总有机碳含量', 'Total organic carbon content in soil matrix'),
+            ('TN', '全氮 (Total Nitrogen)', 'Total Soil Nitrogen', 'Soil Physics', 'mmol kg-1', '土壤全氮素含量', 'Total nitrogen content in soil matrix'),
+            ('TOP', '土壤全有机磷 (Total Organic Phosphorus)', 'Total Organic Phosphorus', 'Soil Physics', 'mmol kg-1', '土壤总有机磷储量', 'Total organic phosphorus pool in soil'),
+            ('DOC', '土壤可溶性有机碳 (Dissolved Organic C)', 'Soil Dissolved Organic Carbon', 'Soil Physics', 'mg C kg-1', '可被微生物直接吸收利用的可溶性有机碳', 'Dissolved organic carbon readily bioavailable to microbes'),
+            ('PH', '土壤酸碱度 (Soil pH)', 'Soil pH', 'Soil Physics', 'pH units', '土壤溶液氢离子活度指标', 'Soil reaction in water/CaCl2 suspension'),
+            ('MAT', '年均温 (Mean Annual Temperature)', 'Mean Annual Temperature', 'Soil Physics', '°C', '采样点长周期气候年均温', 'Long-term mean annual air temperature'),
+            ('MAP', '年降水量 (Mean Annual Precipitation)', 'Mean Annual Precipitation', 'Soil Physics', 'mm', '采样点长周期年均降水总量', 'Long-term mean annual precipitation sum'),
+            ('TSOI', '土壤剖面温度 (Soil Temperature)', 'Soil Profile Temperature', 'Soil Physics', '°C', '采样层土壤热动力学状态观测', 'Layered soil profile thermal temperature'),
+
+            # 气体通量 (Gas Fluxes)
+            ('HR', '土壤异养呼吸 (Heterotrophic Respiration)', 'Heterotrophic Respiration', 'Gas Flux', 'g C m-2 d-1', '微生物有机质分解碳释放', 'Microbial heterotrophic decomposition carbon flux'),
+            ('CH4_FLUX', '甲烷净通量 (CH4 Net Surface Flux)', 'Net Methane Surface Flux', 'Gas Flux', 'mg C m-2 d-1', '地表甲烷净排放通量', 'Net surface methane exchange flux')
         ]
         var_map = {}
         for code, dname, dname_en, cat, unit, desc, desc_en in default_variables:
@@ -151,13 +156,18 @@ def seed_database():
                 db.session.add(var_obj)
                 db.session.flush()
             else:
+                var_obj.display_name = dname
                 var_obj.display_name_en = dname_en
+                var_obj.category = cat
+                var_obj.unit = unit
+                var_obj.description = desc
                 var_obj.description_en = desc_en
             var_map[code] = var_obj
         db.session.commit()
 
-        # 2.2 初始预置真实样点 (对标 email-clm/CLM-Microbe/inputdata 真实目录结构)
+        # 2.2 初始预置全球生态样点/区域
         default_sites = [
+            ('Global-Terrestrial', 'Global Terrestrial Ecosystems (全球陆地生态系统样点集)', 'Global', 20.0, 0.0, 300.0, 'Global / Multi-Biome'),
             ('US-Atq', 'Atqasuk Tundra Research Site (阿拉斯加北极苔原站)', 'United States', 70.47, -157.41, 15.0, 'Tundra'),
             ('US-Brw', 'Barrow Environmental Observatory (巴罗北极环境观测站)', 'United States', 71.32, -156.61, 4.0, 'Tundra'),
             ('US-SPR', 'SPRUCE Peatland (明尼苏达云杉泥炭湿地加热实验站)', 'United States', 47.50, -93.45, 418.0, 'Peatland/Boreal Bog'),
@@ -208,193 +218,191 @@ def seed_database():
             db.session.add(default_oss)
             db.session.commit()
 
-        # 5. 预置真实 CLM-Microbe 体系演示数据集
+        # 5. 预置真实 MicrobialDataSystem 数据集
         if Dataset.query.count() == 0:
             from datetime import date
             
-            # 数据集 1: US-Brw 巴罗北极苔原大气全强迫与多层水热驱动
+            # 数据集 1: 全球土壤微生物量碳/氮/磷空间观测数据集 (真实 CSV 对应)
             ds1 = Dataset(
-                title='CLM-Microbe 北极巴罗站 (US-Brw) cpl_bypass 高频大气强迫与甲烷响应集',
-                year=2021,
-                author='SDSU Ecohydrology Lab / ORNL NGEE-Arctic',
-                doi='10.5281/zenodo.7891023',
-                description='基于 email-clm/CLM-Microbe 仓库 inputdata/atm/datm7/CLM1PT_data/1x1pt_US-Brw 实测大气驱动与 CLM1PT 模式模拟。涵盖降水、风速、气温辐射驱动下北极苔原甲烷净排放、细菌碳与真菌碳的时序动态。',
+                title='Global Soil Microbial Biomass C/N/P Spatial Observation Dataset (全球土壤微生物量碳氮磷空间实测数据集)',
+                year=2020,
+                author='Xiaofeng Xu, P. E. Thornton, W. M. Post, et al. (SDSU & ORNL)',
+                doi='10.1111/geb.12029',
+                description='基于 email-clm/MicrobialDataSystem 仓库核心数据文件 Soil_Microbial_Biomass_C_N_P_spatial.csv。汇总全球各大生物群系（森林、草原、农田、苔原、荒漠）顶层及剖面土壤微生物量碳 (MBC)、氮 (MBN)、磷 (MBP)、有机碳 (SOC)、全氮 (TN) 及 pH 实测样点数据。',
                 data_source_type='github',
-                github_url='https://github.com/email-clm/CLM-Microbe',
-                local_file_path='clm_microbe_us_atq_2021.csv',
-                download_count=64,
-                site_code='US-Brw',
-                site=site_map.get('US-Brw'),
-                spatial_scale='Point',
-                start_date=date(2015, 1, 1),
-                end_date=date(2021, 12, 31),
-                temporal_resolution='Half-hourly',
-                data_type='Model Simulation',
-                scenario='Control',
-                min_depth=0.0,
-                max_depth=1.2
-            )
-            ds1.keywords.extend([
-                kw_map['methanogenesis'],
-                kw_map['soil_respiration'],
-                kw_map['arctic_tundra'],
-                kw_map['fungal_biomass']
-            ])
-            ds1.variables.extend([
-                var_map['CH4_FLUX'],
-                var_map['HR'],
-                var_map['BBC'],
-                var_map['FBC'],
-                var_map['TSOI'],
-                var_map['H2OSOI'],
-                var_map['FROST_TABLE']
-            ])
-
-            # 数据集 2: US-SPR 云杉泥炭湿地加热实验 (2x1pt SPRUCE)
-            ds2 = Dataset(
-                title='SPRUCE 泥炭湿地加热实验 (US-SPR) 剖面微生物量碳与动力学拟合集',
-                year=2022,
-                author='Oak Ridge National Laboratory & SDSU Joint Study',
-                doi='10.5281/zenodo.8239411',
-                description='对标 inputdata/lnd/clm2/surfdata_map/surfdata_2x1pt_US-SPR.nc 与 paramdata/microbepar_in 参数文件。记录 0~2.0m 泥炭剖面深度在全生态系统增温 (Warming +0℃ ~ +9℃) 条件下产甲烷菌、嗜甲烷菌活性、Vmax 与 Q10 温敏响应。',
-                data_source_type='oss',
-                github_url=None,
-                local_file_path='clm_microbe_arctic_permafrost_2022.csv',
-                download_count=48,
-                site_code='US-SPR',
-                site=site_map.get('US-SPR'),
-                spatial_scale='Point',
-                start_date=date(2011, 1, 1),
-                end_date=date(2015, 12, 31),
-                temporal_resolution='Monthly',
-                data_type='Hybrid',
-                scenario='Warming',
-                min_depth=0.0,
-                max_depth=2.0
-            )
-            ds2.keywords.extend([
-                kw_map['spruce_bog'],
-                kw_map['q10_temperature_sensitivity'],
-                kw_map['bacterial_biomass'],
-                kw_map['peatland_permafrost'],
-                kw_map['methanotrophy']
-            ])
-            ds2.variables.extend([
-                var_map['BBC'],
-                var_map['FBC'],
-                var_map['SOC'],
-                var_map['VMAX_CH4'],
-                var_map['KM_CH4'],
-                var_map['AOM_RATE']
-            ])
-
-            # 数据集 3: US-Atq 阿拉斯加 Atqasuk 站单点 CLM1PT 气候与水热序列
-            ds3 = Dataset(
-                title='CLM-Microbe 阿拉斯加 Atqasuk 站 (US-Atq) 土壤异养呼吸与微生物分层驱动集',
-                year=2021,
-                author='SDSU Ecohydrology Lab / CLM-Microbe Working Group',
-                doi='10.5281/zenodo.7891022',
-                description='基于 CLM1PT_InputFile/clm_climatenc.m 生成的单点气象水热与土壤驱动。面向显式微生物生物量碳分解及底物动力学推演。',
-                data_source_type='github',
-                github_url='https://github.com/email-clm/CLM-Microbe',
-                local_file_path='clm_microbe_us_atq_2021.csv',
-                download_count=35,
-                site_code='US-Atq',
-                site=site_map.get('US-Atq'),
-                spatial_scale='Point',
-                start_date=date(2018, 1, 1),
-                end_date=date(2021, 12, 31),
-                temporal_resolution='Daily',
-                data_type='Model Simulation',
+                github_url='https://raw.githubusercontent.com/email-clm/MicrobialDataSystem/master/Soil_Microbial_Biomass_C_N_P_spatial.csv',
+                local_file_path='Soil_Microbial_Biomass_C_N_P_spatial.csv',
+                download_count=128,
+                site_code='Global-Terrestrial',
+                site=site_map.get('Global-Terrestrial'),
+                spatial_scale='Global',
+                start_date=date(1980, 1, 1),
+                end_date=date(2020, 12, 31),
+                temporal_resolution='Yearly',
+                data_type='Field Observation',
                 scenario='Control',
                 min_depth=0.0,
                 max_depth=1.0
             )
-            ds3.keywords.extend([
-                kw_map['methanogenesis'],
-                kw_map['soil_respiration'],
-                kw_map['arctic_tundra'],
-                kw_map['subsurface_permafrost']
+            ds1.keywords.extend([
+                kw_map['soil_microbial_biomass'],
+                kw_map['microbial_biomass_c'],
+                kw_map['microbial_biomass_n'],
+                kw_map['microbial_biomass_p'],
+                kw_map['microbial_stoichiometry'],
+                kw_map['soil_ph']
             ])
-            ds3.variables.extend([
-                var_map['CH4_FLUX'],
-                var_map['HR'],
-                var_map['FSR'],
-                var_map['TSOI'],
-                var_map['H2OSOI']
+            ds1.variables.extend([
+                var_map['MBC'],
+                var_map['MBN'],
+                var_map['MBP'],
+                var_map['SOC'],
+                var_map['TN'],
+                var_map['PH'],
+                var_map['MAT'],
+                var_map['MAP']
             ])
 
-            # 数据集 4: 三江平原湿地沼泽微生态通量
-            ds4 = Dataset(
-                title='三江平原沼泽湿地 (CN-Sanjiang) 产甲烷菌与甲烷氧化菌原位模拟驱动集',
-                year=2023,
-                author='Sanjiang Wetland Ecological Research Station, CAS',
-                doi='10.5281/zenodo.9012345',
-                description='跨纬度高寒与温带沼泽湿地微生态通量交叉验证数据，面向陆面过程生物地球化学循环机制校准。包含多时频连续观测。',
-                data_source_type='local',
-                github_url=None,
+            # 数据集 2: 全球土壤微生物生物量碳氮网格化模拟集 (对应 Global_Soil_Microbial_BiomassCN.nc)
+            ds2 = Dataset(
+                title='Global Soil Microbial Biomass Carbon & Nitrogen Gridded Dataset (全球土壤微生物生物量碳氮网格化模拟集)',
+                year=2021,
+                author='Xiaofeng Xu, D. Hui, A. W. King, et al. (SDSU & CAS)',
+                doi='10.1038/srep17445',
+                description='对应 email-clm/MicrobialDataSystem 仓库文件 Global_Soil_Microbial_BiomassCN.nc。包含全球 0.5° × 0.5° 空间网格分辨率下表层及底层土壤微生物碳氮生物地理分布、碳氮磷化学计量趋同性模拟矩阵。',
+                data_source_type='github',
+                github_url='https://raw.githubusercontent.com/email-clm/MicrobialDataSystem/master/Global_Soil_Microbial_BiomassCN.nc',
                 local_file_path='clm_microbe_us_atq_2021.csv',
-                download_count=21,
+                download_count=92,
+                site_code='Global-Terrestrial',
+                site=site_map.get('Global-Terrestrial'),
+                spatial_scale='Global',
+                start_date=date(2000, 1, 1),
+                end_date=date(2021, 12, 31),
+                temporal_resolution='Monthly',
+                data_type='Model Simulation',
+                scenario='Control',
+                min_depth=0.0,
+                max_depth=1.5
+            )
+            ds2.keywords.extend([
+                kw_map['soil_microbial_biomass'],
+                kw_map['microbial_biomass_c'],
+                kw_map['microbial_biomass_n'],
+                kw_map['microbial_stoichiometry']
+            ])
+            ds2.variables.extend([
+                var_map['MBC'],
+                var_map['MBN'],
+                var_map['SOC'],
+                var_map['TN'],
+                var_map['MAT'],
+                var_map['MAP']
+            ])
+
+            # 数据集 3: 全球表层土壤真菌与细菌生物量碳生物地理学分布集
+            ds3 = Dataset(
+                title='Global Biogeography of Fungal and Bacterial Biomass Carbon in Topsoil (全球表层土壤真菌与细菌碳分布集)',
+                year=2020,
+                author='Liyuan He, J. L. M. Rodrigues, Xiaofeng Xu, et al. (Soil Biology & Biochemistry)',
+                doi='10.1016/j.soilbio.2020.108024',
+                description='集成全球各大经纬度生态系统表层土壤真菌生物量碳 (FBC) 与细菌生物量碳 (BBC) 实测数据，剖析真菌/细菌比例 (F:B ratio) 随环境温度、湿度与植被类型梯度的宏观空间分异特征。',
+                data_source_type='github',
+                github_url='https://github.com/email-clm/MicrobialDataSystem',
+                local_file_path='clm_microbe_arctic_permafrost_2022.csv',
+                download_count=76,
+                site_code='US-SPR',
+                site=site_map.get('US-SPR'),
+                spatial_scale='Global',
+                start_date=date(2010, 1, 1),
+                end_date=date(2020, 12, 31),
+                temporal_resolution='Yearly',
+                data_type='Hybrid',
+                scenario='Control',
+                min_depth=0.0,
+                max_depth=0.2
+            )
+            ds3.keywords.extend([
+                kw_map['fungal_biomass'],
+                kw_map['bacterial_biomass'],
+                kw_map['fungal_bacterial_ratio'],
+                kw_map['forest_soil']
+            ])
+            ds3.variables.extend([
+                var_map['FBC'],
+                var_map['BBC'],
+                var_map['SOC'],
+                var_map['PH']
+            ])
+
+            # 数据集 4: 全球陆地生态系统土壤可溶性有机碳 (DOC) 储量与控制因素集
+            ds4 = Dataset(
+                title='Soil Dissolved Organic Carbon in Terrestrial Ecosystems (全球土壤可溶性有机碳DOC空间分布集)',
+                year=2020,
+                author='Ziyu Guo, Y. Wang, Liyuan He, Xiaofeng Xu, et al. (Global Ecology & Biogeography)',
+                doi='10.1111/geb.13184',
+                description='涵盖全球各大纬度带森林、草地、湿地及苔原土壤可溶性有机碳 (DOC) 空间格局与控制因素，探讨土壤微生物活动与水解产物对溶解性碳库的周转驱动机制。',
+                data_source_type='oss',
+                github_url=None,
+                local_file_path='Soil_Microbial_Biomass_C_N_P_spatial.csv',
+                download_count=45,
                 site_code='CN-Sanjiang',
                 site=site_map.get('CN-Sanjiang'),
                 spatial_scale='Regional',
-                start_date=date(2022, 1, 1),
-                end_date=date(2023, 12, 31),
-                temporal_resolution='Daily',
+                start_date=date(2005, 1, 1),
+                end_date=date(2020, 12, 31),
+                temporal_resolution='Monthly',
                 data_type='Field Observation',
                 scenario='Control',
                 min_depth=0.0,
-                max_depth=0.8
+                max_depth=1.0
             )
             ds4.keywords.extend([
-                kw_map['methanotrophy'],
+                kw_map['soil_doc'],
                 kw_map['soil_respiration'],
-                kw_map['bacterial_biomass'],
-                kw_map['acetogenesis']
+                kw_map['peatland_wetland']
             ])
             ds4.variables.extend([
-                var_map['CH4_FLUX'],
-                var_map['HR'],
-                var_map['NEE'],
-                var_map['GPP'],
-                var_map['H2OSOI']
+                var_map['DOC'],
+                var_map['SOC'],
+                var_map['TN'],
+                var_map['PH']
             ])
 
-            # 数据集 5: Stordalen 瑞典亚北极泥炭沼泽多年冻土融化活动层
+            # 数据集 5: 全球土壤微生物代谢商 (qCO2) 时合格局与微生态调控数据集
             ds5 = Dataset(
-                title='Stordalen Mire (SE-St1) 亚北极多年冻土融化与厌氧甲烷氧化 (AOM) 模拟集',
-                year=2024,
-                author='European Fluxes Consortium & SDSU Collaboration',
-                doi='10.5281/zenodo.9332110',
-                description='对应 CLM-Microbe 源码 initch4Mod 与 microbeMod 模块。结合瑞典多年冻土梯度微地形，模拟融陷沼泽中厌氧甲烷氧化速率及真菌细菌消长。',
-                data_source_type='oss',
-                github_url=None,
-                local_file_path='clm_microbe_arctic_permafrost_2022.csv',
-                download_count=16,
-                site_code='SE-St1',
-                site=site_map.get('SE-St1'),
-                spatial_scale='Point',
-                start_date=date(2020, 5, 1),
-                end_date=date(2024, 10, 1),
-                temporal_resolution='Weekly',
+                title='Global Pattern and Controls of Soil Microbial Metabolic Quotient (qCO2) (全球土壤微生物代谢商格局集)',
+                year=2017,
+                author='Xiaofeng Xu, J. P. Schimel, I. A. Janssens, et al. (Ecological Monographs)',
+                doi='10.1002/ecm.1258',
+                description='记录单位土壤微生物量碳释放 CO2 的效率指标（代谢商 qCO2），揭示从热带到北极苔原在增温和养分胁迫下微生物群落碳利用效率 (CUE) 的生理生化适应机制。',
+                data_source_type='github',
+                github_url='https://github.com/email-clm/MicrobialDataSystem',
+                local_file_path='clm_microbe_us_atq_2021.csv',
+                download_count=38,
+                site_code='US-Atq',
+                site=site_map.get('US-Atq'),
+                spatial_scale='Global',
+                start_date=date(2000, 1, 1),
+                end_date=date(2017, 12, 31),
+                temporal_resolution='Daily',
                 data_type='Hybrid',
-                scenario='SSP5-8.5',
+                scenario='Warming',
                 min_depth=0.0,
-                max_depth=1.8
+                max_depth=0.5
             )
             ds5.keywords.extend([
-                kw_map['peatland_permafrost'],
-                kw_map['aom_anaerobic_oxidation'],
-                kw_map['q10_temperature_sensitivity'],
-                kw_map['subsurface_permafrost']
+                kw_map['metabolic_quotient'],
+                kw_map['soil_respiration'],
+                kw_map['soil_microbial_biomass'],
+                kw_map['arctic_tundra']
             ])
             ds5.variables.extend([
-                var_map['CH4_FLUX'],
-                var_map['AOM_RATE'],
-                var_map['BBC'],
-                var_map['FBC'],
+                var_map['Q_MET'],
+                var_map['MBC'],
+                var_map['HR'],
                 var_map['SOC'],
-                var_map['FROST_TABLE']
+                var_map['TSOI']
             ])
 
             db.session.add_all([ds1, ds2, ds3, ds4, ds5])
@@ -413,19 +421,19 @@ def seed_database():
             log2 = DownloadLog(
                 user_id=researcher.id if researcher else 2,
                 dataset_id=ds2.id,
-                download_type='oss_download',
+                download_type='github_redirect',
                 ip_address='127.0.0.1',
                 user_agent='Mozilla/5.0 (Macintosh; Intel Mac OS X)',
-                institution='Oak Ridge National Laboratory',
+                institution='Northeast Institute of Geography and Agroecology, CAS',
                 purpose='Academic Research'
             )
             log3 = DownloadLog(
                 user_id=None,
-                dataset_id=ds3.id,
+                dataset_id=ds1.id,
                 download_type='github_redirect',
                 ip_address='192.168.1.102',
                 user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-                institution='University of Alaska Fairbanks',
+                institution='Oak Ridge National Laboratory',
                 purpose='Teaching & Education'
             )
             db.session.add_all([log1, log2, log3])
@@ -467,12 +475,17 @@ def index():
     query = Dataset.query.join(Dataset.site, isouter=True)
 
     if query_str:
+        # 智能复合匹配：标题、描述、作者、样点名称、挂载变量代码、挂载关键词
         query = query.filter(
             (Dataset.title.ilike(f'%{query_str}%')) | 
             (Dataset.description.ilike(f'%{query_str}%')) |
             (Dataset.author.ilike(f'%{query_str}%')) |
             (SiteLocation.site_name.ilike(f'%{query_str}%')) |
-            (SiteLocation.site_code.ilike(f'%{query_str}%'))
+            (SiteLocation.site_code.ilike(f'%{query_str}%')) |
+            (Dataset.variables.any(VariableDefinition.code.ilike(f'%{query_str}%'))) |
+            (Dataset.variables.any(VariableDefinition.display_name.ilike(f'%{query_str}%'))) |
+            (Dataset.variables.any(VariableDefinition.display_name_en.ilike(f'%{query_str}%'))) |
+            (Dataset.keywords.any(Keyword.name.ilike(f'%{query_str}%')))
         )
 
     # 时间跨度过滤
@@ -677,13 +690,37 @@ def upload():
         db.session.add(new_dataset)
         db.session.flush()
 
-        # 关联多维变量指标
+        # 关联多维变量指标 (支持已有勾选 + 动态手写录入新指标)
         if var_ids:
             for vid in var_ids:
                 if str(vid).isdigit():
                     v_obj = db.session.get(VariableDefinition, int(vid))
-                    if v_obj:
+                    if v_obj and v_obj not in new_dataset.variables:
                         new_dataset.variables.append(v_obj)
+
+        new_custom_vars = request.form.get('custom_variables', '').strip()
+        if new_custom_vars:
+            # 格式例如: "MBC:mg C kg-1, MBN:mg N kg-1" 或 "PHOSPHATASE"
+            raw_v_items = [v.strip() for v in new_custom_vars.replace('，', ',').split(',') if v.strip()]
+            for item in raw_v_items:
+                parts = item.split(':')
+                v_code = parts[0].strip().upper()
+                v_unit = parts[1].strip() if len(parts) > 1 else 'dimensionless'
+                v_obj = VariableDefinition.query.filter_by(code=v_code).first()
+                if not v_obj:
+                    v_obj = VariableDefinition(
+                        code=v_code,
+                        display_name=f"{v_code} (User Added)",
+                        display_name_en=f"{v_code} (User Added)",
+                        category='Microbial Pool',
+                        unit=v_unit,
+                        description='User-defined microbial variable on upload',
+                        description_en='User-defined microbial variable on upload'
+                    )
+                    db.session.add(v_obj)
+                    db.session.flush()
+                if v_obj not in new_dataset.variables:
+                    new_dataset.variables.append(v_obj)
 
         # 关联关键词 (支持从已有词库挑选绑定 + 录入新词，自动纳管)
         selected_kw_ids = request.form.getlist('keyword_ids')
@@ -746,11 +783,8 @@ def trigger_download(dataset_id):
 
     # 3. 分发数据：支持 GitHub 仓库直连、OSS 云端分发 或 本地文件传输
     if dataset.data_source_type == 'github':
-        # 如果配置了具体的 github_url 则优先使用，否则默认指向开源代码与数据主仓库
-        target_gh_url = dataset.github_url or 'https://github.com/email-clm/CLM-Microbe'
-        # 兼容处理历史可能录入的 raw 或失效的单文件直链，统一规整为可靠的 GitHub 仓库访问链接
-        if 'raw.githubusercontent.com' in target_gh_url:
-            target_gh_url = 'https://github.com/email-clm/CLM-Microbe'
+        # 如果配置了具体的 github_url 则优先使用，否则默认指向 MicrobialDataSystem 主仓库
+        target_gh_url = dataset.github_url or 'https://github.com/email-clm/MicrobialDataSystem'
         return jsonify({'status': 'success', 'download_url': target_gh_url})
     elif dataset.data_source_type == 'oss':
         oss_key = f"datasets/{dataset.year}/{dataset.local_file_path or 'data.csv'}"
@@ -1052,7 +1086,30 @@ def admin_edit_dataset(dataset_id):
         for vid in var_ids:
             if str(vid).isdigit():
                 v_obj = db.session.get(VariableDefinition, int(vid))
-                if v_obj:
+                if v_obj and v_obj not in dataset.variables:
+                    dataset.variables.append(v_obj)
+
+        new_custom_vars = request.form.get('custom_variables', '').strip()
+        if new_custom_vars:
+            raw_v_items = [v.strip() for v in new_custom_vars.replace('，', ',').split(',') if v.strip()]
+            for item in raw_v_items:
+                parts = item.split(':')
+                v_code = parts[0].strip().upper()
+                v_unit = parts[1].strip() if len(parts) > 1 else 'dimensionless'
+                v_obj = VariableDefinition.query.filter_by(code=v_code).first()
+                if not v_obj:
+                    v_obj = VariableDefinition(
+                        code=v_code,
+                        display_name=f"{v_code} (User Added)",
+                        display_name_en=f"{v_code} (User Added)",
+                        category='Microbial Pool',
+                        unit=v_unit,
+                        description='User-defined variable',
+                        description_en='User-defined variable'
+                    )
+                    db.session.add(v_obj)
+                    db.session.flush()
+                if v_obj not in dataset.variables:
                     dataset.variables.append(v_obj)
 
         # 重新同步关联关键词

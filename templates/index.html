@@ -134,14 +134,31 @@
         </div>
     </form>
 
-    <!-- 热门关键词标签云快捷点选 -->
+    <!-- 热门关键词标签云快捷点选 (首屏精简 Top 6，其余支持 More 展开/收起) -->
     <div style="margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--border-color); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
         <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">{{ t('hot_tags') }}</span>
-        {% for kw in keywords %}
+        
+        <!-- 主要精选关键词 (前 6 个) -->
+        {% for kw in keywords[:6] %}
             <a href="{{ url_for('index', keyword=kw.name) }}" class="badge {% if selected_kw == kw.name %}active{% endif %}">
                 # {{ kw.name }}
             </a>
         {% endfor %}
+
+        <!-- 其余更多关键词折叠区 -->
+        {% if keywords|length > 6 %}
+            <div id="moreKeywordsContainer" style="display: none; align-items: center; gap: 8px; flex-wrap: wrap;">
+                {% for kw in keywords[6:] %}
+                    <a href="{{ url_for('index', keyword=kw.name) }}" class="badge {% if selected_kw == kw.name %}active{% endif %}">
+                        # {{ kw.name }}
+                    </a>
+                {% endfor %}
+            </div>
+            
+            <button type="button" id="btnToggleMoreKeywords" onclick="toggleMoreKeywords()" class="btn btn-outline btn-sm" style="padding: 2px 8px; font-size: 0.75rem; border-radius: 12px; color: var(--primary); border-color: #cbd5e1;">
+                + {{ t('more_keywords') }} ({{ keywords|length - 6 }}) ▾
+            </button>
+        {% endif %}
     </div>
 </div>
 
@@ -263,4 +280,22 @@
         </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleMoreKeywords() {
+    const container = document.getElementById('moreKeywordsContainer');
+    const btn = document.getElementById('btnToggleMoreKeywords');
+    if (!container || !btn) return;
+
+    if (container.style.display === 'none') {
+        container.style.display = 'inline-flex';
+        btn.innerText = '▴ {{ t("collapse_keywords") }}';
+    } else {
+        container.style.display = 'none';
+        btn.innerText = '+ {{ t("more_keywords") }} ▾';
+    }
+}
+</script>
 {% endblock %}

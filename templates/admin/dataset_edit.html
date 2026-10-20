@@ -124,6 +124,13 @@
                     </label>
                 {% endfor %}
             </div>
+
+            <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border-color);">
+                <label class="form-label" style="font-size: 0.8rem; color: var(--primary); font-weight: 600;">
+                    + {{ t('upload_custom_var_label') }}
+                </label>
+                <input type="text" name="custom_variables" class="form-control" style="font-size: 0.82rem; padding: 6px 10px;" placeholder="{{ t('upload_custom_var_placeholder') }}">
+            </div>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">

@@ -127,10 +127,19 @@
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px;">
                 {% for v in all_variables %}
                     <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; cursor: pointer; background: #fff; padding: 6px 10px; border-radius: 4px; border: 1px solid #e2e8f0;">
-                        <input type="checkbox" name="variables" value="{{ v.id }}" {% if v.code in ['CH4_FLUX', 'HR', 'BBC', 'TSOI'] %}checked{% endif %}>
+                        <input type="checkbox" name="variables" value="{{ v.id }}" {% if v.code in ['MBC', 'MBN', 'SOC', 'DOC'] %}checked{% endif %}>
                         <strong>{{ v.code }}</strong> - <span style="color: #64748b;">{{ v.get_name(current_lang) }}</span>
                     </label>
                 {% endfor %}
+            </div>
+
+            <!-- 支持动态手写追加新变量 -->
+            <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border-color);">
+                <label class="form-label" style="font-size: 0.8rem; color: var(--primary); font-weight: 600;">
+                    + {{ t('upload_custom_var_label') }}
+                </label>
+                <input type="text" name="custom_variables" class="form-control" style="font-size: 0.82rem; padding: 6px 10px;" placeholder="{{ t('upload_custom_var_placeholder') }}">
+                <small style="color: var(--text-muted); font-size: 0.75rem;">{{ t('upload_custom_var_tip') }}</small>
             </div>
         </div>
 
