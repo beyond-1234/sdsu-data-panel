@@ -127,56 +127,52 @@
     </div>
 </div>
 
-<!-- Time-Series Dynamics -->
+<!-- Real Telemetry Chart 1: Distribution & Gradients -->
 <div class="card">
     <div class="card-title">
-        <span>{{ t('timeseries_title') }}</span>
+        <span>📊 {{ vis_data.chart_title if vis_data else 'Microbial Data Exploration' }}</span>
         <div style="font-size: 0.85rem; font-weight: normal; color: var(--text-muted);">
-            {{ t('timeseries_subtitle') }}
+            {{ vis_data.chart_subtitle if vis_data else 'Real empirical distribution extracted from file' }}
         </div>
     </div>
-    <p class="card-subtitle">
-        {{ t('timeseries_desc') }}
-    </p>
-
-    <div id="timeseriesChart" style="width: 100%; height: 420px;"></div>
+    <div id="mainTelemetryChart" style="width: 100%; height: 420px;"></div>
 </div>
 
-<!-- Soil Depth Profile & Kinetics -->
+<!-- Real Telemetry Chart 2: Vertical Depth Gradient & Stoichiometric Scaling -->
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
     <div class="card">
-        <div class="card-title">{{ t('depth_chart_title') }}</div>
-        <p class="card-subtitle">{{ t('depth_chart_desc') }}</p>
-        <div id="depthChart" style="width: 100%; height: 350px;"></div>
+        <div class="card-title">📉 Soil Depth Gradient Attenuation (0 ~ 150cm)</div>
+        <p class="card-subtitle">Vertical profile gradient of microbial biomass across soil depth horizons</p>
+        <div id="depthProfileChart" style="width: 100%; height: 350px;"></div>
     </div>
 
     <div class="card">
-        <div class="card-title">{{ t('kinetics_chart_title') }}</div>
-        <p class="card-subtitle">{{ t('kinetics_chart_desc') }}</p>
-        <div id="kineticsChart" style="width: 100%; height: 350px;"></div>
+        <div class="card-title">🔬 {{ vis_data.kin_title if vis_data else 'Stoichiometric Scaling & Kinetics' }}</div>
+        <p class="card-subtitle">{{ vis_data.kin_subtitle if vis_data else 'Microbial physiological & stoichiometric scaling' }}</p>
+        <div id="stoichiometryChart" style="width: 100%; height: 350px;"></div>
     </div>
 </div>
 
-<!-- Sample Data Table Snapshot -->
-{% if ts_data and ts_data.records %}
+<!-- Raw Physical Data Table Preview Snapshot -->
+{% if vis_data and vis_data.records %}
 <div class="card">
     <div class="card-title">
-        <span>{{ t('data_table_snapshot') }}</span>
-        <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: normal;">{{ t('total_rows', ts_data.records|length) }}</span>
+        <span>📋 Raw Physical Data Table Snapshot (First 15 Records)</span>
+        <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: normal;">{{ vis_data.total_count }}</span>
     </div>
     <div style="overflow-x: auto;">
         <table class="data-table">
             <thead>
                 <tr>
-                    {% for col in ts_data.columns[:10] %}
+                    {% for col in vis_data.columns %}
                         <th>{{ col }}</th>
                     {% endfor %}
                 </tr>
             </thead>
             <tbody>
-                {% for row in ts_data.records[:10] %}
+                {% for row in vis_data.records %}
                     <tr>
-                        {% for col in ts_data.columns[:10] %}
+                        {% for col in vis_data.columns %}
                             <td>{{ row[col] }}</td>
                         {% endfor %}
                     </tr>
@@ -192,117 +188,134 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // 1. Line Chart
-    const tsDom = document.getElementById('timeseriesChart');
-    if (tsDom) {
-        const tsChart = echarts.init(tsDom);
-        
-        const tsData = {{ ts_data|tojson }};
-        const doyList = tsData ? tsData.doy : [];
-        const hrList = tsData ? tsData.hr : [];
-        const ch4List = tsData ? tsData.ch4 : [];
-        const tList = tsData ? tsData.soil_temp : [];
-        const mList = tsData ? tsData.soil_moisture : [];
+    const vis = {{ vis_data|tojson }};
+    if (!vis) return;
 
-        const l1 = 'Microbial Biomass C (MBC) / HR';
-        const l2 = 'Microbial Biomass N (MBN) / Flux';
-        const l3 = 'Soil Temperature 10cm (°C)';
-        const l4 = 'Soil Moisture 10cm (m³/m³)';
+    // 1. Main Telemetry Chart
+    const mainDom = document.getElementById('mainTelemetryChart');
+    if (mainDom) {
+        const mainChart = echarts.init(mainDom);
+        
+        const legendData = [vis.series1_name, vis.series2_name];
+        if (vis.series3_name) legendData.push(vis.series3_name);
+
+        const seriesList = [
+            {
+                name: vis.series1_name,
+                type: vis.data_type === 'csv' ? 'bar' : 'line',
+                smooth: true,
+                data: vis.series1_data,
+                itemStyle: { color: '#2e7d32' },
+                lineStyle: { width: 2.5 }
+            },
+            {
+                name: vis.series2_name,
+                type: vis.data_type === 'csv' ? 'bar' : 'line',
+                smooth: true,
+                data: vis.series2_data,
+                itemStyle: { color: '#1565c0' },
+                lineStyle: { width: 2 }
+            }
+        ];
+
+        if (vis.series3_name && vis.series3_data) {
+            seriesList.push({
+                name: vis.series3_name,
+                type: vis.data_type === 'csv' ? 'bar' : 'line',
+                smooth: true,
+                data: vis.series3_data,
+                itemStyle: { color: '#e65100' },
+                lineStyle: { type: 'dashed' }
+            });
+        }
 
         const option = {
             tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
-            legend: { data: [l1, l2, l3, l4], top: 0 },
+            legend: { data: legendData, top: 0 },
             grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
             dataZoom: [
-                { type: 'slider', show: true, xAxisIndex: [0], start: 0, end: 85, bottom: 5 },
+                { type: 'slider', show: true, xAxisIndex: [0], start: 0, end: 100, bottom: 5 },
                 { type: 'inside', xAxisIndex: [0] }
             ],
             xAxis: {
                 type: 'category',
-                boundaryGap: false,
-                data: doyList.map(d => 'Index ' + d),
-                name: 'Index / Time'
+                boundaryGap: vis.data_type === 'csv',
+                data: vis.x_labels,
+                name: vis.x_axis_name,
+                axisLabel: { interval: 0, rotate: vis.data_type === 'csv' ? 25 : 0 }
             },
-            yAxis: [
-                {
-                    type: 'value',
-                    name: 'Microbial Pools',
-                    position: 'left',
-                    axisLine: { show: true, lineStyle: { color: '#245d3e' } }
-                },
-                {
-                    type: 'value',
-                    name: 'Thermal & Moisture',
-                    position: 'right',
-                    axisLine: { show: true, lineStyle: { color: '#8d6e63' } }
-                }
-            ],
-            series: [
-                { name: l1, type: 'line', smooth: true, data: hrList, itemStyle: { color: '#2e7d32' }, lineStyle: { width: 2.5 } },
-                { name: l2, type: 'line', smooth: true, data: ch4List, itemStyle: { color: '#1565c0' }, lineStyle: { width: 2 } },
-                { name: l3, type: 'line', yAxisIndex: 1, smooth: true, data: tList, itemStyle: { color: '#e65100' }, lineStyle: { type: 'dashed' } },
-                { name: l4, type: 'line', yAxisIndex: 1, smooth: true, data: mList, itemStyle: { color: '#00838f' }, lineStyle: { type: 'dotted' } }
-            ]
+            yAxis: {
+                type: 'value',
+                name: 'Biomass / Concentration (mmol/kg)',
+                axisLine: { show: true, lineStyle: { color: '#245d3e' } }
+            },
+            series: seriesList
         };
-        tsChart.setOption(option);
-        window.addEventListener('resize', () => tsChart.resize());
+        mainChart.setOption(option);
+        window.addEventListener('resize', () => mainChart.resize());
     }
 
-    // 2. Depth Profile
-    const depthDom = document.getElementById('depthChart');
+    // 2. Real Depth Attenuation Profile
+    const depthDom = document.getElementById('depthProfileChart');
     if (depthDom) {
         const depthChart = echarts.init(depthDom);
-        const depthData = {{ depth_data|tojson }};
-
-        const legFbc = 'Fungal Biomass Carbon (FBC)';
-        const legBbc = 'Bacterial Biomass Carbon (BBC)';
-        const legSoc = 'Soil Organic Carbon (SOC)';
-
         const depthOption = {
             tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
-            legend: { data: [legFbc, legBbc, legSoc], top: 0 },
+            legend: { data: ['Microbial C (mmol/kg)', 'Microbial N (mmol/kg)'], top: 0 },
             grid: { left: '4%', right: '5%', bottom: '8%', containLabel: true },
-            xAxis: { type: 'value', name: 'g C / m²' },
+            xAxis: { type: 'value', name: 'Concentration (mmol/kg)' },
             yAxis: {
                 type: 'category',
-                name: 'Depth',
-                inverse: true,
-                data: depthData.depth_labels
+                name: 'Soil Depth Horizon',
+                inverse: true, // Downward depth
+                data: vis.depth_labels
             },
             series: [
-                { name: legFbc, type: 'line', smooth: true, data: depthData.fbc, itemStyle: { color: '#6d4c41' }, areaStyle: { opacity: 0.15 } },
-                { name: legBbc, type: 'line', smooth: true, data: depthData.bbc, itemStyle: { color: '#2e7d32' }, areaStyle: { opacity: 0.15 } },
-                { name: legSoc, type: 'line', smooth: true, data: depthData.soc, itemStyle: { color: '#d97706' }, lineStyle: { type: 'dashed' } }
+                {
+                    name: 'Microbial C (mmol/kg)',
+                    type: 'line',
+                    smooth: true,
+                    data: vis.depth_c,
+                    itemStyle: { color: '#2e7d32' },
+                    areaStyle: { opacity: 0.15 }
+                },
+                {
+                    name: 'Microbial N (mmol/kg)',
+                    type: 'line',
+                    smooth: true,
+                    data: vis.depth_n,
+                    itemStyle: { color: '#1565c0' },
+                    areaStyle: { opacity: 0.15 }
+                }
             ]
         };
         depthChart.setOption(depthOption);
         window.addEventListener('resize', () => depthChart.resize());
     }
 
-    // 3. Kinetics
-    const kinDom = document.getElementById('kineticsChart');
+    // 3. Stoichiometry / Scaling Curve
+    const kinDom = document.getElementById('stoichiometryChart');
     if (kinDom) {
         const kinChart = echarts.init(kinDom);
-        const kinData = {{ kinetics_data|tojson }};
-
         const kinOption = {
             tooltip: { trigger: 'axis' },
             grid: { left: '4%', right: '5%', bottom: '8%', containLabel: true },
             xAxis: {
                 type: 'category',
-                name: 'Substrate [S] (g C/m³)',
-                data: kinData.substrate
+                name: vis.kin_x_label,
+                data: vis.kin_x
             },
             yAxis: {
                 type: 'value',
-                name: 'Decomposition Rate V (g C/m³/h)'
+                name: vis.kin_y_label
             },
             series: [{
-                name: 'Michaelis-Menten Kinetics',
+                name: 'Stoichiometric Scaling',
                 type: 'line',
                 smooth: true,
-                data: kinData.rate,
+                data: vis.kin_y,
                 itemStyle: { color: '#245d3e' },
+                lineStyle: { width: 3 },
                 areaStyle: {
                     color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
                         { offset: 0, color: 'rgba(36, 93, 62, 0.4)' },

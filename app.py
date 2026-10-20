@@ -4,12 +4,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from werkzeug.utils import secure_filename
 from config import Config
 from models import db, User, Dataset, Keyword, DownloadLog, StorageConfig, VariableDefinition, SiteLocation
-from services.data_parser import (
-    generate_sample_clm_timeseries,
-    parse_dataset_timeseries,
-    get_depth_profile_data,
-    calculate_kinetics_curve
-)
+from services.data_parser import parse_dataset_visualization_data
 from services.stats_service import get_dashboard_summary
 from services.oss_service import upload_to_oss, get_oss_download_url, get_active_oss_config
 from services.i18n import TRANSLATIONS
@@ -452,18 +447,14 @@ def index():
 def detail(dataset_id):
     dataset = Dataset.query.get_or_404(dataset_id)
     
-    # Read attached CSV file for client telemetry and table snapshots
-    ts_file = os.path.join(app.config['UPLOAD_FOLDER'], dataset.local_file_path or 'Soil_Microbial_Biomass_C_N_P_spatial.csv')
-    ts_data = parse_dataset_timeseries(ts_file)
-    depth_data = get_depth_profile_data()
-    kinetics_data = calculate_kinetics_curve()
+    # Read attached NetCDF or CSV file for real scientific visualization telemetry
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], dataset.local_file_path or 'Soil_Microbial_Biomass_C_N_P_spatial.csv')
+    vis_data = parse_dataset_visualization_data(file_path)
 
     return render_template(
         'detail.html',
         dataset=dataset,
-        ts_data=ts_data,
-        depth_data=depth_data,
-        kinetics_data=kinetics_data
+        vis_data=vis_data
     )
 
 @app.route('/analysis')
@@ -541,10 +532,7 @@ def upload():
                 file.save(save_path)
                 local_filename = fname
             else:
-                fname = f"sample_{title[:8].strip().replace(' ', '_')}_{yr_val}.csv"
-                save_path = os.path.join(app.config['UPLOAD_FOLDER'], fname)
-                generate_sample_clm_timeseries(save_path, year=yr_val)
-                local_filename = fname
+                local_filename = 'Soil_Microbial_Biomass_C_N_P_spatial.csv'
         else:
             local_filename = 'Soil_Microbial_Biomass_C_N_P_spatial.csv'
 
