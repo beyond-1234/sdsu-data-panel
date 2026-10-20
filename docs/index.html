@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Soil Microbial Data System (MicrobialDataSystem)</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="assets/js/echarts.min.js"></script>
+    <script src="assets/js/data.js"></script>
+    <style>
+        .page-view { display: none; }
+        .page-view.active { display: block; }
+        .interactive-link { cursor: pointer; }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="brand">
+            <span>🌿</span> MicrobialData
+        </div>
+        <div class="sub-brand">SDSU Soil Microbial & Terrestrial Ecology Hub</div>
+        
+        <ul class="sidebar-nav">
+            <li>
+                <a href="#/" id="navOverview" class="active">
+                    <span>🔍</span> Data Discovery & Slicer
+                </a>
+            </li>
+            <li>
+                <a href="javascript:void(0);" style="opacity: 0.45; cursor: not-allowed; pointer-events: none; text-decoration: none;" title="Module undergoing maintenance (Disabled)">
+                    <span>📈</span> Interactive Diagnostics <small style="font-size: 0.68rem; background: rgba(255,255,255,0.12); padding: 1px 6px; border-radius: 4px; margin-left: 6px;">Disabled</small>
+                </a>
+            </li>
+            <li>
+                <a href="#/upload" id="navUpload">
+                    <span>📤</span> Data Submission
+                </a>
+            </li>
+            <li>
+                <a href="#/admin" id="navAdmin">
+                    <span>📊</span> Admin Dashboard & Telemetry
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <div style="font-weight: 600; color: #fff;">Public Access Mode</div>
+            <div style="font-size: 0.78rem;">Static GitHub Pages Archive</div>
+            <div style="margin-top: 10px; font-size: 0.75rem; color: #64748b;">
+                SDSU EMAIL Lab © 2026<br>
+                MicrobialDataSystem
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+        <header class="top-header">
+            <div class="breadcrumbs" id="headerBreadcrumbs">
+                <a href="#/" style="color: inherit; text-decoration: none; font-weight: 500;">MicrobialData</a>
+                <span style="color: #94a3b8; margin: 0 2px;">/</span>
+                <span id="breadcrumbCurrent">Data Discovery & Slicer</span>
+            </div>
+            <div class="header-user-status">
+                <a href="https://github.com/email-clm/MicrobialDataSystem" target="_blank" class="btn btn-outline btn-sm">GitHub Repository ↗</a>
+            </div>
+        </header>
+
+        <main class="content-area">
+            <!-- 1. VIEW: Home & Slicer -->
+            <div id="viewHome" class="page-view active">
+                <div class="card" style="background: linear-gradient(135deg, #245d3e 0%, #1a3c29 100%); color: #fff; padding: 28px;">
+                    <h1 style="font-family: var(--font-serif); font-size: 1.8rem; margin-bottom: 8px;">Global Terrestrial Soil Microbial Properties Data Platform</h1>
+                    <p style="opacity: 0.88; font-size: 0.95rem; max-width: 860px; line-height: 1.6;">
+                        Archiving and distributing global soil microbial biomass carbon, nitrogen, phosphorus (MBC/MBN/MBP), fungal & bacterial pools, dissolved organic carbon (DOC), and metabolic quotient (qCO2) field observations and gridded simulations based on email-clm/MicrobialDataSystem.
+                    </p>
+                    <div style="margin-top: 18px; display: flex; gap: 12px; flex-wrap: wrap;">
+                        <span class="badge" id="statBadgeDatasets" style="background: rgba(255,255,255,0.2); color: #fff; border: none;">Managed Datasets: 2</span>
+                        <span class="badge" id="statBadgeDownloads" style="background: rgba(255,255,255,0.2); color: #fff; border: none;">Total Distributions: 3</span>
+                        <span class="badge" id="statBadgeKeywords" style="background: rgba(255,255,255,0.2); color: #fff; border: none;">Scientific Taxonomy Tags: 15</span>
+                        <span class="badge" id="statBadgeVariables" style="background: rgba(255,255,255,0.2); color: #fff; border: none;">Variables: 16</span>
+                    </div>
+                </div>
+
+                <!-- Multi-dimensional Scientific Data Slicer Panel -->
+                <div class="card" style="border-top: 4px solid var(--primary-light);">
+                    <div class="card-title">
+                        <span>🔬 Multi-Dimensional Scientific Data Slicer</span>
+                        <button type="button" onclick="resetFilters()" class="btn btn-outline btn-sm">Clear Slicer Filters</button>
+                    </div>
+
+                    <form id="dataSlicerForm" onsubmit="event.preventDefault(); applySlicerFilters();">
+                        <div class="form-group">
+                            <label class="form-label" for="searchQuery">Combined Query & Keyword</label>
+                            <input type="text" id="searchQuery" class="form-control" placeholder="Full-text search: title, abstract, site, variable code (e.g. MBC, MBN, DOC, Atqasuk...)" oninput="applySlicerFilters()">
+                        </div>
+
+                        <!-- Spatio-temporal Grid -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; background: #f8fafc; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                            <div>
+                                <label class="form-label" style="font-size: 0.82rem; color: #475569;">Start Year</label>
+                                <input type="number" id="filterStartYear" class="form-control" placeholder="e.g. 2010" min="1900" max="2100" oninput="applySlicerFilters()">
+                            </div>
+
+                            <div>
+                                <label class="form-label" style="font-size: 0.82rem; color: #475569;">End Year</label>
+                                <input type="number" id="filterEndYear" class="form-control" placeholder="e.g. 2024" min="1900" max="2100" oninput="applySlicerFilters()">
+                            </div>
+
+                            <div>
+                                <label class="form-label" style="font-size: 0.82rem; color: #475569;">Site Location</label>
+                                <select id="filterSite" class="form-control" onchange="applySlicerFilters()">
+                                    <option value="">All Sites</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="form-label" style="font-size: 0.82rem; color: #475569;">Data Type</label>
+                                <select id="filterDataType" class="form-control" onchange="applySlicerFilters()">
+                                    <option value="">All Data Types</option>
+                                    <option value="Field Observation">Field Observation</option>
+                                    <option value="Model Simulation">Model Simulation</option>
+                                    <option value="Hybrid">Hybrid Assimilation</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Biome Multi-select -->
+                        <div style="margin-bottom: 16px;">
+                            <label class="form-label" style="font-size: 0.85rem; font-weight: 600;">Biome Classification</label>
+                            <div id="biomeChecklist" style="display: flex; gap: 12px; flex-wrap: wrap;"></div>
+                        </div>
+
+                        <!-- Standardized Scientific Variables -->
+                        <div style="margin-bottom: 20px;">
+                            <label class="form-label" style="font-size: 0.85rem; font-weight: 600;">Standardized Scientific Variables</label>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; background: #fdfefe; border: 1px solid var(--border-color); border-radius: 8px; padding: 14px;">
+                                <div>
+                                    <div style="font-size: 0.8rem; font-weight: bold; color: var(--secondary); margin-bottom: 8px;">Microbial Biomass & Stoichiometry</div>
+                                    <div id="varsMicrobial" style="display: flex; flex-direction: column; gap: 6px;"></div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.8rem; font-weight: bold; color: #b45309; margin-bottom: 8px;">Soil Chemistry & Physical Drivers</div>
+                                    <div id="varsPhysics" style="display: flex; flex-direction: column; gap: 6px;"></div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.8rem; font-weight: bold; color: var(--primary); margin-bottom: 8px;">Gas & Carbon Fluxes</div>
+                                    <div id="varsGas" style="display: flex; flex-direction: column; gap: 6px;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: flex-end;">
+                            <button type="button" onclick="applySlicerFilters()" class="btn btn-primary" id="btnFilterCount" style="padding: 10px 28px; font-size: 0.95rem;">Filter Datasets</button>
+                        </div>
+                    </form>
+
+                    <!-- Popular Taxonomy Tags (Top 6 + Collapsible More) -->
+                    <div style="margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--border-color); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Key Tags:</span>
+                        <div id="keyTagsContainer" style="display: inline-flex; gap: 8px; flex-wrap: wrap; align-items: center;"></div>
+                    </div>
+                </div>
+
+                <!-- Dataset Cards List -->
+                <div id="datasetCardsContainer" style="display: flex; flex-direction: column; gap: 20px;"></div>
+            </div>
+
+            <!-- 2. VIEW: Dataset Detail -->
+            <div id="viewDetail" class="page-view">
+                <div id="detailContent"></div>
+            </div>
+
+            <!-- 3. VIEW: Upload Form (Simulated Static Form) -->
+            <div id="viewUpload" class="page-view">
+                <div class="card" style="max-width: 900px; margin: 0 auto;">
+                    <div class="card-title">
+                        <span>📤 Ingest & Share Scientific Dataset</span>
+                        <span class="badge badge-primary">GitHub & Local File & Cloud</span>
+                    </div>
+                    <p class="card-subtitle">
+                        In accordance with scientific data sharing standards, please enter accurate metadata. Submissions will be indexed and cataloged automatically.
+                    </p>
+                    <form onsubmit="event.preventDefault(); submitStaticUpload();">
+                        <div class="form-group">
+                            <label class="form-label">Dataset Title / Research Publication Name *</label>
+                            <input type="text" id="uploadTitle" class="form-control" placeholder="e.g., Global Soil Microbial Biomass Carbon and Nitrogen Dataset" required>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="form-group">
+                                <label class="form-label">Lead Author / Responsible Group *</label>
+                                <input type="text" id="uploadAuthor" class="form-control" placeholder="e.g., Xiaofeng Xu et al. (SDSU)" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Base Year *</label>
+                                <input type="number" id="uploadYear" class="form-control" value="2026" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Detailed Description & Scientific Background *</label>
+                            <textarea id="uploadDesc" class="form-control" rows="4" placeholder="Experimental design, sampling methods, geographical scope..." required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">GitHub Repository / Direct Download Link</label>
+                            <input type="url" id="uploadUrl" class="form-control" value="https://github.com/email-clm/MicrobialDataSystem">
+                        </div>
+                        <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px;">
+                            <a href="#/" class="btn btn-outline">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Submit & Ingest to Portal</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 4. VIEW: Admin Dashboard -->
+            <div id="viewAdmin" class="page-view">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+                    <div>
+                        <h1 style="font-family: var(--font-serif); font-size: 1.5rem; color: #1a202c;">Platform Management & Scientific Audit Telemetry</h1>
+                        <p style="font-size: 0.88rem; color: var(--text-muted);">Real-time telemetry on dataset distributions, research purposes, and data taxonomy.</p>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">Managed Datasets</div>
+                        <div class="stat-num" id="adminStatDatasets">2</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Total Distributions</div>
+                        <div class="stat-num" id="adminStatDownloads" style="color: var(--primary);">3</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Recorded Distributions</div>
+                        <div class="stat-num" id="adminStatRecords">3</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Active Subject Tags</div>
+                        <div class="stat-num" id="adminStatTags" style="color: var(--secondary);">15</div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 24px;">
+                    <div class="card">
+                        <div class="card-title">Distribution Volume by Dataset</div>
+                        <div id="adminTrendChart" style="width: 100%; height: 320px;"></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Archived Dataset Composition by Data Type</div>
+                        <div id="adminPurposeChart" style="width: 100%; height: 320px;"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <div>
+                <strong>MicrobialDataSystem Scientific Data Platform | SDSU EMAIL Lab</strong>
+            </div>
+            <div>
+                Repository: <a href="https://github.com/email-clm/MicrobialDataSystem" target="_blank" style="color: var(--primary);">email-clm/MicrobialDataSystem</a>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Download Modal -->
+    <div class="modal-overlay" id="downloadModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">Scientific Data Access & Usage Registration</div>
+                <button class="modal-close" onclick="closeDownloadModal()">&times;</button>
+            </div>
+            <form onsubmit="event.preventDefault(); confirmModalDownload();">
+                <div style="margin-bottom: 16px; font-size: 0.9rem; color: var(--text-muted);">
+                    You are requesting to access dataset:<br>
+                    <strong id="modalDatasetTitle" style="color: var(--text-dark);">-</strong>
+                    <div style="margin-top: 4px; font-size: 0.82rem;">Distribution Channel: <span id="modalSourceType">GitHub Stream</span></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="modalInstitution">Your Research Institution / University *</label>
+                    <input type="text" id="modalInstitution" class="form-control" placeholder="e.g., San Diego State University / CAS" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="modalPurpose">Research Purpose & Application Context *</label>
+                    <select id="modalPurpose" class="form-control" required>
+                        <option value="Academic Research" selected>Academic Research & Peer-Reviewed Publications</option>
+                        <option value="Model Calibration & Validation">Microbial & Land Model Calibration/Validation</option>
+                        <option value="Teaching & Education">Graduate / University Course Teaching</option>
+                        <option value="Cross-site Synthesis">Global Synthesis & Meta-analysis</option>
+                        <option value="General Exploration">General Scientific Exploration & Evaluation</option>
+                    </select>
+                </div>
+
+                <div style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 18px; line-height: 1.4;">
+                    * Governed by scientific data sharing policies. Purpose and institutional affiliations are recorded in the audit log for provenance and citation tracking.
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" class="btn btn-outline" onclick="closeDownloadModal()">Cancel</button>
+                    <button type="submit" id="modalSubmitBtn" class="btn btn-primary">Confirm Purpose & Start Download</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Static Application Script -->
+    <script src="assets/js/app.js"></script>
+</body>
+</html>
