@@ -438,10 +438,45 @@
     function renderDownloadButtons(ds, small) {
         var className = 'btn btn-primary' + (small ? ' btn-sm' : '');
         return datasetFiles(ds).map(function (file) {
+            var isCsv = /\.csv$/i.test(file.name || '');
             return '<a href="' + esc(file.url || rawFileUrl(ds)) + '" target="_blank" rel="noopener" ' +
-                'class="' + className + '" title="' + esc(file.name) + '">' +
+                'class="' + className + (isCsv ? ' js-download' : '') + '" ' +
+                'data-download-name="' + esc(file.name || 'dataset.csv') + '" ' +
+                (isCsv ? 'download ' : '') +
+                'title="' + esc(file.name) + '">' +
                 '⬇ ' + esc(fileLabel(file)) + '</a>';
         }).join('');
+    }
+
+    function forceCsvDownload(url, filename) {
+        function fallback() {
+            window.open(url, '_blank', 'noopener');
+        }
+
+        if (!window.fetch || !window.URL || !window.URL.createObjectURL) {
+            fallback();
+            return Promise.resolve();
+        }
+
+        return fetch(url, { mode: 'cors', credentials: 'omit' })
+            .then(function (response) {
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                return response.blob();
+            })
+            .then(function (blob) {
+                var objectUrl = window.URL.createObjectURL(blob);
+                var anchor = document.createElement('a');
+                anchor.href = objectUrl;
+                anchor.download = filename;
+                anchor.style.display = 'none';
+                document.body.appendChild(anchor);
+                anchor.click();
+                anchor.remove();
+                window.setTimeout(function () {
+                    window.URL.revokeObjectURL(objectUrl);
+                }, 1500);
+            })
+            .catch(fallback);
     }
 
     function renderDetail(ds) {
@@ -800,6 +835,32 @@
     window.applySlicerFilters = applySlicerFilters;
     window.resetFilters = resetFilters;
     window.toggleMoreKeywords = window.App.toggleTags;
+
+    /* CSV links are fetched and saved as Blobs so browsers always download them
+       instead of opening the raw text in a new tab. */
+    document.addEventListener('click', function (event) {
+        if (event.defaultPrevented || event.button !== 0 ||
+            event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+            return;
+        }
+        var link = event.target && event.target.closest
+            ? event.target.closest('a.js-download')
+            : null;
+        if (!link || link.dataset.busy === '1') return;
+
+        event.preventDefault();
+        var filename = link.getAttribute('data-download-name') || 'dataset.csv';
+        var original = link.innerHTML;
+        link.dataset.busy = '1';
+        link.style.opacity = '0.7';
+        link.innerHTML = '⬇ Preparing...';
+
+        forceCsvDownload(link.href, filename).then(function () {
+            link.dataset.busy = '';
+            link.style.opacity = '';
+            link.innerHTML = original;
+        });
+    });
 
     /* ----------------------------------------------------------------- boot */
 

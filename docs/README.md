@@ -36,7 +36,8 @@ docs/
 This build intentionally omits download counters, user authentication, registration, and
 dataset submission. Download buttons link straight to the archived source files, and the
 sidebar exposes a single page: Data Discovery & Slicer. Dataset detail pages open from the
-catalogue cards.
+catalogue cards. CSV files are fetched and saved as Blobs so Chrome and other browsers
+download them instead of opening raw text in a tab.
 
 All future updates to the static site should be made inside this `docs/` folder.
 
