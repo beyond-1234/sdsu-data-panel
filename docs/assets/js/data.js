@@ -1038,7 +1038,7 @@ window.PORTAL_DATA = {
       "author": "Xiaofeng Xu, Ziyu Guo, Yihui Wang, Zhongmei Wang, et al. (SDSU)",
       "year": 2021,
       "doi": "10.5061/dryad.73n5tb2v6",
-      "description": "Physical file: Soil_DOC.csv archived in data/Microbe Data/DOC (converted from the original Soil_DOC.xlsx workbook). Compiles 3,998 field observations from 33 countries across the 0-825 cm soil profile, covering dissolved organic carbon (DOC), total organic carbon (TOC), total nitrogen (TN), pH, MAT and MAP. The workbook also contains the 0-100 cm and >100 cm depth worksheets used to build the global DOC synthesis. References: Guo et al. (2020 GEB) and Xu et al. (2021 Dryad).",
+      "description": "Physical file: Soil_DOC.csv archived in data/Microbe Data/DOC. Compiles 3,998 field observations from 33 countries across the 0-825 cm soil profile, covering dissolved organic carbon (DOC), total organic carbon (TOC), total nitrogen (TN), pH, MAT and MAP. The source synthesis also includes 0-100 cm and >100 cm depth records used to build the global DOC product. References: Guo et al. (2020 GEB) and Xu et al. (2021 Dryad).",
       "spatial_scale": "Global",
       "site_code": "Global-Terrestrial",
       "site": {
