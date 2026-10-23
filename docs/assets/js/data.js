@@ -1038,7 +1038,7 @@ window.PORTAL_DATA = {
       "author": "Xiaofeng Xu, Ziyu Guo, Yihui Wang, Zhongmei Wang, et al. (SDSU)",
       "year": 2021,
       "doi": "10.5061/dryad.73n5tb2v6",
-      "description": "Physical file: Soil_DOC.xlsx archived in data/Microbe Data/DOC. Compiles 3,998 field observations from 33 countries across the 0-825 cm soil profile, covering dissolved organic carbon (DOC), total organic carbon (TOC), total nitrogen (TN), pH, MAT and MAP. The workbook also contains the 0-100 cm and >100 cm depth worksheets used to build the global DOC synthesis. References: Guo et al. (2020 GEB) and Xu et al. (2021 Dryad).",
+      "description": "Physical file: Soil_DOC.csv archived in data/Microbe Data/DOC (converted from the original Soil_DOC.xlsx workbook). Compiles 3,998 field observations from 33 countries across the 0-825 cm soil profile, covering dissolved organic carbon (DOC), total organic carbon (TOC), total nitrogen (TN), pH, MAT and MAP. The workbook also contains the 0-100 cm and >100 cm depth worksheets used to build the global DOC synthesis. References: Guo et al. (2020 GEB) and Xu et al. (2021 Dryad).",
       "spatial_scale": "Global",
       "site_code": "Global-Terrestrial",
       "site": {
@@ -1056,14 +1056,15 @@ window.PORTAL_DATA = {
       "min_depth": 0,
       "max_depth": 8.25,
       "data_source_type": "github",
-      "github_url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/DOC/Soil_DOC.xlsx",
-      "local_file_path": "data/Microbe Data/DOC/Soil_DOC.xlsx",
+      "github_url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/DOC/Soil_DOC.csv",
+      "local_file_path": "data/Microbe Data/DOC/Soil_DOC.csv",
       "files": [
         {
-          "name": "Soil_DOC.xlsx",
-          "path": "data/Microbe Data/DOC/Soil_DOC.xlsx",
-          "size": "1.3 MB",
-          "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/DOC/Soil_DOC.xlsx"
+          "name": "Soil_DOC.csv",
+          "label": "Observations CSV",
+          "path": "data/Microbe Data/DOC/Soil_DOC.csv",
+          "size": "1.9 MB",
+          "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/DOC/Soil_DOC.csv"
         }
       ],
       "keywords": [
@@ -1131,7 +1132,7 @@ window.PORTAL_DATA = {
         }
       ],
       "vis_data": {
-        "data_type": "xlsx",
+        "data_type": "csv",
         "chart_title": "Global Biome Dissolved Organic Carbon, TOC & TN Observations",
         "chart_subtitle": "Mean values aggregated from 3,998 field observations across 33 countries and the 0-825 cm soil profile",
         "x_labels": [
@@ -1463,6 +1464,7 @@ window.PORTAL_DATA = {
       "files": [
         {
           "name": "Global_Soil_DOC.nc",
+          "label": "DOC Grid NetCDF",
           "path": "data/Microbe Data/DOC/Global_Soil_DOC.nc",
           "size": "3.0 MB",
           "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/DOC/Global_Soil_DOC.nc"
@@ -1897,12 +1899,14 @@ window.PORTAL_DATA = {
       "files": [
         {
           "name": "POC_0-30.csv",
+          "label": "0-30 cm CSV",
           "path": "data/Microbe Data/POC/POC_0-30.csv",
           "size": "1.5 MB",
           "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/POC/POC_0-30.csv"
         },
         {
           "name": "POC_0_100.csv",
+          "label": "0-100 cm CSV",
           "path": "data/Microbe Data/POC/POC_0_100.csv",
           "size": "486 KB",
           "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/POC/POC_0_100.csv"
@@ -2350,6 +2354,7 @@ window.PORTAL_DATA = {
       "files": [
         {
           "name": "POC_Global_Map.nc",
+          "label": "POC Grid NetCDF",
           "path": "data/Microbe Data/POC/POC_Global_Map.nc",
           "size": "3.0 MB",
           "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/POC/POC_Global_Map.nc"

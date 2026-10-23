@@ -34,6 +34,9 @@ instance/
 .coverage
 htmlcov/
 
+# Data source spreadsheets (not distributed; export to CSV instead)
+*.xlsx
+
 # macOS
 .DS_Store
 

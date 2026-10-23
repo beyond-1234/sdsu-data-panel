@@ -64,7 +64,7 @@ open the site with an extra query parameter, for example `?t=202610202200`.
 
 1. the original metadata for datasets 1-2 in the existing bundle;
 2. the archived source files under `data/Microbe Data`:
-   - `DOC/Soil_DOC.xlsx`
+   - `DOC/Soil_DOC.csv`
    - `DOC/Global_Soil_DOC.nc`
    - `POC/POC_0-30.csv`
    - `POC/POC_0_100.csv`
@@ -76,5 +76,6 @@ After changing the source files, regenerate the bundle from the repository root:
 .venv/bin/python docs/tools/build_data.py
 ```
 
-The script requires `pandas`, `numpy`, and `openpyxl`. Download buttons point directly
-at the source files through `raw.githubusercontent.com` on the `gh-pages` branch.
+The script requires `pandas` and `numpy`. Only CSV and NetCDF files are published for
+download; the original Excel workbook is kept as a local authoring source and is not part
+of the public download set. Every file in a dataset is exposed as its own download link.

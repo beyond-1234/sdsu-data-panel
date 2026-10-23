@@ -143,10 +143,11 @@ def raw_url(rel_path: str) -> str:
     return RAW_BASE + quote(rel_path)
 
 
-def file_entry(rel_path: str) -> dict:
+def file_entry(rel_path: str, label: str | None = None) -> dict:
     path = ROOT / rel_path
     return {
         "name": path.name,
+        "label": label or path.name,
         "path": rel_path,
         "size": human_size(path),
         "url": raw_url(rel_path),
@@ -244,8 +245,7 @@ def binned_curve(x: np.ndarray, y: np.ndarray, mask: np.ndarray, upper: float, b
 
 
 def build_doc_observations() -> dict:
-    workbook = pd.ExcelFile(DATA_DIR / "DOC" / "Soil_DOC.xlsx")
-    frame = workbook.parse("Soil").copy()
+    frame = pd.read_csv(DATA_DIR / "DOC" / "Soil_DOC.csv", encoding="utf-8-sig").copy()
 
     frame["biome"] = frame["F Biome"].map(normalize_biome)
     numeric = {
@@ -310,8 +310,8 @@ def build_doc_observations() -> dict:
     date_min = int(math.floor(frame["Date"].min()))
     date_max = int(math.floor(frame["Date"].max()))
     country_count = int(frame["Country"].nunique())
-    rel_path = "data/Microbe Data/DOC/Soil_DOC.xlsx"
-    entry = file_entry(rel_path)
+    rel_path = "data/Microbe Data/DOC/Soil_DOC.csv"
+    entry = file_entry(rel_path, "Observations CSV")
 
     meta = {
         "id": 3,
@@ -320,7 +320,8 @@ def build_doc_observations() -> dict:
         "year": 2021,
         "doi": "10.5061/dryad.73n5tb2v6",
         "description": (
-            "Physical file: Soil_DOC.xlsx archived in data/Microbe Data/DOC. Compiles 3,998 "
+            "Physical file: Soil_DOC.csv archived in data/Microbe Data/DOC (converted from the "
+            "original Soil_DOC.xlsx workbook). Compiles 3,998 "
             f"field observations from {country_count} countries across the 0-825 cm soil profile, "
             "covering dissolved organic carbon (DOC), total organic carbon (TOC), total nitrogen "
             "(TN), pH, MAT and MAP. The workbook also contains the 0-100 cm and >100 cm depth "
@@ -359,7 +360,7 @@ def build_doc_observations() -> dict:
     }
 
     vis = {
-        "data_type": "xlsx",
+        "data_type": "csv",
         "chart_title": "Global Biome Dissolved Organic Carbon, TOC & TN Observations",
         "chart_subtitle": (
             f"Mean values aggregated from 3,998 field observations across {country_count} countries "
@@ -484,8 +485,8 @@ def build_poc_observations() -> dict:
     date_max = int(math.floor(frame["Date"].max()))
     country_count = int(frame["Country"].nunique())
     files = [
-        file_entry("data/Microbe Data/POC/POC_0-30.csv"),
-        file_entry("data/Microbe Data/POC/POC_0_100.csv"),
+        file_entry("data/Microbe Data/POC/POC_0-30.csv", "0-30 cm CSV"),
+        file_entry("data/Microbe Data/POC/POC_0_100.csv", "0-100 cm CSV"),
     ]
 
     meta = {
@@ -636,7 +637,7 @@ def build_doc_grid() -> dict:
         )
 
     rel_path = "data/Microbe Data/DOC/Global_Soil_DOC.nc"
-    entry = file_entry(rel_path)
+    entry = file_entry(rel_path, "DOC Grid NetCDF")
 
     meta = {
         "id": 4,
@@ -780,7 +781,7 @@ def build_poc_grid() -> dict:
         )
 
     rel_path = "data/Microbe Data/POC/POC_Global_Map.nc"
-    entry = file_entry(rel_path)
+    entry = file_entry(rel_path, "POC Grid NetCDF")
 
     meta = {
         "id": 6,

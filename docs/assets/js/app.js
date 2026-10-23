@@ -369,9 +369,9 @@
                 '</span></div>' +
                 (ds.files && ds.files.length ? '<div style="font-size:0.78rem;color:#718096;">' +
                     ds.files.length + ' data file' + (ds.files.length > 1 ? 's' : '') + '</div>' : '') +
-                '<div style="display:flex;gap:8px;margin-top:8px;">' +
+                '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;justify-content:flex-end;">' +
                 '<a href="#/dataset/' + ds.id + '" class="btn btn-outline btn-sm">Preview</a>' +
-                '<a href="' + esc(rawFileUrl(ds)) + '" target="_blank" rel="noopener" class="btn btn-primary btn-sm">Download</a>' +
+                renderDownloadButtons(ds, true) +
                 '</div></div></div></div>';
         }).join('');
     }
@@ -418,32 +418,30 @@
 
     function datasetFiles(ds) {
         if (ds.files && ds.files.length) return ds.files;
+        var name = (ds.local_file_path || 'dataset').split('/').pop();
+        var ext = (name.split('.').pop() || '').toUpperCase();
         return [{
-            name: (ds.local_file_path || 'dataset').split('/').pop(),
+            name: name,
+            label: ext === 'NC' ? 'Download NetCDF' : 'Download ' + (ext || 'File'),
             url: rawFileUrl(ds),
             size: ''
         }];
     }
 
-    function renderDataFiles(ds) {
-        var files = datasetFiles(ds);
-        var rows = files.map(function (file, index) {
-            return '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;' +
-                'padding:8px 0;' + (index ? 'border-top:1px dashed var(--border-color);' : '') + '">' +
-                '<div style="min-width:0;">' +
-                '<a href="' + esc(file.url || rawFileUrl(ds)) + '" target="_blank" rel="noopener" ' +
-                'style="color:var(--primary);font-weight:600;text-decoration:none;word-break:break-all;">' +
-                '⬇ ' + esc(file.name) + '</a>' +
-                (index === 0 ? ' <span style="font-size:0.72rem;color:#94a3b8;">(primary)</span>' : '') +
-                '</div>' +
-                '<span style="font-size:0.78rem;color:#64748b;white-space:nowrap;">' + esc(file.size || '') + '</span>' +
-                '</div>';
-        }).join('');
+    function fileLabel(file) {
+        if (file.label) return file.label;
+        var ext = (String(file.name || '').split('.').pop() || '').toUpperCase();
+        if (ext === 'NC') return 'Download NetCDF';
+        return 'Download ' + (ext || 'File');
+    }
 
-        return '<div style="margin-top:14px;padding:12px 16px;background:#fff;' +
-            'border:1px solid var(--border-color);border-radius:8px;">' +
-            '<div style="font-size:0.8rem;font-weight:bold;color:#475569;margin-bottom:4px;">' +
-            'Data Files (' + files.length + ')</div>' + rows + '</div>';
+    function renderDownloadButtons(ds, small) {
+        var className = 'btn btn-primary' + (small ? ' btn-sm' : '');
+        return datasetFiles(ds).map(function (file) {
+            return '<a href="' + esc(file.url || rawFileUrl(ds)) + '" target="_blank" rel="noopener" ' +
+                'class="' + className + '" title="' + esc(file.name) + '">' +
+                '⬇ ' + esc(fileLabel(file)) + '</a>';
+        }).join('');
     }
 
     function renderDetail(ds) {
@@ -489,9 +487,8 @@
             (ds.doi ? ' | DOI: <a href="https://doi.org/' + esc(ds.doi) + '" target="_blank" rel="noopener" ' +
                 'style="color:var(--primary);">' + esc(ds.doi) + '</a>' : '') +
             '</div></div>' +
-            '<div style="text-align:right;min-width:200px;">' +
-            '<a href="' + esc(rawFileUrl(ds)) + '" target="_blank" rel="noopener" ' +
-            'class="btn btn-primary" style="width:100%;">Download Dataset</a>' +
+            '<div style="text-align:right;min-width:220px;">' +
+            '<div style="display:flex;flex-direction:column;gap:8px;">' + renderDownloadButtons(ds, false) + '</div>' +
             (ds.github_url ? '<div style="margin-top:8px;font-size:0.75rem;">' +
                 '<a href="' + GITHUB_REPO_URL + '" target="_blank" rel="noopener" style="color:#64748b;text-decoration:none;">' +
                 'View GitHub Repository</a></div>' : '') +
@@ -518,8 +515,6 @@
                 'border:1px solid var(--border-color);border-radius:8px;">' +
                 '<div style="font-size:0.8rem;font-weight:bold;color:#475569;margin-bottom:8px;">Managed Variables</div>' +
                 '<div style="display:flex;gap:8px;flex-wrap:wrap;">' + variables + '</div></div>' : '') +
-
-            renderDataFiles(ds) +
 
             '<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border-color);' +
             'line-height:1.65;color:#374151;">' +
