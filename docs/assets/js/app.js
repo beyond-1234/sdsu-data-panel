@@ -145,7 +145,7 @@
         var list = [];
         if (ds.site && ds.site.biome) list.push(ds.site.biome);
         var vis = ds.vis_data;
-        if (vis && vis.data_type === 'csv' && vis.x_labels) {
+        if (vis && vis.data_type !== 'netcdf' && vis.x_labels) {
             vis.x_labels.forEach(function (label) {
                 if (label && list.indexOf(label) === -1) list.push(label);
             });
@@ -256,6 +256,7 @@
                 ds.site ? ds.site.site_name : '',
                 ds.site ? ds.site.biome : ''
             ].concat(ds.keywords || [])
+                .concat((ds.vis_data && ds.vis_data.x_labels) || [])
                 .concat((ds.variables || []).map(function (v) {
                     return v.code + ' ' + (v.display_name_en || v.display_name);
                 }))
@@ -366,6 +367,8 @@
                 '<div style="font-size:0.78rem;color:#718096;">Channel <span style="color:#0366d6;">' +
                 esc(ds.data_source_type === 'github' ? 'GitHub Mirror' : (ds.data_source_type === 'oss' ? 'OSS Channel' : 'Local Archive')) +
                 '</span></div>' +
+                (ds.files && ds.files.length ? '<div style="font-size:0.78rem;color:#718096;">' +
+                    ds.files.length + ' data file' + (ds.files.length > 1 ? 's' : '') + '</div>' : '') +
                 '<div style="display:flex;gap:8px;margin-top:8px;">' +
                 '<a href="#/dataset/' + ds.id + '" class="btn btn-outline btn-sm">Preview</a>' +
                 '<a href="' + esc(rawFileUrl(ds)) + '" target="_blank" rel="noopener" class="btn btn-primary btn-sm">Download</a>' +
@@ -412,6 +415,36 @@
     }
 
     /* --------------------------------------------------------- detail view */
+
+    function datasetFiles(ds) {
+        if (ds.files && ds.files.length) return ds.files;
+        return [{
+            name: (ds.local_file_path || 'dataset').split('/').pop(),
+            url: rawFileUrl(ds),
+            size: ''
+        }];
+    }
+
+    function renderDataFiles(ds) {
+        var files = datasetFiles(ds);
+        var rows = files.map(function (file, index) {
+            return '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;' +
+                'padding:8px 0;' + (index ? 'border-top:1px dashed var(--border-color);' : '') + '">' +
+                '<div style="min-width:0;">' +
+                '<a href="' + esc(file.url || rawFileUrl(ds)) + '" target="_blank" rel="noopener" ' +
+                'style="color:var(--primary);font-weight:600;text-decoration:none;word-break:break-all;">' +
+                '⬇ ' + esc(file.name) + '</a>' +
+                (index === 0 ? ' <span style="font-size:0.72rem;color:#94a3b8;">(primary)</span>' : '') +
+                '</div>' +
+                '<span style="font-size:0.78rem;color:#64748b;white-space:nowrap;">' + esc(file.size || '') + '</span>' +
+                '</div>';
+        }).join('');
+
+        return '<div style="margin-top:14px;padding:12px 16px;background:#fff;' +
+            'border:1px solid var(--border-color);border-radius:8px;">' +
+            '<div style="font-size:0.8rem;font-weight:bold;color:#475569;margin-bottom:4px;">' +
+            'Data Files (' + files.length + ')</div>' + rows + '</div>';
+    }
 
     function renderDetail(ds) {
         var host = document.getElementById('detailContent');
@@ -486,6 +519,8 @@
                 '<div style="font-size:0.8rem;font-weight:bold;color:#475569;margin-bottom:8px;">Managed Variables</div>' +
                 '<div style="display:flex;gap:8px;flex-wrap:wrap;">' + variables + '</div></div>' : '') +
 
+            renderDataFiles(ds) +
+
             '<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border-color);' +
             'line-height:1.65;color:#374151;">' +
             '<h3 style="font-family:var(--font-serif);font-size:1.05rem;margin-bottom:8px;">Abstract</h3>' +
@@ -512,9 +547,11 @@
             '<div id="mainTelemetryChart" style="width:100%;height:420px;"></div></div>' +
 
             '<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">' +
-            '<div class="card"><div class="card-title">📉 Soil Depth Gradient Attenuation</div>' +
-            '<p class="card-subtitle">Vertical profile of microbial biomass across the archived soil depth horizons</p>' +
-            '<div id="depthProfileChart" style="width:100%;height:350px;"></div></div>' +
+            '<div class="card"><div class="card-title">📉 ' +
+            esc(vis.depth_title || 'Soil Depth Gradient Attenuation') + '</div>' +
+            '<p class="card-subtitle">' +
+            esc(vis.depth_subtitle || 'Vertical profile of the archived soil depth horizons') +
+            '</p><div id="depthProfileChart" style="width:100%;height:350px;"></div></div>' +
             '<div class="card"><div class="card-title">🔬 ' + esc(vis.kin_title) + '</div>' +
             '<p class="card-subtitle">' + esc(vis.kin_subtitle) + '</p>' +
             '<div id="stoichiometryChart" style="width:100%;height:350px;"></div></div></div>';
@@ -529,7 +566,7 @@
             }).join('');
 
             html += '<div class="card"><div class="card-title">' +
-                '<span>📋 Raw Physical Data Table Snapshot (First ' + vis.records.length + ' Records)</span>' +
+                '<span>📋 Raw Data Table Snapshot (' + vis.records.length + ' Sampled Records)</span>' +
                 '<span style="font-size:0.82rem;color:var(--text-muted);font-weight:normal;">' +
                 esc(vis.total_count) + '</span></div>' +
                 '<div style="overflow-x:auto;"><table class="data-table">' +
@@ -552,14 +589,24 @@
         var mainDom = document.getElementById('mainTelemetryChart');
         if (mainDom) {
             var mainChart = echarts.init(mainDom);
-            var isCsv = vis.data_type === 'csv';
+            var isTabular = vis.data_type !== 'netcdf';
+            var axis1 = vis.series1_axis || 0;
+            var axis2 = vis.series2_axis || 0;
+            var axis3 = vis.series3_axis || 0;
+            var hasSecondary = axis2 === 1 || axis3 === 1 || !!vis.y_axis_name2;
             var legend = [vis.series1_name, vis.series2_name];
             if (vis.series3_name) legend.push(vis.series3_name);
+
+            function seriesTypeFor(axis) {
+                if (axis === 1) return 'line';
+                return isTabular ? 'bar' : 'line';
+            }
 
             var series = [
                 {
                     name: vis.series1_name,
-                    type: isCsv ? 'bar' : 'line',
+                    type: seriesTypeFor(axis1),
+                    yAxisIndex: axis1,
                     smooth: true,
                     data: vis.series1_data,
                     itemStyle: { color: '#2e7d32' },
@@ -567,7 +614,8 @@
                 },
                 {
                     name: vis.series2_name,
-                    type: isCsv ? 'bar' : 'line',
+                    type: seriesTypeFor(axis2),
+                    yAxisIndex: axis2,
                     smooth: true,
                     data: vis.series2_data,
                     itemStyle: { color: '#1565c0' },
@@ -578,43 +626,62 @@
             if (vis.series3_name && vis.series3_data) {
                 series.push({
                     name: vis.series3_name,
-                    type: isCsv ? 'bar' : 'line',
+                    type: seriesTypeFor(axis3),
+                    yAxisIndex: axis3,
                     smooth: true,
                     data: vis.series3_data,
                     itemStyle: { color: '#e65100' },
-                    lineStyle: { type: 'dashed' }
+                    lineStyle: { type: 'dashed', width: 2 }
+                });
+            }
+
+            var yAxes = [{
+                type: 'value',
+                name: vis.y_axis_name || 'Biomass / Concentration (mmol/kg)',
+                nameLocation: 'middle',
+                nameRotate: 90,
+                nameGap: 62,
+                axisLine: { show: true, lineStyle: { color: '#245d3e' } }
+            }];
+            if (hasSecondary) {
+                yAxes.push({
+                    type: 'value',
+                    name: vis.y_axis_name2 || 'Secondary axis',
+                    position: 'right',
+                    nameLocation: 'middle',
+                    nameRotate: 90,
+                    nameGap: 58,
+                    axisLine: { show: true, lineStyle: { color: '#e65100' } }
                 });
             }
 
             mainChart.setOption({
                 tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
                 legend: { data: legend, top: 0, type: 'scroll' },
-                grid: { left: '10%', right: '4%', bottom: '18%', containLabel: true },
+                grid: {
+                    left: '10%',
+                    right: hasSecondary ? '10%' : '4%',
+                    bottom: '18%',
+                    containLabel: true
+                },
                 dataZoom: [
                     { type: 'slider', show: true, xAxisIndex: [0], start: 0, end: 100, bottom: 5 },
                     { type: 'inside', xAxisIndex: [0] }
                 ],
                 xAxis: {
                     type: 'category',
-                    boundaryGap: isCsv,
+                    boundaryGap: isTabular,
                     data: vis.x_labels,
                     name: vis.x_axis_name,
                     nameLocation: 'middle',
                     nameGap: 52,
                     axisLabel: {
-                        interval: isCsv ? 0 : Math.ceil(vis.x_labels.length / 18),
-                        rotate: isCsv ? 25 : 45,
+                        interval: isTabular ? 0 : Math.ceil(vis.x_labels.length / 18),
+                        rotate: isTabular ? 25 : 45,
                         hideOverlap: true
                     }
                 },
-                yAxis: {
-                    type: 'value',
-                    name: 'Biomass / Concentration (mmol/kg)',
-                    nameLocation: 'middle',
-                    nameRotate: 90,
-                    nameGap: 62,
-                    axisLine: { show: true, lineStyle: { color: '#245d3e' } }
-                },
+                yAxis: yAxes,
                 series: series
             });
             charts.push(mainChart);
@@ -623,13 +690,21 @@
         var depthDom = document.getElementById('depthProfileChart');
         if (depthDom) {
             var depthChart = echarts.init(depthDom);
+            var depthSeries = (vis.depth_series && vis.depth_series.length)
+                ? vis.depth_series
+                : [
+                    { name: 'Microbial C (mmol/kg)', data: vis.depth_c, color: '#2e7d32' },
+                    { name: 'Microbial N (mmol/kg)', data: vis.depth_n, color: '#1565c0' }
+                ];
+            var depthNames = depthSeries.map(function (item) { return item.name; });
+
             depthChart.setOption({
                 tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
-                legend: { data: ['Microbial C (mmol/kg)', 'Microbial N (mmol/kg)'], top: 0 },
+                legend: { data: depthNames, top: 0, type: 'scroll' },
                 grid: { left: '4%', right: '5%', bottom: '14%', containLabel: true },
                 xAxis: {
                     type: 'value',
-                    name: 'Concentration (mmol/kg)',
+                    name: vis.depth_x_axis_name || vis.y_axis_name || 'Concentration (mmol/kg)',
                     nameLocation: 'middle',
                     nameGap: 30
                 },
@@ -638,18 +713,17 @@
                     inverse: true,
                     data: vis.depth_labels
                 },
-                series: [
-                    {
-                        name: 'Microbial C (mmol/kg)', type: 'line', smooth: true,
-                        data: vis.depth_c, itemStyle: { color: '#2e7d32' },
+                series: depthSeries.map(function (item) {
+                    return {
+                        name: item.name,
+                        type: 'line',
+                        smooth: true,
+                        data: item.data,
+                        itemStyle: { color: item.color || '#2e7d32' },
+                        lineStyle: item.dash ? { type: 'dashed', width: 2 } : { width: 2 },
                         areaStyle: { opacity: 0.15 }
-                    },
-                    {
-                        name: 'Microbial N (mmol/kg)', type: 'line', smooth: true,
-                        data: vis.depth_n, itemStyle: { color: '#1565c0' },
-                        areaStyle: { opacity: 0.15 }
-                    }
-                ]
+                    };
+                })
             });
             charts.push(depthChart);
         }

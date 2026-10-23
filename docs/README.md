@@ -12,9 +12,11 @@ docs/
   .nojekyll             disables Jekyll processing on GitHub Pages
   assets/
     css/style.css       portal styles
-    js/data.js          data snapshot exported from the Flask database
-    js/app.js           hash router, slicer, detail charts, catalogue telemetry
+    js/data.js          catalogue snapshot and visualization payloads
+    js/app.js           hash router, slicer, detail charts
     js/echarts.min.js   charting library
+  tools/
+    build_data.py       rebuilds data.js from the archived source files
 ```
 
 ## Routes
@@ -22,8 +24,12 @@ docs/
 | URL | View |
 | --- | --- |
 | `#/` | Data discovery, multi-dimensional slicer, dataset cards |
-| `#/dataset/1` | CSV observation dataset detail page with real charts |
-| `#/dataset/2` | NetCDF gridded dataset detail page with real charts |
+| `#/dataset/1` | Microbial biomass C/N/P observations |
+| `#/dataset/2` | Microbial biomass C/N gridded simulation |
+| `#/dataset/3` | Soil DOC field observations (Excel workbook) |
+| `#/dataset/4` | Soil DOC 0.5-degree gridded dataset |
+| `#/dataset/5` | Soil POC field observations (0-30 cm and 0-100 cm) |
+| `#/dataset/6` | Soil POC 0.5-degree gridded dataset |
 
 ## Scope of the static build
 
@@ -54,10 +60,21 @@ open the site with an extra query parameter, for example `?t=202610202200`.
 
 ## Updating the data snapshot
 
-`assets/js/data.js` is exported from the Flask database and contains the dataset metadata,
-managed variables, taxonomy tags, and the pre-computed visualization payloads for both
-physical files (`Soil_Microbial_Biomass_C_N_P_spatial.csv` and
-`Global_Soil_Microbial_BiomassCN.nc`).
+`assets/js/data.js` is generated from two sources:
 
-After changing the database or the parser in the backend branch, re-export the bundle and
-replace `assets/js/data.js` before publishing.
+1. the original metadata for datasets 1-2 in the existing bundle;
+2. the archived source files under `data/Microbe Data`:
+   - `DOC/Soil_DOC.xlsx`
+   - `DOC/Global_Soil_DOC.nc`
+   - `POC/POC_0-30.csv`
+   - `POC/POC_0_100.csv`
+   - `POC/POC_Global_Map.nc`
+
+After changing the source files, regenerate the bundle from the repository root:
+
+```bash
+.venv/bin/python docs/tools/build_data.py
+```
+
+The script requires `pandas`, `numpy`, and `openpyxl`. Download buttons point directly
+at the source files through `raw.githubusercontent.com` on the `gh-pages` branch.
