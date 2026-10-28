@@ -8,7 +8,40 @@
     'use strict';
 
     var DATA = window.PORTAL_DATA || { datasets: [], variables: [], keywords: [], sites: [] };
-    var GITHUB_REPO_URL = 'https://github.com/email-clm/MicrobialDataSystem';
+    var UPSTREAM_RAW_BASE = 'https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/';
+    var UPSTREAM_REPO_URL = 'https://github.com/beyond-1234/sdsu-data-panel';
+    var DATA_BRANCH = 'gh-pages';
+
+    function detectRepoCoordinates(hostname, pathname) {
+        var host = hostname || window.location.hostname || '';
+        var path = pathname || window.location.pathname || '';
+        if (!/\.github\.io$/i.test(host)) return null;
+        var owner = host.replace(/\.github\.io$/i, '');
+        var segments = path.split('/').filter(function (part) { return part.length > 0; });
+        var repo = segments.length ? decodeURIComponent(segments[0]) : owner + '.github.io';
+        return { owner: owner, repo: repo };
+    }
+
+    var REPO_COORDS = detectRepoCoordinates();
+
+    function repoRawBase() {
+        if (!REPO_COORDS) return UPSTREAM_RAW_BASE;
+        return 'https://raw.githubusercontent.com/' + REPO_COORDS.owner + '/' +
+            REPO_COORDS.repo + '/' + DATA_BRANCH + '/';
+    }
+
+    function githubRepoUrl() {
+        if (!REPO_COORDS) return UPSTREAM_REPO_URL;
+        return 'https://github.com/' + REPO_COORDS.owner + '/' + REPO_COORDS.repo;
+    }
+
+    function resolveRepoUrl(url) {
+        if (!url || !REPO_COORDS) return url;
+        if (url.indexOf(UPSTREAM_RAW_BASE) === 0) {
+            return repoRawBase() + url.slice(UPSTREAM_RAW_BASE.length);
+        }
+        return url;
+    }
 
     var state = {
         query: '',
@@ -44,7 +77,7 @@
     }
 
     function rawFileUrl(ds) {
-        if (ds.github_url) return ds.github_url;
+        if (ds.github_url) return resolveRepoUrl(ds.github_url);
         return 'https://raw.githubusercontent.com/email-clm/MicrobialDataSystem/master/' +
             encodeURIComponent(ds.local_file_path || '');
     }
@@ -440,7 +473,7 @@
         var className = 'btn btn-primary' + (small ? ' btn-sm' : '');
         return datasetFiles(ds).map(function (file) {
             var isCsv = /\.csv$/i.test(file.name || '');
-            return '<a href="' + esc(file.url || rawFileUrl(ds)) + '" target="_blank" rel="noopener" ' +
+            return '<a href="' + esc(resolveRepoUrl(file.url || rawFileUrl(ds))) + '" target="_blank" rel="noopener" ' +
                 'class="' + className + (isCsv ? ' js-download' : '') + '" ' +
                 'data-download-name="' + esc(file.name || 'dataset.csv') + '" ' +
                 (isCsv ? 'download ' : '') +
@@ -526,7 +559,7 @@
             '<div style="text-align:right;min-width:220px;">' +
             '<div style="display:flex;flex-direction:column;gap:8px;">' + renderDownloadButtons(ds, false) + '</div>' +
             (ds.github_url ? '<div style="margin-top:8px;font-size:0.75rem;">' +
-                '<a href="' + GITHUB_REPO_URL + '" target="_blank" rel="noopener" style="color:#64748b;text-decoration:none;">' +
+                '<a href="' + esc(githubRepoUrl()) + '" target="_blank" rel="noopener" style="color:#64748b;text-decoration:none;">' +
                 'View GitHub Repository</a></div>' : '') +
             '</div></div>' +
 
@@ -811,6 +844,17 @@
     window.App = {
         applySlicerFilters: applySlicerFilters,
         resetFilters: resetFilters,
+        repoInfo: function () {
+            return {
+                detected: !!REPO_COORDS,
+                owner: REPO_COORDS ? REPO_COORDS.owner : null,
+                repo: REPO_COORDS ? REPO_COORDS.repo : null,
+                branch: DATA_BRANCH,
+                rawBase: repoRawBase(),
+                repository: githubRepoUrl()
+            };
+        },
+        detectRepo: detectRepoCoordinates,
         toggleTags: function () {
             state.tagsExpanded = !state.tagsExpanded;
             renderKeyTags();

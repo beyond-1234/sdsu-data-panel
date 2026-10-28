@@ -58,6 +58,16 @@ All future updates to the static site should be made inside this `docs/` folder.
 All asset paths are relative, so the build works from a project sub-path as well as a
 custom domain. Hash routing avoids any server-side rewrite rules.
 
+## Forking
+
+GitHub does not copy Pages settings when a repository is forked. After forking, open
+**Settings → Pages**, choose **Deploy from a branch**, then select `gh-pages` and `/docs`.
+
+At runtime the portal reads the `<owner>.github.io/<repository>/` address and rewrites
+first-party download and repository links to the current fork. The fork must keep the
+`gh-pages` branch with the `data/` folder. Custom domains cannot be inferred from the URL,
+so they fall back to the upstream repository links.
+
 ## Cache busting
 
 Each page load creates an access timestamp (`window.__ACCESS_TS__`). The stylesheet,
