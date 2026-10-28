@@ -2,7 +2,9 @@
 
 Reads the archived source files under ``data/Microbe Data`` and regenerates
 ``docs/assets/js/data.js`` with dataset metadata, search facets, and real
-visualization payloads. Run from the repository root:
+visualization payloads. First-party file URLs are stored as repository-relative
+paths so a fork resolves them against its own GitHub Pages origin. Run from the
+repository root:
 
     .venv/bin/python docs/tools/build_data.py
 """
@@ -15,7 +17,6 @@ import os
 import re
 import struct
 from pathlib import Path
-from urllib.parse import quote
 
 import h5py
 import numpy as np
@@ -26,8 +27,7 @@ ROOT = Path(__file__).resolve().parents[2]
 DOCS = ROOT / "docs"
 DATA_DIR = ROOT / "data" / "Microbe Data"
 DATA_JS = DOCS / "assets" / "js" / "data.js"
-
-RAW_BASE = "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/"
+LEGACY_RAW_BASE = "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/"
 
 VEG_NAMES = {
     101: "Boreal Forest",
@@ -142,18 +142,19 @@ def human_size(path: Path) -> str:
     return f"{size / 1024:.0f} KB"
 
 
-def raw_url(rel_path: str) -> str:
-    return RAW_BASE + quote(rel_path)
-
-
 def file_entry(rel_path: str, label: str | None = None) -> dict:
+    """Return a repository-relative file record.
+
+    The browser resolves the path against the current GitHub Pages fork, so the
+    generated bundle does not need to know the owner or repository name.
+    """
     path = ROOT / rel_path
     return {
         "name": path.name,
         "label": label or path.name,
         "path": rel_path,
         "size": human_size(path),
-        "url": raw_url(rel_path),
+        "url": rel_path,
     }
 
 
@@ -1990,6 +1991,15 @@ def main() -> None:
                     "biome": "Global / Multi-Biome",
                 }
             )
+
+    # Store first-party files as repository-relative paths so forks resolve them
+    # against their own owner/repository at runtime.
+    for dataset in bundle["datasets"]:
+        if str(dataset.get("github_url", "")).startswith(LEGACY_RAW_BASE):
+            dataset["github_url"] = dataset.get("local_file_path") or dataset["github_url"]
+        for file_info in dataset.get("files", []):
+            if str(file_info.get("url", "")).startswith(LEGACY_RAW_BASE):
+                file_info["url"] = file_info.get("path") or file_info["url"]
 
     output = prefix + json.dumps(bundle, indent=2, ensure_ascii=False, allow_nan=False) + ";"
     DATA_JS.write_text(output, encoding="utf-8")

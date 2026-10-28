@@ -1,7 +1,7 @@
 /* =========================================================================
    MicrobialDataSystem - Static GitHub Pages Application
    Pure client-side rendering of the archived dataset catalogue.
-   Data source: assets/js/data.js (exported from the Flask database).
+   Data source: assets/js/data.js (generated from the archived source files).
    ========================================================================= */
 
 (function () {
@@ -43,6 +43,12 @@
         return url;
     }
 
+    function repoAssetUrl(pathOrUrl) {
+        if (!pathOrUrl) return '';
+        if (/^https?:\/\//i.test(pathOrUrl)) return resolveRepoUrl(pathOrUrl);
+        return repoRawBase() + encodeURI(String(pathOrUrl).replace(/^\/+/, ''));
+    }
+
     var state = {
         query: '',
         startYear: '',
@@ -77,9 +83,12 @@
     }
 
     function rawFileUrl(ds) {
-        if (ds.github_url) return resolveRepoUrl(ds.github_url);
-        return 'https://raw.githubusercontent.com/email-clm/MicrobialDataSystem/master/' +
-            encodeURIComponent(ds.local_file_path || '');
+        if (ds.github_url) {
+            if (/^https?:\/\//i.test(ds.github_url)) return resolveRepoUrl(ds.github_url);
+            return repoAssetUrl(ds.github_url);
+        }
+        if (ds.local_file_path) return repoAssetUrl(ds.local_file_path);
+        return '';
     }
 
     function showToast(message) {
@@ -473,7 +482,7 @@
         var className = 'btn btn-primary' + (small ? ' btn-sm' : '');
         return datasetFiles(ds).map(function (file) {
             var isCsv = /\.csv$/i.test(file.name || '');
-            return '<a href="' + esc(resolveRepoUrl(file.url || rawFileUrl(ds))) + '" target="_blank" rel="noopener" ' +
+            return '<a href="' + esc(repoAssetUrl(file.url || file.path || rawFileUrl(ds))) + '" target="_blank" rel="noopener" ' +
                 'class="' + className + (isCsv ? ' js-download' : '') + '" ' +
                 'data-download-name="' + esc(file.name || 'dataset.csv') + '" ' +
                 (isCsv ? 'download ' : '') +
@@ -921,6 +930,14 @@
         if (datasetCount) datasetCount.textContent = 'Managed Datasets: ' + DATA.datasets.length;
         if (keywordCount) keywordCount.textContent = 'Scientific Taxonomy Tags: ' + DATA.keywords.length;
         if (variableCount) variableCount.textContent = 'Variables: ' + DATA.variables.length;
+
+        var footerRepo = document.getElementById('footerRepoLink');
+        if (footerRepo) {
+            footerRepo.href = githubRepoUrl();
+            footerRepo.textContent = REPO_COORDS
+                ? REPO_COORDS.owner + '/' + REPO_COORDS.repo
+                : 'beyond-1234/sdsu-data-panel';
+        }
 
         populateFilters();
         renderDatasetCards();

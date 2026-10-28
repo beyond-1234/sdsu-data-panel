@@ -1056,7 +1056,7 @@ window.PORTAL_DATA = {
       "min_depth": 0,
       "max_depth": 8.25,
       "data_source_type": "github",
-      "github_url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/DOC/Soil_DOC.csv",
+      "github_url": "data/Microbe Data/DOC/Soil_DOC.csv",
       "local_file_path": "data/Microbe Data/DOC/Soil_DOC.csv",
       "files": [
         {
@@ -1064,7 +1064,7 @@ window.PORTAL_DATA = {
           "label": "Observations CSV",
           "path": "data/Microbe Data/DOC/Soil_DOC.csv",
           "size": "1.9 MB",
-          "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/DOC/Soil_DOC.csv"
+          "url": "data/Microbe Data/DOC/Soil_DOC.csv"
         }
       ],
       "keywords": [
@@ -1459,7 +1459,7 @@ window.PORTAL_DATA = {
       "min_depth": 0,
       "max_depth": 1.0,
       "data_source_type": "github",
-      "github_url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/DOC/Global_Soil_DOC.nc",
+      "github_url": "data/Microbe Data/DOC/Global_Soil_DOC.nc",
       "local_file_path": "data/Microbe Data/DOC/Global_Soil_DOC.nc",
       "files": [
         {
@@ -1467,7 +1467,7 @@ window.PORTAL_DATA = {
           "label": "DOC Grid NetCDF",
           "path": "data/Microbe Data/DOC/Global_Soil_DOC.nc",
           "size": "3.0 MB",
-          "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/DOC/Global_Soil_DOC.nc"
+          "url": "data/Microbe Data/DOC/Global_Soil_DOC.nc"
         }
       ],
       "keywords": [
@@ -1894,7 +1894,7 @@ window.PORTAL_DATA = {
       "min_depth": 0,
       "max_depth": 1.0,
       "data_source_type": "github",
-      "github_url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/POC/POC_0-30.csv",
+      "github_url": "data/Microbe Data/POC/POC_0-30.csv",
       "local_file_path": "data/Microbe Data/POC/POC_0-30.csv",
       "files": [
         {
@@ -1902,14 +1902,14 @@ window.PORTAL_DATA = {
           "label": "0-30 cm CSV",
           "path": "data/Microbe Data/POC/POC_0-30.csv",
           "size": "1.5 MB",
-          "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/POC/POC_0-30.csv"
+          "url": "data/Microbe Data/POC/POC_0-30.csv"
         },
         {
           "name": "POC_0_100.csv",
           "label": "0-100 cm CSV",
           "path": "data/Microbe Data/POC/POC_0_100.csv",
           "size": "486 KB",
-          "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/POC/POC_0_100.csv"
+          "url": "data/Microbe Data/POC/POC_0_100.csv"
         }
       ],
       "keywords": [
@@ -2349,7 +2349,7 @@ window.PORTAL_DATA = {
       "min_depth": 0,
       "max_depth": 1.0,
       "data_source_type": "github",
-      "github_url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/POC/POC_Global_Map.nc",
+      "github_url": "data/Microbe Data/POC/POC_Global_Map.nc",
       "local_file_path": "data/Microbe Data/POC/POC_Global_Map.nc",
       "files": [
         {
@@ -2357,7 +2357,7 @@ window.PORTAL_DATA = {
           "label": "POC Grid NetCDF",
           "path": "data/Microbe Data/POC/POC_Global_Map.nc",
           "size": "3.0 MB",
-          "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/POC/POC_Global_Map.nc"
+          "url": "data/Microbe Data/POC/POC_Global_Map.nc"
         }
       ],
       "keywords": [
@@ -2794,7 +2794,7 @@ window.PORTAL_DATA = {
       "min_depth": 0,
       "max_depth": 0.3,
       "data_source_type": "github",
-      "github_url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/AOC/Global_AOC.nc",
+      "github_url": "data/Microbe Data/AOC/Global_AOC.nc",
       "local_file_path": "data/Microbe Data/AOC/Global_AOC.nc",
       "files": [
         {
@@ -2802,7 +2802,7 @@ window.PORTAL_DATA = {
           "label": "AOC Grid NetCDF",
           "path": "data/Microbe Data/AOC/Global_AOC.nc",
           "size": "1.8 MB",
-          "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/AOC/Global_AOC.nc"
+          "url": "data/Microbe Data/AOC/Global_AOC.nc"
         }
       ],
       "keywords": [
@@ -3174,7 +3174,7 @@ window.PORTAL_DATA = {
       "min_depth": 0,
       "max_depth": 1.0,
       "data_source_type": "github",
-      "github_url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/DOC%20Turnover/global_DOC_turnover.nc",
+      "github_url": "data/Microbe Data/DOC Turnover/global_DOC_turnover.nc",
       "local_file_path": "data/Microbe Data/DOC Turnover/global_DOC_turnover.nc",
       "files": [
         {
@@ -3182,14 +3182,14 @@ window.PORTAL_DATA = {
           "label": "Turnover Grid NetCDF",
           "path": "data/Microbe Data/DOC Turnover/global_DOC_turnover.nc",
           "size": "191 KB",
-          "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/DOC%20Turnover/global_DOC_turnover.nc"
+          "url": "data/Microbe Data/DOC Turnover/global_DOC_turnover.nc"
         },
         {
           "name": "DOC_turnover.csv",
           "label": "Turnover CSV",
           "path": "data/Microbe Data/DOC Turnover/DOC_turnover.csv",
           "size": "1.9 MB",
-          "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/DOC%20Turnover/DOC_turnover.csv"
+          "url": "data/Microbe Data/DOC Turnover/DOC_turnover.csv"
         }
       ],
       "keywords": [
@@ -3471,7 +3471,7 @@ window.PORTAL_DATA = {
       "min_depth": 0,
       "max_depth": 0.3,
       "data_source_type": "github",
-      "github_url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/FBC_BBC/FBC_BBC.nc",
+      "github_url": "data/Microbe Data/FBC_BBC/FBC_BBC.nc",
       "local_file_path": "data/Microbe Data/FBC_BBC/FBC_BBC.nc",
       "files": [
         {
@@ -3479,7 +3479,7 @@ window.PORTAL_DATA = {
           "label": "FBC/BBC Grid NetCDF",
           "path": "data/Microbe Data/FBC_BBC/FBC_BBC.nc",
           "size": "4.0 MB",
-          "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/FBC_BBC/FBC_BBC.nc"
+          "url": "data/Microbe Data/FBC_BBC/FBC_BBC.nc"
         }
       ],
       "keywords": [
@@ -3896,7 +3896,7 @@ window.PORTAL_DATA = {
       "min_depth": 0,
       "max_depth": 0.3,
       "data_source_type": "github",
-      "github_url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/MCRA/global_mcrA.nc",
+      "github_url": "data/Microbe Data/MCRA/global_mcrA.nc",
       "local_file_path": "data/Microbe Data/MCRA/global_mcrA.nc",
       "files": [
         {
@@ -3904,7 +3904,7 @@ window.PORTAL_DATA = {
           "label": "mcrA Grid NetCDF",
           "path": "data/Microbe Data/MCRA/global_mcrA.nc",
           "size": "384 KB",
-          "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/MCRA/global_mcrA.nc"
+          "url": "data/Microbe Data/MCRA/global_mcrA.nc"
         }
       ],
       "keywords": [
@@ -4196,7 +4196,7 @@ window.PORTAL_DATA = {
       "min_depth": 0,
       "max_depth": 1.0,
       "data_source_type": "github",
-      "github_url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/MMQ/MMQ.csv",
+      "github_url": "data/Microbe Data/MMQ/MMQ.csv",
       "local_file_path": "data/Microbe Data/MMQ/MMQ.csv",
       "files": [
         {
@@ -4204,7 +4204,7 @@ window.PORTAL_DATA = {
           "label": "MMQ Observations CSV",
           "path": "data/Microbe Data/MMQ/MMQ.csv",
           "size": "1.3 MB",
-          "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/MMQ/MMQ.csv"
+          "url": "data/Microbe Data/MMQ/MMQ.csv"
         }
       ],
       "keywords": [
@@ -4556,7 +4556,7 @@ window.PORTAL_DATA = {
       "min_depth": 0,
       "max_depth": 0.3,
       "data_source_type": "github",
-      "github_url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/MNL_MPL/Global_MNL.tif",
+      "github_url": "data/Microbe Data/MNL_MPL/Global_MNL.tif",
       "local_file_path": "data/Microbe Data/MNL_MPL/Global_MNL.tif",
       "files": [
         {
@@ -4564,14 +4564,14 @@ window.PORTAL_DATA = {
           "label": "MNL GeoTIFF",
           "path": "data/Microbe Data/MNL_MPL/Global_MNL.tif",
           "size": "6.1 MB",
-          "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/MNL_MPL/Global_MNL.tif"
+          "url": "data/Microbe Data/MNL_MPL/Global_MNL.tif"
         },
         {
           "name": "Global_MPL.tif",
           "label": "MPL GeoTIFF",
           "path": "data/Microbe Data/MNL_MPL/Global_MPL.tif",
           "size": "6.0 MB",
-          "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/MNL_MPL/Global_MPL.tif"
+          "url": "data/Microbe Data/MNL_MPL/Global_MPL.tif"
         }
       ],
       "keywords": [
@@ -4925,7 +4925,7 @@ window.PORTAL_DATA = {
       "min_depth": 0,
       "max_depth": 0.3,
       "data_source_type": "github",
-      "github_url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/PMOA/global_pmoA.nc",
+      "github_url": "data/Microbe Data/PMOA/global_pmoA.nc",
       "local_file_path": "data/Microbe Data/PMOA/global_pmoA.nc",
       "files": [
         {
@@ -4933,7 +4933,7 @@ window.PORTAL_DATA = {
           "label": "pmoA Grid NetCDF",
           "path": "data/Microbe Data/PMOA/global_pmoA.nc",
           "size": "384 KB",
-          "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/PMOA/global_pmoA.nc"
+          "url": "data/Microbe Data/PMOA/global_pmoA.nc"
         }
       ],
       "keywords": [
