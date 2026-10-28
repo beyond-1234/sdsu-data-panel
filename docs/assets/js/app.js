@@ -233,15 +233,16 @@
         var host = document.getElementById('keyTagsContainer');
         if (!host) return;
         var tags = DATA.keywords.slice();
-        var limit = state.tagsExpanded ? tags.length : 6;
+        var defaultLimit = 10;
+        var limit = state.tagsExpanded ? tags.length : defaultLimit;
         var html = tags.slice(0, limit).map(function (tag) {
             return '<a href="javascript:void(0);" class="badge" onclick="App.applyKeyword(\'' +
                 esc(tag).replace(/'/g, "\\'") + '\')"># ' + esc(tag) + '</a>';
         }).join('');
-        if (tags.length > 6) {
+        if (tags.length > defaultLimit) {
             html += '<button type="button" class="btn btn-outline btn-sm" onclick="App.toggleTags()" ' +
                 'style="padding:2px 8px;font-size:0.75rem;border-radius:12px;color:var(--primary);border-color:#cbd5e1;">' +
-                (state.tagsExpanded ? 'Show Less &#9650;' : 'More Tags (' + (tags.length - 6) + ') &#9660;') +
+                (state.tagsExpanded ? 'Show Less &#9650;' : 'More Tags (' + (tags.length - defaultLimit) + ') &#9660;') +
                 '</button>';
         }
         host.innerHTML = html;
@@ -624,7 +625,8 @@
             var axis2 = vis.series2_axis || 0;
             var axis3 = vis.series3_axis || 0;
             var hasSecondary = axis2 === 1 || axis3 === 1 || !!vis.y_axis_name2;
-            var legend = [vis.series1_name, vis.series2_name];
+            var legend = [vis.series1_name];
+            if (vis.series2_name && vis.series2_data) legend.push(vis.series2_name);
             if (vis.series3_name) legend.push(vis.series3_name);
 
             function seriesTypeFor(axis) {
@@ -641,8 +643,11 @@
                     data: vis.series1_data,
                     itemStyle: { color: '#2e7d32' },
                     lineStyle: { width: 2.5 }
-                },
-                {
+                }
+            ];
+
+            if (vis.series2_name && vis.series2_data) {
+                series.push({
                     name: vis.series2_name,
                     type: seriesTypeFor(axis2),
                     yAxisIndex: axis2,
@@ -650,8 +655,8 @@
                     data: vis.series2_data,
                     itemStyle: { color: '#1565c0' },
                     lineStyle: { width: 2 }
-                }
-            ];
+                });
+            }
 
             if (vis.series3_name && vis.series3_data) {
                 series.push({

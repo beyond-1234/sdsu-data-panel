@@ -13,11 +13,14 @@ import json
 import math
 import os
 import re
+import struct
 from pathlib import Path
 from urllib.parse import quote
 
+import h5py
 import numpy as np
 import pandas as pd
+import tifffile
 
 ROOT = Path(__file__).resolve().parents[2]
 DOCS = ROOT / "docs"
@@ -200,6 +203,26 @@ def normalize_biome(raw) -> str:
         return "Mixed Forest"
     if low == "temperate forest":
         return "Temperate Forest"
+    if "confir" in low or "conif" in low:
+        return "Temperate Coniferous Forest"
+    if "wetland" in low:
+        return "Wetland"
+    if "bare" in low:
+        return "Bare Soil"
+    if "urban" in low:
+        return "Urban"
+    if "glacier" in low:
+        return "Glacier"
+    if "crop" in low or "paddy" in low:
+        return "Cropland"
+    if "shrub" in low:
+        return "Shrubland"
+    if "grass" in low:
+        return "Grassland"
+    if "desert" in low:
+        return "Desert"
+    if "boreal" in low:
+        return "Boreal Forest"
     return text[:48]
 
 
@@ -873,25 +896,1084 @@ def build_poc_grid() -> dict:
 # ----------------------------------------------------------------------- main
 
 
+LATEST_VARIABLES = [
+    {
+        "id": 23,
+        "code": "AOC",
+        "display_name": "Aggregate Organic Carbon",
+        "display_name_en": "Aggregate Organic Carbon",
+        "category": "Soil Physics",
+        "unit": "g C m-2",
+        "description": "Organic carbon stored in soil aggregates",
+    },
+    {
+        "id": 24,
+        "code": "AD",
+        "display_name": "Aggregate Distribution",
+        "display_name_en": "Aggregate Distribution",
+        "category": "Soil Physics",
+        "unit": "%",
+        "description": "Mass proportion of a soil aggregate size class",
+    },
+    {
+        "id": 25,
+        "code": "DOC_TURN",
+        "display_name": "DOC Turnover Rate",
+        "display_name_en": "DOC Turnover Rate",
+        "category": "Soil Physics",
+        "unit": "day-1",
+        "description": "Predicted turnover rate of dissolved organic carbon",
+    },
+    {
+        "id": 26,
+        "code": "FB_RATIO",
+        "display_name": "Fungal:Bacterial Ratio",
+        "display_name_en": "Fungal:Bacterial Ratio",
+        "category": "Microbial Pool",
+        "unit": "unitless",
+        "description": "Ratio of fungal to bacterial biomass carbon",
+    },
+    {
+        "id": 27,
+        "code": "MCR_A",
+        "display_name": "mcrA Gene Density",
+        "display_name_en": "mcrA Gene Density",
+        "category": "Microbial Pool",
+        "unit": "copies m-2",
+        "description": "Predicted soil mcrA gene density (methanogenesis marker)",
+    },
+    {
+        "id": 28,
+        "code": "PMO_A",
+        "display_name": "pmoA Gene Density",
+        "display_name_en": "pmoA Gene Density",
+        "category": "Microbial Pool",
+        "unit": "copies m-2",
+        "description": "Predicted soil pmoA gene density (methane oxidation marker)",
+    },
+    {
+        "id": 29,
+        "code": "MQ",
+        "display_name": "Microbial Quotient",
+        "display_name_en": "Microbial Quotient",
+        "category": "Microbial Pool",
+        "unit": "%",
+        "description": "Microbial biomass carbon as a percentage of soil organic carbon",
+    },
+    {
+        "id": 30,
+        "code": "BR",
+        "display_name": "Basal Respiration",
+        "display_name_en": "Basal Respiration",
+        "category": "Gas Flux",
+        "unit": "ug C g-1 h-1",
+        "description": "Measured basal soil respiration rate",
+    },
+    {
+        "id": 31,
+        "code": "MNL",
+        "display_name": "Microbial N Limitation Index",
+        "display_name_en": "Microbial N Limitation Index",
+        "category": "Microbial Pool",
+        "unit": "index",
+        "description": "Predicted microbial nitrogen limitation index",
+    },
+    {
+        "id": 32,
+        "code": "MPL",
+        "display_name": "Microbial P Limitation Index",
+        "display_name_en": "Microbial P Limitation Index",
+        "category": "Microbial Pool",
+        "unit": "index",
+        "description": "Predicted microbial phosphorus limitation index",
+    },
+]
+
+LATEST_KEYWORDS = [
+    "soil_aoc",
+    "aggregate_organic_carbon",
+    "doc_turnover",
+    "mcra",
+    "pmoa",
+    "microbial_n_limitation",
+    "microbial_p_limitation",
+    "basal_respiration",
+    "aggregate_stability",
+    "methanogenesis",
+    "methane_oxidation",
+    "gene_density",
+    "nutrient_limitation",
+    "carbon_cycling",
+]
+
+REBUILD_DATASET_IDS = {7, 8, 9, 10, 11, 12, 13}
+
+
+def read_h5_grid(path: Path, names: list[str]):
+    with h5py.File(path, "r") as handle:
+        latitude = handle["latitude"][...]
+        longitude = handle["longitude"][...]
+        arrays = {name: handle[name][...] for name in names}
+    return latitude, longitude, arrays
+
+
+def zonal_by_latitude(latitude, grid, mask, step: int = 5):
+    latitude = np.asarray(latitude)
+    bins = np.floor((latitude + 90.0) / step).astype(int)
+    rows = []
+    for bin_id in np.unique(bins):
+        selected = bins == bin_id
+        values = np.asarray(grid)[selected, :][mask[selected, :]]
+        if values.size == 0:
+            continue
+        rows.append((float(np.mean(latitude[selected])), float(np.mean(values))))
+    rows.sort(key=lambda item: item[0])
+    labels = [lat_label(lat) for lat, _ in rows]
+    values = [value_or_none(value, 3) for _, value in rows]
+    return labels, values
+
+
+def histogram_share(values, bins, fmt: str = ".3f"):
+    counts, edges = np.histogram(values, bins=bins)
+    total = int(counts.sum())
+    labels = [
+        f"{edges[index]:{fmt}}-{edges[index + 1]:{fmt}}"
+        for index in range(len(edges) - 1)
+    ]
+    shares = [round(float(count) / total * 100, 2) if total else 0 for count in counts]
+    return labels, shares
+
+
+def cdf1_variables(path: Path):
+    def read_name(handle):
+        length = struct.unpack(">I", handle.read(4))[0]
+        text = handle.read(length).decode("latin1")
+        handle.read((4 - (length % 4)) % 4)
+        return text
+
+    def read_values(handle, value_type):
+        count = struct.unpack(">I", handle.read(4))[0]
+        if value_type == 2:
+            text = handle.read(count).decode("latin1")
+            handle.read((4 - (count % 4)) % 4)
+            return text
+        format_code = {1: "b", 3: "h", 4: "i", 5: "f", 6: "d"}[value_type]
+        size = {1: 1, 3: 2, 4: 4, 5: 4, 6: 8}[value_type]
+        return np.frombuffer(handle.read(size * count), dtype=">" + format_code).copy()
+
+    layout = {}
+    with open(path, "rb") as handle:
+        handle.read(4)
+        struct.unpack(">I", handle.read(4))
+        _, dim_count = struct.unpack(">II", handle.read(8))
+        dims = []
+        for _ in range(dim_count):
+            dims.append((read_name(handle), struct.unpack(">I", handle.read(4))[0]))
+        _, attr_count = struct.unpack(">II", handle.read(8))
+        for _ in range(attr_count):
+            read_name(handle)
+            read_values(handle, struct.unpack(">I", handle.read(4))[0])
+        _, var_count = struct.unpack(">II", handle.read(8))
+        for _ in range(var_count):
+            name = read_name(handle)
+            dim_ids_count = struct.unpack(">I", handle.read(4))[0]
+            dim_ids = [struct.unpack(">I", handle.read(4))[0] for _ in range(dim_ids_count)]
+            _, var_attr_count = struct.unpack(">II", handle.read(8))
+            for _ in range(var_attr_count):
+                read_name(handle)
+                read_values(handle, struct.unpack(">I", handle.read(4))[0])
+            value_type, _, begin = struct.unpack(">III", handle.read(12))
+            shape = tuple(dims[index][1] for index in dim_ids)
+            dtype = {4: ">i4", 5: ">f4", 6: ">f8"}.get(value_type)
+            if dtype:
+                layout[name] = (begin, shape, dtype)
+
+    arrays = {}
+    with open(path, "rb") as handle:
+        for name, (begin, shape, dtype) in layout.items():
+            count = int(np.prod(shape))
+            handle.seek(begin)
+            arrays[name] = np.frombuffer(
+                handle.read(count * np.dtype(dtype).itemsize), dtype=dtype
+            ).copy().reshape(shape)
+    return arrays
+
+
+def read_geotiff(path: Path):
+    with tifffile.TiffFile(path) as tiff:
+        page = tiff.pages[0]
+        array = page.asarray()
+        scale = page.tags["ModelPixelScaleTag"].value
+        tiepoint = page.tags["ModelTiepointTag"].value
+    x_res, y_res = float(scale[0]), float(scale[1])
+    lon_top_left, lat_top_left = float(tiepoint[3]), float(tiepoint[4])
+    latitudes = lat_top_left - (np.arange(array.shape[0]) + 0.5) * y_res
+    longitudes = lon_top_left + (np.arange(array.shape[1]) + 0.5) * x_res
+    return array, latitudes, longitudes
+
+
+def build_aoc_grid() -> dict:
+    path = DATA_DIR / "AOC" / "Global_AOC.nc"
+    latitude, longitude, arrays = read_h5_grid(
+        path,
+        ["AOC_total", "AOCS_H_2_pred", "AOCS_H_25p_pred", "AOCS_H_25m_pred", "AOCS_H_53"],
+    )
+    total = arrays["AOC_total"]
+    macro = arrays["AOCS_H_2_pred"]
+    micro = arrays["AOCS_H_25p_pred"]
+    fine_mid = arrays["AOCS_H_25m_pred"]
+    fine = arrays["AOCS_H_53"]
+    mask = np.isfinite(total) & (total > -9998)
+
+    labels, zonal_total = zonal_by_latitude(latitude, total, mask)
+    _, zonal_macro = zonal_by_latitude(latitude, macro, mask)
+    _, zonal_micro = zonal_by_latitude(latitude, micro, mask)
+
+    mean_total = value_or_none(total[mask].mean(), 1)
+    mean_macro = value_or_none(macro[mask].mean(), 1)
+    mean_micro = value_or_none(micro[mask].mean(), 1)
+    mean_fine_mid = value_or_none(fine_mid[mask].mean(), 1)
+    mean_fine = value_or_none(fine[mask].mean(), 1)
+
+    kin_x, kin_y = [], []
+    edges = np.linspace(float(total[mask].min()), float(np.percentile(total[mask], 99.5)), 12)
+    for index in range(len(edges) - 1):
+        selected = mask & (total >= edges[index]) & (total < edges[index + 1])
+        if selected.sum() > 10:
+            kin_x.append(round(float((edges[index] + edges[index + 1]) / 2), 0))
+            kin_y.append(round(float(macro[selected].mean()), 1))
+
+    records = []
+    candidates = [
+        (row, col)
+        for row in range(10, 360, 20)
+        for col in range(10, 720, 30)
+        if mask[row, col]
+    ]
+    picks = np.linspace(0, len(candidates) - 1, 15).astype(int) if candidates else []
+    for index in picks:
+        row, col = candidates[int(index)]
+        records.append(
+            {
+                "Latitude": value_or_none(latitude[row], 2),
+                "Longitude": value_or_none(longitude[col], 2),
+                "AOC total (g C m-2)": value_or_none(total[row, col], 1),
+                ">2 mm (g C m-2)": value_or_none(macro[row, col], 1),
+                "0.25-2 mm (g C m-2)": value_or_none(micro[row, col], 1),
+                "<0.053 mm (g C m-2)": value_or_none(fine[row, col], 1),
+            }
+        )
+
+    entry = file_entry("data/Microbe Data/AOC/Global_AOC.nc", "AOC Grid NetCDF")
+    meta = {
+        "id": 7,
+        "title": "Global Soil Aggregate Organic Carbon Components (0.5-Degree Grid)",
+        "author": "Ziyu Guo, Xiaofeng Xu, et al. (SDSU)",
+        "year": 2026,
+        "doi": "",
+        "description": (
+            "Physical file: Global_AOC.nc archived in data/Microbe Data/AOC. A 0.5-degree "
+            f"gridded product (360 x 720) with {int(mask.sum()):,} valid land cells, providing "
+            "total aggregate organic carbon and four aggregate-size fractions (>2 mm, "
+            "0.25-2 mm, 0.053-0.25 mm and <0.053 mm), together with aggregate distribution "
+            "percentages."
+        ),
+        "spatial_scale": "Global",
+        "site_code": "Global-Terrestrial",
+        "site": {
+            "site_code": "Global-Terrestrial",
+            "site_name": "Global Terrestrial Grid (0.5 degree)",
+            "biome": "Global / Multi-Biome",
+            "latitude": 20,
+            "longitude": 0,
+        },
+        "start_date": "2026-01-01",
+        "end_date": "2026-12-31",
+        "temporal_resolution": "Static Grid",
+        "data_type": "Model Simulation",
+        "scenario": "Control",
+        "min_depth": 0,
+        "max_depth": 0.3,
+        "data_source_type": "github",
+        "github_url": entry["url"],
+        "local_file_path": entry["path"],
+        "files": [entry],
+        "keywords": [
+            "soil_aoc",
+            "aggregate_organic_carbon",
+            "aggregate_stability",
+            "soil_carbon_fractions",
+            "gridded_simulation",
+            "global_grid",
+        ],
+        "variables": ["AOC", "AD"],
+    }
+    meta["vis_data"] = {
+        "data_type": "netcdf",
+        "chart_title": "Global Zonal Aggregate Organic Carbon Components",
+        "chart_subtitle": (
+            f"Zonal means across {int(mask.sum()):,} valid 0.5-degree land cells "
+            "(360 x 720 matrix; 5-degree latitude bands)"
+        ),
+        "x_labels": labels,
+        "x_axis_name": "Latitude",
+        "series1_name": "Total AOC (g C m-2)",
+        "series1_data": zonal_total,
+        "series2_name": ">2 mm aggregate (g C m-2)",
+        "series2_data": zonal_macro,
+        "series3_name": "0.25-2 mm aggregate (g C m-2)",
+        "series3_data": zonal_micro,
+        "y_axis_name": "AOC (g C m-2)",
+        "depth_title": "Mean Carbon by Aggregate Size Class",
+        "depth_subtitle": "Aggregate organic carbon across four measured size fractions",
+        "depth_x_axis_name": "Mean AOC (g C m-2)",
+        "depth_labels": [">2 mm", "0.25-2 mm", "0.053-0.25 mm", "<0.053 mm"],
+        "depth_series": [
+            {
+                "name": "Mean AOC (g C m-2)",
+                "data": [mean_macro, mean_micro, mean_fine_mid, mean_fine],
+                "color": "#2e7d32",
+            }
+        ],
+        "kin_x": kin_x,
+        "kin_y": kin_y,
+        "kin_x_label": "Total AOC (g C m-2)",
+        "kin_y_label": ">2 mm aggregate C (g C m-2)",
+        "kin_title": "Total AOC vs. Macroaggregate Carbon",
+        "kin_subtitle": "Binned grid cells linking bulk aggregate carbon to the >2 mm fraction",
+        "columns": [
+            "Latitude",
+            "Longitude",
+            "AOC total (g C m-2)",
+            ">2 mm (g C m-2)",
+            "0.25-2 mm (g C m-2)",
+            "<0.053 mm (g C m-2)",
+        ],
+        "records": records,
+        "total_count": f"{int(mask.sum()):,} valid 0.5-degree land grid cells (360 x 720 matrix)",
+    }
+    return meta
+
+
+def build_doc_turnover_grid() -> dict:
+    path = DATA_DIR / "DOC Turnover" / "global_DOC_turnover.nc"
+    latitude, longitude, arrays = read_h5_grid(path, ["DOC turnover rate"])
+    turnover = arrays["DOC turnover rate"]
+    mask = np.isfinite(turnover) & (turnover > -9998)
+
+    labels, zonal = zonal_by_latitude(latitude, turnover, mask)
+    values = turnover[mask]
+    edges = np.linspace(float(values.min()), float(values.max()), 13)
+    hist_labels, hist_share = histogram_share(values, edges, fmt=".4f")
+
+    sorted_values = np.sort(values)
+    cumulative = np.arange(1, len(sorted_values) + 1) / len(sorted_values) * 100
+    sample_index = np.linspace(0, len(sorted_values) - 1, 12).astype(int)
+    kin_x = [round(float(sorted_values[index]), 4) for index in sample_index]
+    kin_y = [round(float(cumulative[index]), 1) for index in sample_index]
+
+    records = []
+    candidates = [
+        (row, col)
+        for row in range(10, 360, 20)
+        for col in range(10, 720, 30)
+        if mask[row, col]
+    ]
+    picks = np.linspace(0, len(candidates) - 1, 15).astype(int) if candidates else []
+    for index in picks:
+        row, col = candidates[int(index)]
+        records.append(
+            {
+                "Latitude": value_or_none(latitude[row], 2),
+                "Longitude": value_or_none(longitude[col], 2),
+                "DOC turnover rate (day-1)": value_or_none(turnover[row, col], 5),
+            }
+        )
+
+    nc_entry = file_entry("data/Microbe Data/DOC Turnover/global_DOC_turnover.nc", "Turnover Grid NetCDF")
+    csv_entry = file_entry("data/Microbe Data/DOC Turnover/DOC_turnover.csv", "Turnover CSV")
+    meta = {
+        "id": 8,
+        "title": "Global Soil Dissolved Organic Carbon Turnover Rate (0.5-Degree Grid)",
+        "author": "MicrobialDataSystem archive (SDSU)",
+        "year": 2026,
+        "doi": "",
+        "description": (
+            "Physical files: global_DOC_turnover.nc and DOC_turnover.csv archived in "
+            "data/Microbe Data/DOC Turnover. The NetCDF grid (360 x 720) and its flattened "
+            f"CSV representation contain {int(mask.sum()):,} valid land cells with predicted "
+            "soil dissolved organic carbon turnover rates (day-1)."
+        ),
+        "spatial_scale": "Global",
+        "site_code": "Global-Terrestrial",
+        "site": {
+            "site_code": "Global-Terrestrial",
+            "site_name": "Global Terrestrial Grid (0.5 degree)",
+            "biome": "Global / Multi-Biome",
+            "latitude": 20,
+            "longitude": 0,
+        },
+        "start_date": "2026-01-01",
+        "end_date": "2026-12-31",
+        "temporal_resolution": "Static Grid",
+        "data_type": "Model Simulation",
+        "scenario": "Control",
+        "min_depth": 0,
+        "max_depth": 1.0,
+        "data_source_type": "github",
+        "github_url": nc_entry["url"],
+        "local_file_path": nc_entry["path"],
+        "files": [nc_entry, csv_entry],
+        "keywords": [
+            "soil_doc",
+            "doc_turnover",
+            "dissolved_organic_carbon",
+            "carbon_cycling",
+            "gridded_simulation",
+            "global_grid",
+        ],
+        "variables": ["DOC_TURN", "DOC"],
+    }
+    meta["vis_data"] = {
+        "data_type": "netcdf",
+        "chart_title": "Global Zonal DOC Turnover Rate",
+        "chart_subtitle": (
+            f"Zonal means across {int(mask.sum()):,} valid 0.5-degree land cells "
+            "(360 x 720 matrix; 5-degree latitude bands)"
+        ),
+        "x_labels": labels,
+        "x_axis_name": "Latitude",
+        "series1_name": "DOC turnover rate (day-1)",
+        "series1_data": zonal,
+        "series2_name": None,
+        "series2_data": None,
+        "series3_name": None,
+        "series3_data": None,
+        "y_axis_name": "Turnover rate (day-1)",
+        "depth_title": "Turnover Rate Distribution",
+        "depth_subtitle": "Share of valid land area across turnover-rate classes",
+        "depth_x_axis_name": "Share of land area (%)",
+        "depth_labels": hist_labels,
+        "depth_series": [
+            {"name": "Land area share (%)", "data": hist_share, "color": "#2e7d32"}
+        ],
+        "kin_x": kin_x,
+        "kin_y": kin_y,
+        "kin_x_label": "Turnover rate (day-1)",
+        "kin_y_label": "Cumulative land area (%)",
+        "kin_title": "Cumulative Distribution of DOC Turnover",
+        "kin_subtitle": "Cumulative share of valid land area sorted by predicted turnover rate",
+        "columns": ["Latitude", "Longitude", "DOC turnover rate (day-1)"],
+        "records": records,
+        "total_count": f"{int(mask.sum()):,} valid 0.5-degree land grid cells (360 x 720 matrix)",
+    }
+    return meta
+
+
+def build_fbc_bbc_grid() -> dict:
+    path = DATA_DIR / "FBC_BBC" / "FBC_BBC.nc"
+    arrays = cdf1_variables(path)
+    latitude = arrays["latitude"]
+    longitude = arrays["longitude"]
+    fbc = arrays["FBC"]
+    bbc = arrays["BBC"]
+    ratio = arrays["FBratio"]
+    biome = arrays["Biome"]
+    mask = (fbc > -9998) & (bbc > -9998) & np.isfinite(fbc) & np.isfinite(bbc)
+
+    labels, zonal_fbc = zonal_by_latitude(latitude, fbc, mask)
+    _, zonal_bbc = zonal_by_latitude(latitude, bbc, mask)
+    _, zonal_ratio = zonal_by_latitude(latitude, ratio, mask)
+
+    biome_labels, biome_fbc, biome_bbc = [], [], []
+    for code in sorted(np.unique(biome[mask])):
+        selected = mask & (biome == code)
+        if selected.sum() < 20:
+            continue
+        biome_labels.append(VEG_NAMES.get(int(code), f"Class {int(code)}"))
+        biome_fbc.append(value_or_none(fbc[selected].mean(), 1))
+        biome_bbc.append(value_or_none(bbc[selected].mean(), 1))
+
+    kin_x, kin_y = [], []
+    edges = np.linspace(
+        float(np.percentile(fbc[mask], 1)),
+        float(np.percentile(fbc[mask], 99)),
+        12,
+    )
+    for index in range(len(edges) - 1):
+        selected = mask & (fbc >= edges[index]) & (fbc < edges[index + 1])
+        if selected.sum() > 10:
+            kin_x.append(round(float((edges[index] + edges[index + 1]) / 2), 1))
+            kin_y.append(round(float(bbc[selected].mean()), 1))
+
+    records = []
+    candidates = [
+        (row, col)
+        for row in range(10, 360, 20)
+        for col in range(10, 720, 30)
+        if mask[row, col]
+    ]
+    picks = np.linspace(0, len(candidates) - 1, 15).astype(int) if candidates else []
+    for index in picks:
+        row, col = candidates[int(index)]
+        code = int(biome[row, col])
+        records.append(
+            {
+                "Latitude": value_or_none(latitude[row], 2),
+                "Longitude": value_or_none(longitude[col], 2),
+                "Biome": VEG_NAMES.get(code, f"Class {code}"),
+                "FBC (g C m-2)": value_or_none(fbc[row, col], 1),
+                "BBC (g C m-2)": value_or_none(bbc[row, col], 1),
+                "F:B ratio": value_or_none(ratio[row, col], 2),
+            }
+        )
+
+    entry = file_entry("data/Microbe Data/FBC_BBC/FBC_BBC.nc", "FBC/BBC Grid NetCDF")
+    meta = {
+        "id": 9,
+        "title": "Global Soil Fungal and Bacterial Biomass Carbon (0.5-Degree Grid)",
+        "author": "Liyuan He, Xiaofeng Xu, et al. (SDSU)",
+        "year": 2020,
+        "doi": "",
+        "description": (
+            "Physical file: FBC_BBC.nc archived in data/Microbe Data/FBC_BBC. A 0.5-degree "
+            f"gridded product (360 x 720) with {int(mask.sum()):,} valid land cells, providing "
+            "fungal biomass carbon (FBC), bacterial biomass carbon (BBC), the fungal:bacterial "
+            "ratio, and 12 biome classes. Reference: He et al. (2020) Global biogeography of "
+            "fungal and bacterial biomass carbon in topsoil, Soil Biology and Biochemistry."
+        ),
+        "spatial_scale": "Global",
+        "site_code": "Global-Terrestrial",
+        "site": {
+            "site_code": "Global-Terrestrial",
+            "site_name": "Global Terrestrial Grid (0.5 degree)",
+            "biome": "Global / Multi-Biome",
+            "latitude": 20,
+            "longitude": 0,
+        },
+        "start_date": "2020-01-01",
+        "end_date": "2020-12-31",
+        "temporal_resolution": "Static Grid",
+        "data_type": "Model Simulation",
+        "scenario": "Control",
+        "min_depth": 0,
+        "max_depth": 0.3,
+        "data_source_type": "github",
+        "github_url": entry["url"],
+        "local_file_path": entry["path"],
+        "files": [entry],
+        "keywords": [
+            "fungal_biomass",
+            "bacterial_biomass",
+            "fungal_bacterial_ratio",
+            "soil_microbial_biomass",
+            "gridded_simulation",
+            "global_grid",
+        ],
+        "variables": ["FBC", "BBC", "FB_RATIO"],
+    }
+    meta["vis_data"] = {
+        "data_type": "netcdf",
+        "chart_title": "Global Zonal Fungal and Bacterial Biomass Carbon",
+        "chart_subtitle": (
+            f"Zonal means across {int(mask.sum()):,} valid 0.5-degree land cells "
+            "(360 x 720 matrix; 5-degree latitude bands)"
+        ),
+        "x_labels": labels,
+        "x_axis_name": "Latitude",
+        "series1_name": "Fungal biomass C (g C m-2)",
+        "series1_data": zonal_fbc,
+        "series2_name": "Bacterial biomass C (g C m-2)",
+        "series2_data": zonal_bbc,
+        "series3_name": "F:B ratio",
+        "series3_data": zonal_ratio,
+        "series3_axis": 1,
+        "y_axis_name": "Biomass C (g C m-2)",
+        "y_axis_name2": "F:B ratio",
+        "depth_title": "Fungal and Bacterial Biomass by Biome",
+        "depth_subtitle": "Mean biomass carbon across the 12 archived biome classes",
+        "depth_x_axis_name": "Biomass C (g C m-2)",
+        "depth_labels": biome_labels,
+        "depth_series": [
+            {"name": "FBC (g C m-2)", "data": biome_fbc, "color": "#2e7d32"},
+            {"name": "BBC (g C m-2)", "data": biome_bbc, "color": "#1565c0"},
+        ],
+        "kin_x": kin_x,
+        "kin_y": kin_y,
+        "kin_x_label": "Fungal biomass C (g C m-2)",
+        "kin_y_label": "Bacterial biomass C (g C m-2)",
+        "kin_title": "Fungal vs. Bacterial Biomass Scaling",
+        "kin_subtitle": "Binned grid cells linking fungal to bacterial biomass carbon",
+        "columns": [
+            "Latitude",
+            "Longitude",
+            "Biome",
+            "FBC (g C m-2)",
+            "BBC (g C m-2)",
+            "F:B ratio",
+        ],
+        "records": records,
+        "total_count": f"{int(mask.sum()):,} valid 0.5-degree land grid cells (360 x 720 matrix)",
+    }
+    return meta
+
+
+def build_gene_grid(dataset_id: int, gene: str) -> dict:
+    folder, filename = ("MCRA", "global_mcrA.nc") if gene == "mcra" else ("PMOA", "global_pmoA.nc")
+    path = DATA_DIR / folder / filename
+    latitude, longitude, arrays = read_h5_grid(path, ["mcrA density", "pmoA density"])
+    target = arrays["mcrA density"] if gene == "mcra" else arrays["pmoA density"]
+    other = arrays["pmoA density"] if gene == "mcra" else arrays["mcrA density"]
+    mask = np.isfinite(target) & (target > -9998)
+
+    labels, zonal = zonal_by_latitude(latitude, target, mask)
+    values = target[mask]
+    edges = np.linspace(float(values.min()), float(values.max()), 11)
+    hist_labels, hist_share = histogram_share(values, edges, fmt=".2f")
+
+    kin_x, kin_y = [], []
+    edges = np.linspace(
+        float(np.percentile(target[mask], 1)),
+        float(np.percentile(target[mask], 99)),
+        12,
+    )
+    for index in range(len(edges) - 1):
+        selected = mask & (target >= edges[index]) & (target < edges[index + 1])
+        if selected.sum() > 10:
+            kin_x.append(round(float((edges[index] + edges[index + 1]) / 2), 2))
+            kin_y.append(round(float(other[selected].mean()), 2))
+
+    records = []
+    candidates = [
+        (row, col)
+        for row in range(10, 360, 20)
+        for col in range(10, 720, 30)
+        if mask[row, col]
+    ]
+    picks = np.linspace(0, len(candidates) - 1, 15).astype(int) if candidates else []
+    for index in picks:
+        row, col = candidates[int(index)]
+        records.append(
+            {
+                "Latitude": value_or_none(latitude[row], 2),
+                "Longitude": value_or_none(longitude[col], 2),
+                "mcrA density (copies m-2)": value_or_none(arrays["mcrA density"][row, col], 2),
+                "pmoA density (copies m-2)": value_or_none(arrays["pmoA density"][row, col], 2),
+            }
+        )
+
+    is_mcra = gene == "mcra"
+    title = (
+        "Global Soil mcrA Gene Density (0.5-Degree Grid)"
+        if is_mcra
+        else "Global Soil pmoA Gene Density (0.5-Degree Grid)"
+    )
+    entry = file_entry(
+        f"data/Microbe Data/{folder}/{filename}",
+        "mcrA Grid NetCDF" if is_mcra else "pmoA Grid NetCDF",
+    )
+    meta = {
+        "id": dataset_id,
+        "title": title,
+        "author": (
+            "Ziyu Guo, Xiaofeng Xu, et al. (SDSU)"
+            if is_mcra
+            else "Xinhao Zhu, Xiaofeng Xu, et al. (SDSU)"
+        ),
+        "year": 2026,
+        "doi": "",
+        "description": (
+            f"Physical file: {filename} archived in data/Microbe Data/{folder}. A 0.5-degree "
+            f"random-forest prediction grid (360 x 720) with {int(mask.sum()):,} valid land "
+            f"cells. The file stores predicted {'mcrA' if is_mcra else 'pmoA'} gene density "
+            "and the companion methane-cycle gene density, both in copies m-2."
+        ),
+        "spatial_scale": "Global",
+        "site_code": "Global-Terrestrial",
+        "site": {
+            "site_code": "Global-Terrestrial",
+            "site_name": "Global Terrestrial Grid (0.5 degree)",
+            "biome": "Global / Multi-Biome",
+            "latitude": 20,
+            "longitude": 0,
+        },
+        "start_date": "2026-01-01",
+        "end_date": "2026-12-31",
+        "temporal_resolution": "Static Grid",
+        "data_type": "Model Simulation",
+        "scenario": "Control",
+        "min_depth": 0,
+        "max_depth": 0.3,
+        "data_source_type": "github",
+        "github_url": entry["url"],
+        "local_file_path": entry["path"],
+        "files": [entry],
+        "keywords": (
+            ["mcra", "methanogenesis", "gene_density", "soil_microbial_community",
+             "gridded_simulation", "global_grid"]
+            if is_mcra
+            else ["pmoa", "methane_oxidation", "gene_density", "soil_microbial_community",
+                  "gridded_simulation", "global_grid"]
+        ),
+        "variables": ["MCR_A", "PMO_A"] if is_mcra else ["PMO_A", "MCR_A"],
+    }
+
+    target_name = "mcrA" if is_mcra else "pmoA"
+    other_name = "pmoA" if is_mcra else "mcrA"
+    meta["vis_data"] = {
+        "data_type": "netcdf",
+        "chart_title": f"Global Zonal Soil {target_name} Gene Density",
+        "chart_subtitle": (
+            f"Zonal means across {int(mask.sum()):,} valid 0.5-degree land cells "
+            "(360 x 720 matrix; 5-degree latitude bands)"
+        ),
+        "x_labels": labels,
+        "x_axis_name": "Latitude",
+        "series1_name": f"{target_name} density (copies m-2)",
+        "series1_data": zonal,
+        "series2_name": None,
+        "series2_data": None,
+        "series3_name": None,
+        "series3_data": None,
+        "y_axis_name": "Gene density (copies m-2)",
+        "depth_title": f"{target_name} Density Distribution",
+        "depth_subtitle": "Share of valid land area across predicted gene-density classes",
+        "depth_x_axis_name": "Share of land area (%)",
+        "depth_labels": hist_labels,
+        "depth_series": [
+            {"name": "Land area share (%)", "data": hist_share, "color": "#2e7d32"}
+        ],
+        "kin_x": kin_x,
+        "kin_y": kin_y,
+        "kin_x_label": f"{target_name} density (copies m-2)",
+        "kin_y_label": f"{other_name} density (copies m-2)",
+        "kin_title": f"{target_name} vs. {other_name} Gene Density",
+        "kin_subtitle": "Binned grid cells linking the two methane-cycle gene markers",
+        "columns": [
+            "Latitude",
+            "Longitude",
+            "mcrA density (copies m-2)",
+            "pmoA density (copies m-2)",
+        ],
+        "records": records,
+        "total_count": f"{int(mask.sum()):,} valid 0.5-degree land grid cells (360 x 720 matrix)",
+    }
+    return meta
+
+
+def build_mmq_observations() -> dict:
+    path = DATA_DIR / "MMQ" / "MMQ.csv"
+    frame = pd.read_csv(
+        path,
+        encoding="utf-8-sig",
+        skiprows=[1],
+        lineterminator="\r",
+    )
+    frame["biome"] = frame["vegetation"].map(normalize_biome)
+    numeric = {
+        "MQ": "Microbial quotient (MicrobialC/Organic C)",
+        "MBC": "Biomass C",
+        "MBN": "Biomass N",
+        "MBP": "Biomass P",
+        "BR": "Basal respiration (ug C g-1 h-1)",
+        "PH": "pH",
+        "MAT": "MAT",
+        "MAP": "MAP",
+    }
+    for target, source in numeric.items():
+        frame[target] = pd.to_numeric(frame.get(source), errors="coerce")
+
+    def depth_midpoint(raw):
+        match = re.search(r"(\d+(?:\.\d+)?)\s*[~\-]\s*(\d+(?:\.\d+)?)", str(raw))
+        if not match:
+            return np.nan
+        return (float(match.group(1)) + float(match.group(2))) / 2
+
+    frame["depth"] = frame["Soil Depth (cm)"].map(depth_midpoint)
+
+    grouped = (
+        frame.groupby("biome")
+        .agg(n=("MBC", "size"), MQ=("MQ", "mean"), BR=("BR", "mean"), MBC=("MBC", "mean"))
+        .query("n >= 20")
+        .sort_values("MQ", ascending=False)
+    )
+
+    depth_bins = [(0, 10), (10, 20), (20, 30), (30, 50), (50, 100)]
+    depth_labels = ["0-10cm", "10-20cm", "20-30cm", "30-50cm", "50-100cm"]
+    depth_mq = []
+    for low, high in depth_bins:
+        subset = frame[(frame["depth"] > low) & (frame["depth"] <= high)]
+        depth_mq.append(mean_or_none(subset["MQ"], 2) or 0)
+
+    kin_x, kin_y = [], []
+    edges = np.logspace(
+        np.log10(max(0.1, float(frame["MBC"].min()))),
+        np.log10(float(frame["MBC"].max())),
+        10,
+    )
+    for index in range(len(edges) - 1):
+        subset = frame[(frame["MBC"] >= edges[index]) & (frame["MBC"] < edges[index + 1])]
+        if len(subset) >= 5 and subset["BR"].notna().any():
+            kin_x.append(round(float((edges[index] + edges[index + 1]) / 2), 2))
+            kin_y.append(round(float(subset["BR"].mean()), 3))
+
+    sample = frame.dropna(subset=["MBC"]).sample(
+        n=min(15, int(frame["MBC"].notna().sum())), random_state=21
+    )
+    records = []
+    for row in sample.to_dict(orient="records"):
+        records.append(
+            {
+                "Country": str(row["Country"]).strip(),
+                "Biome": row["biome"],
+                "Depth (cm)": value_or_none(row["depth"], 1),
+                "Biomass C (mmol kg-1)": value_or_none(row["MBC"], 2),
+                "Basal respiration (ug C g-1 h-1)": value_or_none(row["BR"], 3),
+                "Microbial quotient (%)": value_or_none(row["MQ"], 2),
+                "pH": value_or_none(row["PH"], 2),
+            }
+        )
+
+    entry = file_entry("data/Microbe Data/MMQ/MMQ.csv", "MMQ Observations CSV")
+    meta = {
+        "id": 11,
+        "title": "Global Soil Microbial Metabolic Quotient Observations",
+        "author": "MicrobialDataSystem archive (SDSU)",
+        "year": 2026,
+        "doi": "",
+        "description": (
+            "Physical file: MMQ.csv archived in data/Microbe Data/MMQ. Compiles 2,444 field "
+            "and incubation observations from 48 countries with microbial biomass C, N and P, "
+            "basal respiration, microbial quotient (microbial C / organic C), soil C/N/P, pH, "
+            "MAT, MAP and sampling depth."
+        ),
+        "spatial_scale": "Global",
+        "site_code": "Global-Terrestrial",
+        "site": {
+            "site_code": "Global-Terrestrial",
+            "site_name": "Global Terrestrial Ecosystems (MMQ synthesis)",
+            "biome": "Global / Multi-Biome",
+            "latitude": 20,
+            "longitude": 0,
+        },
+        "start_date": "2026-01-01",
+        "end_date": "2026-12-31",
+        "temporal_resolution": "Snapshot",
+        "data_type": "Field Observation",
+        "scenario": "Control",
+        "min_depth": 0,
+        "max_depth": 1.0,
+        "data_source_type": "github",
+        "github_url": entry["url"],
+        "local_file_path": entry["path"],
+        "files": [entry],
+        "keywords": [
+            "metabolic_quotient",
+            "basal_respiration",
+            "soil_respiration",
+            "soil_microbial_biomass",
+            "global_synthesis",
+            "soil_chemistry",
+        ],
+        "variables": ["MQ", "MBC", "MBN", "MBP", "BR", "PH"],
+    }
+    meta["vis_data"] = {
+        "data_type": "csv",
+        "chart_title": "Global Biome Microbial Quotient, Respiration and Biomass Carbon",
+        "chart_subtitle": "Mean values aggregated from 2,444 observations across 48 countries",
+        "x_labels": grouped.index.tolist(),
+        "x_axis_name": "Global Biomes",
+        "series1_name": "Microbial quotient (%)",
+        "series1_data": [value_or_none(grouped.loc[b, "MQ"], 2) for b in grouped.index],
+        "series2_name": "Basal respiration (ug C g-1 h-1)",
+        "series2_data": [value_or_none(grouped.loc[b, "BR"], 3) for b in grouped.index],
+        "series3_name": "Biomass C (mmol kg-1)",
+        "series3_data": [value_or_none(grouped.loc[b, "MBC"], 2) for b in grouped.index],
+        "series3_axis": 1,
+        "y_axis_name": "MQ (%) / Respiration (ug C g-1 h-1)",
+        "y_axis_name2": "Biomass C (mmol kg-1)",
+        "depth_title": "Microbial Quotient Depth Profile",
+        "depth_subtitle": "Mean microbial quotient across reported soil depth horizons",
+        "depth_x_axis_name": "Microbial quotient (%)",
+        "depth_labels": depth_labels,
+        "depth_series": [
+            {"name": "Microbial quotient (%)", "data": depth_mq, "color": "#2e7d32"}
+        ],
+        "kin_x": kin_x,
+        "kin_y": kin_y,
+        "kin_x_label": "Biomass C (mmol kg-1)",
+        "kin_y_label": "Basal respiration (ug C g-1 h-1)",
+        "kin_title": "Biomass Carbon vs. Basal Respiration",
+        "kin_subtitle": "Log-binned observations linking microbial biomass to respiration",
+        "columns": [
+            "Country",
+            "Biome",
+            "Depth (cm)",
+            "Biomass C (mmol kg-1)",
+            "Basal respiration (ug C g-1 h-1)",
+            "Microbial quotient (%)",
+            "pH",
+        ],
+        "records": records,
+        "total_count": "2,444 observations across 48 countries",
+    }
+    return meta
+
+
+def build_mnl_mpl_rasters() -> dict:
+    mnl, latitude, longitude = read_geotiff(DATA_DIR / "MNL_MPL" / "Global_MNL.tif")
+    mpl, _, _ = read_geotiff(DATA_DIR / "MNL_MPL" / "Global_MPL.tif")
+    mask = np.isfinite(mnl) & np.isfinite(mpl)
+
+    labels, zonal_mnl = zonal_by_latitude(latitude, mnl, mask)
+    _, zonal_mpl = zonal_by_latitude(latitude, mpl, mask)
+
+    edges = np.linspace(-8, 8, 17)
+    hist_labels, hist_mnl = histogram_share(mnl[mask], edges, fmt=".1f")
+    _, hist_mpl = histogram_share(mpl[mask], edges, fmt=".1f")
+
+    kin_x, kin_y = [], []
+    edges = np.linspace(
+        float(np.percentile(mnl[mask], 1)),
+        float(np.percentile(mnl[mask], 99)),
+        12,
+    )
+    for index in range(len(edges) - 1):
+        selected = mask & (mnl >= edges[index]) & (mnl < edges[index + 1])
+        if selected.sum() > 100:
+            kin_x.append(round(float((edges[index] + edges[index + 1]) / 2), 2))
+            kin_y.append(round(float(mpl[selected].mean()), 2))
+
+    records = []
+    candidates = [
+        (row, col)
+        for row in range(20, mnl.shape[0], 70)
+        for col in range(20, mnl.shape[1], 180)
+        if mask[row, col]
+    ]
+    picks = np.linspace(0, len(candidates) - 1, 15).astype(int) if candidates else []
+    for index in picks:
+        row, col = candidates[int(index)]
+        records.append(
+            {
+                "Latitude": value_or_none(latitude[row], 2),
+                "Longitude": value_or_none(longitude[col], 2),
+                "MNL index": value_or_none(mnl[row, col], 3),
+                "MPL index": value_or_none(mpl[row, col], 3),
+            }
+        )
+
+    mnl_entry = file_entry("data/Microbe Data/MNL_MPL/Global_MNL.tif", "MNL GeoTIFF")
+    mpl_entry = file_entry("data/Microbe Data/MNL_MPL/Global_MPL.tif", "MPL GeoTIFF")
+    meta = {
+        "id": 12,
+        "title": "Global Microbial Nitrogen and Phosphorus Limitation Predictions (0.1-Degree Rasters)",
+        "author": "MicrobialDataSystem archive (SDSU)",
+        "year": 2026,
+        "doi": "10.5061/dryad.jm63xsjnw",
+        "description": (
+            "Physical files: Global_MNL.tif and Global_MPL.tif archived in "
+            "data/Microbe Data/MNL_MPL. Two 0.1-degree GeoTIFF rasters (3599 x 1367) of "
+            f"predicted microbial nitrogen (MNL) and phosphorus (MPL) limitation indices, "
+            f"with {int(mask.sum()):,} valid land pixels. Dataset DOI: "
+            "10.5061/dryad.jm63xsjnw."
+        ),
+        "spatial_scale": "Global",
+        "site_code": "Global-Terrestrial",
+        "site": {
+            "site_code": "Global-Terrestrial",
+            "site_name": "Global Terrestrial Raster (0.1 degree)",
+            "biome": "Global / Multi-Biome",
+            "latitude": 20,
+            "longitude": 0,
+        },
+        "start_date": "2026-01-01",
+        "end_date": "2026-12-31",
+        "temporal_resolution": "Static Raster",
+        "data_type": "Model Simulation",
+        "scenario": "Control",
+        "min_depth": 0,
+        "max_depth": 0.3,
+        "data_source_type": "github",
+        "github_url": mnl_entry["url"],
+        "local_file_path": mnl_entry["path"],
+        "files": [mnl_entry, mpl_entry],
+        "keywords": [
+            "microbial_n_limitation",
+            "microbial_p_limitation",
+            "nutrient_limitation",
+            "global_grid",
+        ],
+        "variables": ["MNL", "MPL"],
+    }
+    meta["vis_data"] = {
+        "data_type": "netcdf",
+        "chart_title": "Global Zonal Microbial N and P Limitation Indices",
+        "chart_subtitle": (
+            f"Zonal means across {int(mask.sum()):,} valid 0.1-degree land pixels "
+            "(3599 x 1367 rasters; 5-degree latitude bands)"
+        ),
+        "x_labels": labels,
+        "x_axis_name": "Latitude",
+        "series1_name": "MNL index",
+        "series1_data": zonal_mnl,
+        "series2_name": "MPL index",
+        "series2_data": zonal_mpl,
+        "series3_name": None,
+        "series3_data": None,
+        "y_axis_name": "Limitation index",
+        "depth_title": "Distribution of Limitation Index Values",
+        "depth_subtitle": "Share of valid land area across index classes",
+        "depth_x_axis_name": "Share of land area (%)",
+        "depth_labels": hist_labels,
+        "depth_series": [
+            {"name": "MNL share (%)", "data": hist_mnl, "color": "#2e7d32"},
+            {"name": "MPL share (%)", "data": hist_mpl, "color": "#1565c0"},
+        ],
+        "kin_x": kin_x,
+        "kin_y": kin_y,
+        "kin_x_label": "MNL index",
+        "kin_y_label": "MPL index",
+        "kin_title": "Microbial N vs. P Limitation",
+        "kin_subtitle": "Binned land pixels linking the nitrogen and phosphorus indices",
+        "columns": ["Latitude", "Longitude", "MNL index", "MPL index"],
+        "records": records,
+        "total_count": f"{int(mask.sum()):,} valid 0.1-degree land pixels (3599 x 1367 rasters)",
+    }
+    return meta
+
+
 def main() -> None:
     raw = DATA_JS.read_text(encoding="utf-8")
     prefix = "window.PORTAL_DATA = "
     bundle = json.loads(raw[len(prefix):].rstrip().rstrip(";"))
 
-    existing_datasets = [item for item in bundle["datasets"] if item["id"] <= 2]
-    existing_keywords = [item for item in bundle["keywords"] if item not in NEW_PRIMARY_KEYWORDS + NEW_EXTRA_KEYWORDS]
-    existing_variables = [item for item in bundle["variables"] if item["code"] not in {v["code"] for v in NEW_VARIABLES}]
+    existing_datasets = []
+    seen_ids = set()
+    for item in bundle["datasets"]:
+        if item["id"] in REBUILD_DATASET_IDS or item["id"] in seen_ids:
+            continue
+        seen_ids.add(item["id"])
+        existing_datasets.append(item)
+    existing_keywords = [item for item in bundle["keywords"] if item not in LATEST_KEYWORDS]
+    existing_variables = [
+        item for item in bundle["variables"]
+        if item["code"] not in {variable["code"] for variable in LATEST_VARIABLES}
+    ]
 
     new_datasets = [
-        build_doc_observations(),
-        build_doc_grid(),
-        build_poc_observations(),
-        build_poc_grid(),
+        build_aoc_grid(),
+        build_doc_turnover_grid(),
+        build_fbc_bbc_grid(),
+        build_gene_grid(10, "mcra"),
+        build_mmq_observations(),
+        build_mnl_mpl_rasters(),
+        build_gene_grid(13, "pmoa"),
     ]
 
     bundle["datasets"] = existing_datasets + new_datasets
-    bundle["keywords"] = NEW_PRIMARY_KEYWORDS + existing_keywords + NEW_EXTRA_KEYWORDS
-    bundle["variables"] = existing_variables + NEW_VARIABLES
+    bundle["keywords"] = LATEST_KEYWORDS + existing_keywords
+    bundle["variables"] = existing_variables + LATEST_VARIABLES
 
     variable_lookup = {variable["code"]: variable for variable in bundle["variables"]}
     for dataset in new_datasets:

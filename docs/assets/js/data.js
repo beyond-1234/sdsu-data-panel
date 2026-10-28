@@ -2769,6 +2769,2437 @@ window.PORTAL_DATA = {
         ],
         "total_count": "52,235 valid 0.5-degree land grid cells (360 x 720 matrix)"
       }
+    },
+    {
+      "id": 7,
+      "title": "Global Soil Aggregate Organic Carbon Components (0.5-Degree Grid)",
+      "author": "Ziyu Guo, Xiaofeng Xu, et al. (SDSU)",
+      "year": 2026,
+      "doi": "",
+      "description": "Physical file: Global_AOC.nc archived in data/Microbe Data/AOC. A 0.5-degree gridded product (360 x 720) with 57,164 valid land cells, providing total aggregate organic carbon and four aggregate-size fractions (>2 mm, 0.25-2 mm, 0.053-0.25 mm and <0.053 mm), together with aggregate distribution percentages.",
+      "spatial_scale": "Global",
+      "site_code": "Global-Terrestrial",
+      "site": {
+        "site_code": "Global-Terrestrial",
+        "site_name": "Global Terrestrial Grid (0.5 degree)",
+        "biome": "Global / Multi-Biome",
+        "latitude": 20,
+        "longitude": 0
+      },
+      "start_date": "2026-01-01",
+      "end_date": "2026-12-31",
+      "temporal_resolution": "Static Grid",
+      "data_type": "Model Simulation",
+      "scenario": "Control",
+      "min_depth": 0,
+      "max_depth": 0.3,
+      "data_source_type": "github",
+      "github_url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/AOC/Global_AOC.nc",
+      "local_file_path": "data/Microbe Data/AOC/Global_AOC.nc",
+      "files": [
+        {
+          "name": "Global_AOC.nc",
+          "label": "AOC Grid NetCDF",
+          "path": "data/Microbe Data/AOC/Global_AOC.nc",
+          "size": "1.8 MB",
+          "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/AOC/Global_AOC.nc"
+        }
+      ],
+      "keywords": [
+        "soil_aoc",
+        "aggregate_organic_carbon",
+        "aggregate_stability",
+        "soil_carbon_fractions",
+        "gridded_simulation",
+        "global_grid"
+      ],
+      "variables": [
+        {
+          "id": 23,
+          "code": "AOC",
+          "display_name": "Aggregate Organic Carbon",
+          "display_name_en": "Aggregate Organic Carbon",
+          "category": "Soil Physics",
+          "unit": "g C m-2",
+          "description": "Organic carbon stored in soil aggregates"
+        },
+        {
+          "id": 24,
+          "code": "AD",
+          "display_name": "Aggregate Distribution",
+          "display_name_en": "Aggregate Distribution",
+          "category": "Soil Physics",
+          "unit": "%",
+          "description": "Mass proportion of a soil aggregate size class"
+        }
+      ],
+      "vis_data": {
+        "data_type": "netcdf",
+        "chart_title": "Global Zonal Aggregate Organic Carbon Components",
+        "chart_subtitle": "Zonal means across 57,164 valid 0.5-degree land cells (360 x 720 matrix; 5-degree latitude bands)",
+        "x_labels": [
+          "57.5°S",
+          "52.5°S",
+          "47.5°S",
+          "42.5°S",
+          "37.5°S",
+          "32.5°S",
+          "27.5°S",
+          "22.5°S",
+          "17.5°S",
+          "12.5°S",
+          "7.5°S",
+          "2.5°S",
+          "2.5°N",
+          "7.5°N",
+          "12.5°N",
+          "17.5°N",
+          "22.5°N",
+          "27.5°N",
+          "32.5°N",
+          "37.5°N",
+          "42.5°N",
+          "47.5°N",
+          "52.5°N",
+          "57.5°N",
+          "62.5°N",
+          "67.5°N",
+          "72.5°N",
+          "77.5°N",
+          "82.5°N"
+        ],
+        "x_axis_name": "Latitude",
+        "series1_name": "Total AOC (g C m-2)",
+        "series1_data": [
+          10056.713,
+          9099.175,
+          6069.691,
+          4611.78,
+          4096.964,
+          2981.134,
+          3055.996,
+          3025.885,
+          3411.513,
+          3849.295,
+          4582.251,
+          5428.38,
+          4841.078,
+          3899.39,
+          3517.477,
+          3518.53,
+          3494.317,
+          3570.797,
+          3655.999,
+          3552.174,
+          4368.027,
+          5761.004,
+          8577.556,
+          9349.46,
+          10834.847,
+          11527.595,
+          12091.019,
+          9422.694,
+          9697.188
+        ],
+        "series2_name": ">2 mm aggregate (g C m-2)",
+        "series2_data": [
+          1115.893,
+          1681.398,
+          1249.122,
+          1037.708,
+          929.871,
+          586.196,
+          638.593,
+          626.262,
+          731.268,
+          878.085,
+          957.194,
+          1160.065,
+          1053.061,
+          747.436,
+          631.853,
+          606.542,
+          640.462,
+          650.008,
+          694.35,
+          648.345,
+          710.094,
+          970.534,
+          1772.2,
+          1906.395,
+          2173.407,
+          2159.738,
+          2224.809,
+          1059.987,
+          1190.917
+        ],
+        "series3_name": "0.25-2 mm aggregate (g C m-2)",
+        "series3_data": [
+          4776.147,
+          3786.225,
+          2403.526,
+          1532.814,
+          1457.694,
+          1075.442,
+          1098.571,
+          1145.106,
+          1351.35,
+          1478.639,
+          1740.744,
+          2007.145,
+          1910.934,
+          1471.749,
+          1273.672,
+          1189.821,
+          1231.909,
+          1253.054,
+          1230.303,
+          996.788,
+          1185.491,
+          1623.62,
+          3166.849,
+          3482.09,
+          4077.895,
+          4111.367,
+          3786.932,
+          1945.722,
+          1740.199
+        ],
+        "y_axis_name": "AOC (g C m-2)",
+        "depth_title": "Mean Carbon by Aggregate Size Class",
+        "depth_subtitle": "Aggregate organic carbon across four measured size fractions",
+        "depth_x_axis_name": "Mean AOC (g C m-2)",
+        "depth_labels": [
+          ">2 mm",
+          "0.25-2 mm",
+          "0.053-0.25 mm",
+          "<0.053 mm"
+        ],
+        "depth_series": [
+          {
+            "name": "Mean AOC (g C m-2)",
+            "data": [
+              1190.0,
+              2159.8,
+              1674.5,
+              1130.8
+            ],
+            "color": "#2e7d32"
+          }
+        ],
+        "kin_x": [
+          3449.0,
+          7350.0,
+          11250.0,
+          15151.0,
+          19052.0,
+          22953.0,
+          26853.0,
+          30754.0,
+          34655.0,
+          38556.0,
+          42457.0
+        ],
+        "kin_y": [
+          645.0,
+          1360.1,
+          1903.1,
+          4109.9,
+          5268.2,
+          6066.9,
+          7094.1,
+          6865.5,
+          7122.7,
+          7772.4,
+          8987.2
+        ],
+        "kin_x_label": "Total AOC (g C m-2)",
+        "kin_y_label": ">2 mm aggregate C (g C m-2)",
+        "kin_title": "Total AOC vs. Macroaggregate Carbon",
+        "kin_subtitle": "Binned grid cells linking bulk aggregate carbon to the >2 mm fraction",
+        "columns": [
+          "Latitude",
+          "Longitude",
+          "AOC total (g C m-2)",
+          ">2 mm (g C m-2)",
+          "0.25-2 mm (g C m-2)",
+          "<0.053 mm (g C m-2)"
+        ],
+        "records": [
+          {
+            "Latitude": -44.75,
+            "Longitude": -69.75,
+            "AOC total (g C m-2)": 3885.0,
+            ">2 mm (g C m-2)": 378.9,
+            "0.25-2 mm (g C m-2)": 677.7,
+            "<0.053 mm (g C m-2)": 581.7
+          },
+          {
+            "Latitude": -24.75,
+            "Longitude": -54.75,
+            "AOC total (g C m-2)": 3528.5,
+            ">2 mm (g C m-2)": 978.8,
+            "0.25-2 mm (g C m-2)": 1562.2,
+            "<0.053 mm (g C m-2)": 318.4
+          },
+          {
+            "Latitude": -14.75,
+            "Longitude": 20.25,
+            "AOC total (g C m-2)": 3873.1,
+            ">2 mm (g C m-2)": 1015.1,
+            "0.25-2 mm (g C m-2)": 1599.1,
+            "<0.053 mm (g C m-2)": 299.1
+          },
+          {
+            "Latitude": -4.75,
+            "Longitude": 35.25,
+            "AOC total (g C m-2)": 3396.6,
+            ">2 mm (g C m-2)": 1116.0,
+            "0.25-2 mm (g C m-2)": 1401.3,
+            "<0.053 mm (g C m-2)": 291.7
+          },
+          {
+            "Latitude": 5.25,
+            "Longitude": 95.25,
+            "AOC total (g C m-2)": 6153.5,
+            ">2 mm (g C m-2)": 916.8,
+            "0.25-2 mm (g C m-2)": 1527.0,
+            "<0.053 mm (g C m-2)": 806.7
+          },
+          {
+            "Latitude": 25.25,
+            "Longitude": -99.75,
+            "AOC total (g C m-2)": 3651.4,
+            ">2 mm (g C m-2)": 1029.5,
+            "0.25-2 mm (g C m-2)": 985.0,
+            "<0.053 mm (g C m-2)": 771.9
+          },
+          {
+            "Latitude": 25.25,
+            "Longitude": 110.25,
+            "AOC total (g C m-2)": 4290.9,
+            ">2 mm (g C m-2)": 1020.7,
+            "0.25-2 mm (g C m-2)": 1572.6,
+            "<0.053 mm (g C m-2)": 584.2
+          },
+          {
+            "Latitude": 35.25,
+            "Longitude": 95.25,
+            "AOC total (g C m-2)": 4656.0,
+            ">2 mm (g C m-2)": 1054.9,
+            "0.25-2 mm (g C m-2)": 1112.0,
+            "<0.053 mm (g C m-2)": 404.1
+          },
+          {
+            "Latitude": 45.25,
+            "Longitude": -69.75,
+            "AOC total (g C m-2)": 12671.8,
+            ">2 mm (g C m-2)": 1445.7,
+            "0.25-2 mm (g C m-2)": 6348.9,
+            "<0.053 mm (g C m-2)": 2446.8
+          },
+          {
+            "Latitude": 45.25,
+            "Longitude": 110.25,
+            "AOC total (g C m-2)": 4651.5,
+            ">2 mm (g C m-2)": 372.5,
+            "0.25-2 mm (g C m-2)": 847.2,
+            "<0.053 mm (g C m-2)": 925.7
+          },
+          {
+            "Latitude": 55.25,
+            "Longitude": 50.25,
+            "AOC total (g C m-2)": 3644.9,
+            ">2 mm (g C m-2)": 696.4,
+            "0.25-2 mm (g C m-2)": 1292.3,
+            "<0.053 mm (g C m-2)": 452.1
+          },
+          {
+            "Latitude": 65.25,
+            "Longitude": -174.75,
+            "AOC total (g C m-2)": 4641.7,
+            ">2 mm (g C m-2)": 447.8,
+            "0.25-2 mm (g C m-2)": 1837.3,
+            "<0.053 mm (g C m-2)": 722.7
+          },
+          {
+            "Latitude": 65.25,
+            "Longitude": -69.75,
+            "AOC total (g C m-2)": 8440.4,
+            ">2 mm (g C m-2)": 1023.9,
+            "0.25-2 mm (g C m-2)": 1675.4,
+            "<0.053 mm (g C m-2)": 3367.4
+          },
+          {
+            "Latitude": 65.25,
+            "Longitude": 125.25,
+            "AOC total (g C m-2)": 10849.3,
+            ">2 mm (g C m-2)": 1861.1,
+            "0.25-2 mm (g C m-2)": 4533.5,
+            "<0.053 mm (g C m-2)": 1648.4
+          },
+          {
+            "Latitude": 75.25,
+            "Longitude": 140.25,
+            "AOC total (g C m-2)": 9158.4,
+            ">2 mm (g C m-2)": 1689.0,
+            "0.25-2 mm (g C m-2)": 1380.8,
+            "<0.053 mm (g C m-2)": 3899.4
+          }
+        ],
+        "total_count": "57,164 valid 0.5-degree land grid cells (360 x 720 matrix)"
+      }
+    },
+    {
+      "id": 8,
+      "title": "Global Soil Dissolved Organic Carbon Turnover Rate (0.5-Degree Grid)",
+      "author": "MicrobialDataSystem archive (SDSU)",
+      "year": 2026,
+      "doi": "",
+      "description": "Physical files: global_DOC_turnover.nc and DOC_turnover.csv archived in data/Microbe Data/DOC Turnover. The NetCDF grid (360 x 720) and its flattened CSV representation contain 50,211 valid land cells with predicted soil dissolved organic carbon turnover rates (day-1).",
+      "spatial_scale": "Global",
+      "site_code": "Global-Terrestrial",
+      "site": {
+        "site_code": "Global-Terrestrial",
+        "site_name": "Global Terrestrial Grid (0.5 degree)",
+        "biome": "Global / Multi-Biome",
+        "latitude": 20,
+        "longitude": 0
+      },
+      "start_date": "2026-01-01",
+      "end_date": "2026-12-31",
+      "temporal_resolution": "Static Grid",
+      "data_type": "Model Simulation",
+      "scenario": "Control",
+      "min_depth": 0,
+      "max_depth": 1.0,
+      "data_source_type": "github",
+      "github_url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/DOC%20Turnover/global_DOC_turnover.nc",
+      "local_file_path": "data/Microbe Data/DOC Turnover/global_DOC_turnover.nc",
+      "files": [
+        {
+          "name": "global_DOC_turnover.nc",
+          "label": "Turnover Grid NetCDF",
+          "path": "data/Microbe Data/DOC Turnover/global_DOC_turnover.nc",
+          "size": "191 KB",
+          "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/DOC%20Turnover/global_DOC_turnover.nc"
+        },
+        {
+          "name": "DOC_turnover.csv",
+          "label": "Turnover CSV",
+          "path": "data/Microbe Data/DOC Turnover/DOC_turnover.csv",
+          "size": "1.9 MB",
+          "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/DOC%20Turnover/DOC_turnover.csv"
+        }
+      ],
+      "keywords": [
+        "soil_doc",
+        "doc_turnover",
+        "dissolved_organic_carbon",
+        "carbon_cycling",
+        "gridded_simulation",
+        "global_grid"
+      ],
+      "variables": [
+        {
+          "id": 25,
+          "code": "DOC_TURN",
+          "display_name": "DOC Turnover Rate",
+          "display_name_en": "DOC Turnover Rate",
+          "category": "Soil Physics",
+          "unit": "day-1",
+          "description": "Predicted turnover rate of dissolved organic carbon"
+        },
+        {
+          "id": 10,
+          "code": "DOC",
+          "display_name": "Soil Dissolved Organic Carbon",
+          "display_name_en": "Soil Dissolved Organic Carbon",
+          "category": "Soil Physics",
+          "unit": "mg C kg-1",
+          "description": "Dissolved organic carbon readily bioavailable to microbes"
+        }
+      ],
+      "vis_data": {
+        "data_type": "netcdf",
+        "chart_title": "Global Zonal DOC Turnover Rate",
+        "chart_subtitle": "Zonal means across 50,211 valid 0.5-degree land cells (360 x 720 matrix; 5-degree latitude bands)",
+        "x_labels": [
+          "57.5°S",
+          "52.5°S",
+          "47.5°S",
+          "42.5°S",
+          "37.5°S",
+          "32.5°S",
+          "27.5°S",
+          "22.5°S",
+          "17.5°S",
+          "12.5°S",
+          "7.5°S",
+          "2.5°S",
+          "2.5°N",
+          "7.5°N",
+          "12.5°N",
+          "17.5°N",
+          "22.5°N",
+          "27.5°N",
+          "32.5°N",
+          "37.5°N",
+          "42.5°N",
+          "47.5°N",
+          "52.5°N",
+          "57.5°N",
+          "62.5°N",
+          "67.5°N",
+          "72.5°N",
+          "77.5°N",
+          "82.5°N"
+        ],
+        "x_axis_name": "Latitude",
+        "series1_name": "DOC turnover rate (day-1)",
+        "series1_data": [
+          0.005,
+          0.006,
+          0.007,
+          0.01,
+          0.012,
+          0.012,
+          0.013,
+          0.013,
+          0.016,
+          0.017,
+          0.017,
+          0.017,
+          0.017,
+          0.017,
+          0.014,
+          0.016,
+          0.016,
+          0.013,
+          0.01,
+          0.009,
+          0.008,
+          0.006,
+          0.005,
+          0.005,
+          0.004,
+          0.003,
+          0.003,
+          0.003,
+          0.003
+        ],
+        "series2_name": null,
+        "series2_data": null,
+        "series3_name": null,
+        "series3_data": null,
+        "y_axis_name": "Turnover rate (day-1)",
+        "depth_title": "Turnover Rate Distribution",
+        "depth_subtitle": "Share of valid land area across turnover-rate classes",
+        "depth_x_axis_name": "Share of land area (%)",
+        "depth_labels": [
+          "0.0017-0.0047",
+          "0.0047-0.0076",
+          "0.0076-0.0106",
+          "0.0106-0.0136",
+          "0.0136-0.0166",
+          "0.0166-0.0196",
+          "0.0196-0.0226",
+          "0.0226-0.0256",
+          "0.0256-0.0286",
+          "0.0286-0.0315",
+          "0.0315-0.0345",
+          "0.0345-0.0375"
+        ],
+        "depth_series": [
+          {
+            "name": "Land area share (%)",
+            "data": [
+              28.56,
+              22.25,
+              12.72,
+              13.41,
+              7.77,
+              8.09,
+              5.24,
+              1.57,
+              0.34,
+              0.04,
+              0.0,
+              0.0
+            ],
+            "color": "#2e7d32"
+          }
+        ],
+        "kin_x": [
+          0.0017,
+          0.0033,
+          0.0037,
+          0.0045,
+          0.0054,
+          0.0067,
+          0.0089,
+          0.0107,
+          0.0123,
+          0.0154,
+          0.0189,
+          0.0375
+        ],
+        "kin_y": [
+          0.0,
+          9.1,
+          18.2,
+          27.3,
+          36.4,
+          45.5,
+          54.5,
+          63.6,
+          72.7,
+          81.8,
+          90.9,
+          100.0
+        ],
+        "kin_x_label": "Turnover rate (day-1)",
+        "kin_y_label": "Cumulative land area (%)",
+        "kin_title": "Cumulative Distribution of DOC Turnover",
+        "kin_subtitle": "Cumulative share of valid land area sorted by predicted turnover rate",
+        "columns": [
+          "Latitude",
+          "Longitude",
+          "DOC turnover rate (day-1)"
+        ],
+        "records": [
+          {
+            "Latitude": -44.75,
+            "Longitude": -69.75,
+            "DOC turnover rate (day-1)": 0.00552
+          },
+          {
+            "Latitude": -24.75,
+            "Longitude": 125.25,
+            "DOC turnover rate (day-1)": 0.01163
+          },
+          {
+            "Latitude": -14.75,
+            "Longitude": 35.25,
+            "DOC turnover rate (day-1)": 0.01781
+          },
+          {
+            "Latitude": -4.75,
+            "Longitude": 35.25,
+            "DOC turnover rate (day-1)": 0.01041
+          },
+          {
+            "Latitude": 5.25,
+            "Longitude": 95.25,
+            "DOC turnover rate (day-1)": 0.01945
+          },
+          {
+            "Latitude": 15.25,
+            "Longitude": 50.25,
+            "DOC turnover rate (day-1)": 0.00996
+          },
+          {
+            "Latitude": 35.25,
+            "Longitude": -99.75,
+            "DOC turnover rate (day-1)": 0.01235
+          },
+          {
+            "Latitude": 45.25,
+            "Longitude": -114.75,
+            "DOC turnover rate (day-1)": 0.00596
+          },
+          {
+            "Latitude": 45.25,
+            "Longitude": 35.25,
+            "DOC turnover rate (day-1)": 0.004
+          },
+          {
+            "Latitude": 55.25,
+            "Longitude": -114.75,
+            "DOC turnover rate (day-1)": 0.00497
+          },
+          {
+            "Latitude": 55.25,
+            "Longitude": 80.25,
+            "DOC turnover rate (day-1)": 0.00453
+          },
+          {
+            "Latitude": 65.25,
+            "Longitude": -144.75,
+            "DOC turnover rate (day-1)": 0.0033
+          },
+          {
+            "Latitude": 65.25,
+            "Longitude": 20.25,
+            "DOC turnover rate (day-1)": 0.00546
+          },
+          {
+            "Latitude": 65.25,
+            "Longitude": 125.25,
+            "DOC turnover rate (day-1)": 0.0032
+          },
+          {
+            "Latitude": 75.25,
+            "Longitude": 140.25,
+            "DOC turnover rate (day-1)": 0.00379
+          }
+        ],
+        "total_count": "50,211 valid 0.5-degree land grid cells (360 x 720 matrix)"
+      }
+    },
+    {
+      "id": 9,
+      "title": "Global Soil Fungal and Bacterial Biomass Carbon (0.5-Degree Grid)",
+      "author": "Liyuan He, Xiaofeng Xu, et al. (SDSU)",
+      "year": 2020,
+      "doi": "",
+      "description": "Physical file: FBC_BBC.nc archived in data/Microbe Data/FBC_BBC. A 0.5-degree gridded product (360 x 720) with 57,164 valid land cells, providing fungal biomass carbon (FBC), bacterial biomass carbon (BBC), the fungal:bacterial ratio, and 12 biome classes. Reference: He et al. (2020) Global biogeography of fungal and bacterial biomass carbon in topsoil, Soil Biology and Biochemistry.",
+      "spatial_scale": "Global",
+      "site_code": "Global-Terrestrial",
+      "site": {
+        "site_code": "Global-Terrestrial",
+        "site_name": "Global Terrestrial Grid (0.5 degree)",
+        "biome": "Global / Multi-Biome",
+        "latitude": 20,
+        "longitude": 0
+      },
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "temporal_resolution": "Static Grid",
+      "data_type": "Model Simulation",
+      "scenario": "Control",
+      "min_depth": 0,
+      "max_depth": 0.3,
+      "data_source_type": "github",
+      "github_url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/FBC_BBC/FBC_BBC.nc",
+      "local_file_path": "data/Microbe Data/FBC_BBC/FBC_BBC.nc",
+      "files": [
+        {
+          "name": "FBC_BBC.nc",
+          "label": "FBC/BBC Grid NetCDF",
+          "path": "data/Microbe Data/FBC_BBC/FBC_BBC.nc",
+          "size": "4.0 MB",
+          "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/FBC_BBC/FBC_BBC.nc"
+        }
+      ],
+      "keywords": [
+        "fungal_biomass",
+        "bacterial_biomass",
+        "fungal_bacterial_ratio",
+        "soil_microbial_biomass",
+        "gridded_simulation",
+        "global_grid"
+      ],
+      "variables": [
+        {
+          "id": 4,
+          "code": "FBC",
+          "display_name": "Fungal Biomass Carbon",
+          "display_name_en": "Fungal Biomass Carbon",
+          "category": "Microbial Pool",
+          "unit": "g C m-2",
+          "description": "Explicit active fungal mycelial carbon pool"
+        },
+        {
+          "id": 5,
+          "code": "BBC",
+          "display_name": "Bacterial Biomass Carbon",
+          "display_name_en": "Bacterial Biomass Carbon",
+          "category": "Microbial Pool",
+          "unit": "g C m-2",
+          "description": "Explicit active bacterial carbon pool"
+        },
+        {
+          "id": 26,
+          "code": "FB_RATIO",
+          "display_name": "Fungal:Bacterial Ratio",
+          "display_name_en": "Fungal:Bacterial Ratio",
+          "category": "Microbial Pool",
+          "unit": "unitless",
+          "description": "Ratio of fungal to bacterial biomass carbon"
+        }
+      ],
+      "vis_data": {
+        "data_type": "netcdf",
+        "chart_title": "Global Zonal Fungal and Bacterial Biomass Carbon",
+        "chart_subtitle": "Zonal means across 57,164 valid 0.5-degree land cells (360 x 720 matrix; 5-degree latitude bands)",
+        "x_labels": [
+          "57.5°S",
+          "52.5°S",
+          "47.5°S",
+          "42.5°S",
+          "37.5°S",
+          "32.5°S",
+          "27.5°S",
+          "22.5°S",
+          "17.5°S",
+          "12.5°S",
+          "7.5°S",
+          "2.5°S",
+          "2.5°N",
+          "7.5°N",
+          "12.5°N",
+          "17.5°N",
+          "22.5°N",
+          "27.5°N",
+          "32.5°N",
+          "37.5°N",
+          "42.5°N",
+          "47.5°N",
+          "52.5°N",
+          "57.5°N",
+          "62.5°N",
+          "67.5°N",
+          "72.5°N",
+          "77.5°N",
+          "82.5°N"
+        ],
+        "x_axis_name": "Latitude",
+        "series1_name": "Fungal biomass C (g C m-2)",
+        "series1_data": [
+          74.872,
+          144.216,
+          87.545,
+          80.825,
+          74.981,
+          69.296,
+          63.089,
+          59.04,
+          75.001,
+          68.683,
+          70.71,
+          79.065,
+          78.14,
+          75.758,
+          75.815,
+          65.972,
+          69.449,
+          69.194,
+          72.854,
+          66.39,
+          78.515,
+          90.158,
+          104.639,
+          183.275,
+          308.664,
+          238.918,
+          321.923,
+          346.901,
+          192.171
+        ],
+        "series2_name": "Bacterial biomass C (g C m-2)",
+        "series2_data": [
+          53.393,
+          73.958,
+          34.482,
+          31.272,
+          33.196,
+          22.203,
+          17.275,
+          16.466,
+          26.68,
+          32.273,
+          32.024,
+          41.661,
+          41.113,
+          29.938,
+          18.134,
+          14.263,
+          14.088,
+          12.983,
+          13.887,
+          18.663,
+          25.55,
+          30.861,
+          35.052,
+          37.064,
+          57.395,
+          39.006,
+          44.867,
+          41.579,
+          10.823
+        ],
+        "series3_name": "F:B ratio",
+        "series3_data": [
+          1.434,
+          2.387,
+          4.579,
+          3.795,
+          3.001,
+          4.109,
+          5.397,
+          5.495,
+          3.758,
+          2.625,
+          2.805,
+          2.543,
+          3.22,
+          3.844,
+          7.263,
+          8.028,
+          8.087,
+          7.724,
+          6.945,
+          4.888,
+          4.294,
+          3.62,
+          4.181,
+          6.05,
+          7.299,
+          9.58,
+          10.933,
+          12.022,
+          32.29
+        ],
+        "series3_axis": 1,
+        "y_axis_name": "Biomass C (g C m-2)",
+        "y_axis_name2": "F:B ratio",
+        "depth_title": "Fungal and Bacterial Biomass by Biome",
+        "depth_subtitle": "Mean biomass carbon across the 12 archived biome classes",
+        "depth_x_axis_name": "Biomass C (g C m-2)",
+        "depth_labels": [
+          "Boreal Forest",
+          "Temperate Coniferous Forest",
+          "Temperate Broadleaf Forest",
+          "Tropical Forest",
+          "Mixed Forest",
+          "Grassland",
+          "Shrubland",
+          "Tundra",
+          "Desert",
+          "Wetland",
+          "Cropland",
+          "Pasture"
+        ],
+        "depth_series": [
+          {
+            "name": "FBC (g C m-2)",
+            "data": [
+              306.3,
+              81.5,
+              73.3,
+              77.5,
+              108.0,
+              100.2,
+              53.7,
+              262.1,
+              66.5,
+              76.2,
+              73.3,
+              69.0
+            ],
+            "color": "#2e7d32"
+          },
+          {
+            "name": "BBC (g C m-2)",
+            "data": [
+              56.3,
+              26.3,
+              31.0,
+              38.6,
+              29.4,
+              35.8,
+              12.0,
+              35.1,
+              7.8,
+              26.2,
+              26.1,
+              19.6
+            ],
+            "color": "#1565c0"
+          }
+        ],
+        "kin_x": [
+          38.9,
+          116.7,
+          194.4,
+          272.2,
+          350.0,
+          427.8,
+          505.5,
+          583.3,
+          661.1,
+          738.9,
+          816.6
+        ],
+        "kin_y": [
+          17.7,
+          29.7,
+          37.2,
+          47.4,
+          63.6,
+          74.1,
+          97.3,
+          104.6,
+          123.6,
+          163.5,
+          199.7
+        ],
+        "kin_x_label": "Fungal biomass C (g C m-2)",
+        "kin_y_label": "Bacterial biomass C (g C m-2)",
+        "kin_title": "Fungal vs. Bacterial Biomass Scaling",
+        "kin_subtitle": "Binned grid cells linking fungal to bacterial biomass carbon",
+        "columns": [
+          "Latitude",
+          "Longitude",
+          "Biome",
+          "FBC (g C m-2)",
+          "BBC (g C m-2)",
+          "F:B ratio"
+        ],
+        "records": [
+          {
+            "Latitude": 74.75,
+            "Longitude": 95.25,
+            "Biome": "Tundra",
+            "FBC (g C m-2)": 359.7,
+            "BBC (g C m-2)": 39.1,
+            "F:B ratio": 9.21
+          },
+          {
+            "Latitude": 64.75,
+            "Longitude": -114.75,
+            "Biome": "Boreal Forest",
+            "FBC (g C m-2)": 100.4,
+            "BBC (g C m-2)": 17.6,
+            "F:B ratio": 5.7
+          },
+          {
+            "Latitude": 64.75,
+            "Longitude": 80.25,
+            "Biome": "Wetland",
+            "FBC (g C m-2)": 130.2,
+            "BBC (g C m-2)": 15.8,
+            "F:B ratio": 8.22
+          },
+          {
+            "Latitude": 64.75,
+            "Longitude": 170.25,
+            "Biome": "Boreal Forest",
+            "FBC (g C m-2)": 154.8,
+            "BBC (g C m-2)": 25.9,
+            "F:B ratio": 5.97
+          },
+          {
+            "Latitude": 54.75,
+            "Longitude": 35.25,
+            "Biome": "Temperate Broadleaf Forest",
+            "FBC (g C m-2)": 105.1,
+            "BBC (g C m-2)": 21.2,
+            "F:B ratio": 4.97
+          },
+          {
+            "Latitude": 54.75,
+            "Longitude": 125.25,
+            "Biome": "Boreal Forest",
+            "FBC (g C m-2)": 170.1,
+            "BBC (g C m-2)": 32.8,
+            "F:B ratio": 5.19
+          },
+          {
+            "Latitude": 44.75,
+            "Longitude": 65.25,
+            "Biome": "Wetland",
+            "FBC (g C m-2)": 42.3,
+            "BBC (g C m-2)": 8.0,
+            "F:B ratio": 5.31
+          },
+          {
+            "Latitude": 34.75,
+            "Longitude": -84.75,
+            "Biome": "Temperate Coniferous Forest",
+            "FBC (g C m-2)": 27.5,
+            "BBC (g C m-2)": 11.0,
+            "F:B ratio": 2.49
+          },
+          {
+            "Latitude": 34.75,
+            "Longitude": 110.25,
+            "Biome": "Cropland",
+            "FBC (g C m-2)": 50.6,
+            "BBC (g C m-2)": 12.8,
+            "F:B ratio": 3.96
+          },
+          {
+            "Latitude": 24.75,
+            "Longitude": 95.25,
+            "Biome": "Tropical Forest",
+            "FBC (g C m-2)": 59.8,
+            "BBC (g C m-2)": 19.1,
+            "F:B ratio": 3.14
+          },
+          {
+            "Latitude": 14.75,
+            "Longitude": 35.25,
+            "Biome": "Pasture",
+            "FBC (g C m-2)": 74.5,
+            "BBC (g C m-2)": 2.2,
+            "F:B ratio": 33.94
+          },
+          {
+            "Latitude": -5.25,
+            "Longitude": -39.75,
+            "Biome": "Shrubland",
+            "FBC (g C m-2)": 52.7,
+            "BBC (g C m-2)": 22.9,
+            "F:B ratio": 2.3
+          },
+          {
+            "Latitude": -15.25,
+            "Longitude": -39.75,
+            "Biome": "Pasture",
+            "FBC (g C m-2)": 108.3,
+            "BBC (g C m-2)": 26.4,
+            "F:B ratio": 4.11
+          },
+          {
+            "Latitude": -25.25,
+            "Longitude": 20.25,
+            "Biome": "Shrubland",
+            "FBC (g C m-2)": 78.6,
+            "BBC (g C m-2)": 11.8,
+            "F:B ratio": 6.65
+          },
+          {
+            "Latitude": -55.25,
+            "Longitude": -69.75,
+            "Biome": "Tundra",
+            "FBC (g C m-2)": 9.6,
+            "BBC (g C m-2)": 6.6,
+            "F:B ratio": 1.45
+          }
+        ],
+        "total_count": "57,164 valid 0.5-degree land grid cells (360 x 720 matrix)"
+      }
+    },
+    {
+      "id": 10,
+      "title": "Global Soil mcrA Gene Density (0.5-Degree Grid)",
+      "author": "Ziyu Guo, Xiaofeng Xu, et al. (SDSU)",
+      "year": 2026,
+      "doi": "",
+      "description": "Physical file: global_mcrA.nc archived in data/Microbe Data/MCRA. A 0.5-degree random-forest prediction grid (360 x 720) with 54,059 valid land cells. The file stores predicted mcrA gene density and the companion methane-cycle gene density, both in copies m-2.",
+      "spatial_scale": "Global",
+      "site_code": "Global-Terrestrial",
+      "site": {
+        "site_code": "Global-Terrestrial",
+        "site_name": "Global Terrestrial Grid (0.5 degree)",
+        "biome": "Global / Multi-Biome",
+        "latitude": 20,
+        "longitude": 0
+      },
+      "start_date": "2026-01-01",
+      "end_date": "2026-12-31",
+      "temporal_resolution": "Static Grid",
+      "data_type": "Model Simulation",
+      "scenario": "Control",
+      "min_depth": 0,
+      "max_depth": 0.3,
+      "data_source_type": "github",
+      "github_url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/MCRA/global_mcrA.nc",
+      "local_file_path": "data/Microbe Data/MCRA/global_mcrA.nc",
+      "files": [
+        {
+          "name": "global_mcrA.nc",
+          "label": "mcrA Grid NetCDF",
+          "path": "data/Microbe Data/MCRA/global_mcrA.nc",
+          "size": "384 KB",
+          "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/MCRA/global_mcrA.nc"
+        }
+      ],
+      "keywords": [
+        "mcra",
+        "methanogenesis",
+        "gene_density",
+        "soil_microbial_community",
+        "gridded_simulation",
+        "global_grid"
+      ],
+      "variables": [
+        {
+          "id": 27,
+          "code": "MCR_A",
+          "display_name": "mcrA Gene Density",
+          "display_name_en": "mcrA Gene Density",
+          "category": "Microbial Pool",
+          "unit": "copies m-2",
+          "description": "Predicted soil mcrA gene density (methanogenesis marker)"
+        },
+        {
+          "id": 28,
+          "code": "PMO_A",
+          "display_name": "pmoA Gene Density",
+          "display_name_en": "pmoA Gene Density",
+          "category": "Microbial Pool",
+          "unit": "copies m-2",
+          "description": "Predicted soil pmoA gene density (methane oxidation marker)"
+        }
+      ],
+      "vis_data": {
+        "data_type": "netcdf",
+        "chart_title": "Global Zonal Soil mcrA Gene Density",
+        "chart_subtitle": "Zonal means across 54,059 valid 0.5-degree land cells (360 x 720 matrix; 5-degree latitude bands)",
+        "x_labels": [
+          "57.5°S",
+          "52.5°S",
+          "47.5°S",
+          "42.5°S",
+          "37.5°S",
+          "32.5°S",
+          "27.5°S",
+          "22.5°S",
+          "17.5°S",
+          "12.5°S",
+          "7.5°S",
+          "2.5°S",
+          "2.5°N",
+          "7.5°N",
+          "12.5°N",
+          "17.5°N",
+          "22.5°N",
+          "27.5°N",
+          "32.5°N",
+          "37.5°N",
+          "42.5°N",
+          "47.5°N",
+          "52.5°N",
+          "57.5°N",
+          "62.5°N",
+          "67.5°N",
+          "72.5°N",
+          "77.5°N",
+          "82.5°N"
+        ],
+        "x_axis_name": "Latitude",
+        "series1_name": "mcrA density (copies m-2)",
+        "series1_data": [
+          11.773,
+          11.727,
+          11.619,
+          11.47,
+          11.867,
+          11.432,
+          11.321,
+          11.594,
+          11.76,
+          11.681,
+          11.431,
+          11.175,
+          11.101,
+          11.622,
+          11.623,
+          10.838,
+          10.835,
+          10.969,
+          11.316,
+          11.424,
+          11.314,
+          11.42,
+          11.731,
+          11.932,
+          11.995,
+          11.877,
+          11.689,
+          10.604,
+          10.045
+        ],
+        "series2_name": null,
+        "series2_data": null,
+        "series3_name": null,
+        "series3_data": null,
+        "y_axis_name": "Gene density (copies m-2)",
+        "depth_title": "mcrA Density Distribution",
+        "depth_subtitle": "Share of valid land area across predicted gene-density classes",
+        "depth_x_axis_name": "Share of land area (%)",
+        "depth_labels": [
+          "9.01-9.53",
+          "9.53-10.06",
+          "10.06-10.58",
+          "10.58-11.10",
+          "11.10-11.62",
+          "11.62-12.14",
+          "12.14-12.66",
+          "12.66-13.18",
+          "13.18-13.70",
+          "13.70-14.23"
+        ],
+        "depth_series": [
+          {
+            "name": "Land area share (%)",
+            "data": [
+              0.59,
+              7.13,
+              9.45,
+              9.93,
+              13.82,
+              39.37,
+              16.49,
+              2.91,
+              0.29,
+              0.02
+            ],
+            "color": "#2e7d32"
+          }
+        ],
+        "kin_x": [
+          9.78,
+          10.08,
+          10.37,
+          10.66,
+          10.95,
+          11.25,
+          11.54,
+          11.83,
+          12.13,
+          12.42,
+          12.71
+        ],
+        "kin_y": [
+          11.44,
+          11.5,
+          11.67,
+          11.68,
+          11.66,
+          11.87,
+          12.12,
+          12.3,
+          12.18,
+          12.17,
+          12.23
+        ],
+        "kin_x_label": "mcrA density (copies m-2)",
+        "kin_y_label": "pmoA density (copies m-2)",
+        "kin_title": "mcrA vs. pmoA Gene Density",
+        "kin_subtitle": "Binned grid cells linking the two methane-cycle gene markers",
+        "columns": [
+          "Latitude",
+          "Longitude",
+          "mcrA density (copies m-2)",
+          "pmoA density (copies m-2)"
+        ],
+        "records": [
+          {
+            "Latitude": -54.75,
+            "Longitude": -69.75,
+            "mcrA density (copies m-2)": 11.93,
+            "pmoA density (copies m-2)": 10.75
+          },
+          {
+            "Latitude": -24.75,
+            "Longitude": -54.75,
+            "mcrA density (copies m-2)": 12.38,
+            "pmoA density (copies m-2)": 12.72
+          },
+          {
+            "Latitude": -14.75,
+            "Longitude": -39.75,
+            "mcrA density (copies m-2)": 11.27,
+            "pmoA density (copies m-2)": 11.74
+          },
+          {
+            "Latitude": -4.75,
+            "Longitude": 35.25,
+            "mcrA density (copies m-2)": 11.73,
+            "pmoA density (copies m-2)": 12.51
+          },
+          {
+            "Latitude": 15.25,
+            "Longitude": -9.75,
+            "mcrA density (copies m-2)": 12.11,
+            "pmoA density (copies m-2)": 11.77
+          },
+          {
+            "Latitude": 25.25,
+            "Longitude": -9.75,
+            "mcrA density (copies m-2)": 9.83,
+            "pmoA density (copies m-2)": 12.29
+          },
+          {
+            "Latitude": 35.25,
+            "Longitude": -114.75,
+            "mcrA density (copies m-2)": 10.89,
+            "pmoA density (copies m-2)": 12.48
+          },
+          {
+            "Latitude": 35.25,
+            "Longitude": 95.25,
+            "mcrA density (copies m-2)": 11.12,
+            "pmoA density (copies m-2)": 11.94
+          },
+          {
+            "Latitude": 45.25,
+            "Longitude": 5.25,
+            "mcrA density (copies m-2)": 12.2,
+            "pmoA density (copies m-2)": 12.51
+          },
+          {
+            "Latitude": 55.25,
+            "Longitude": -114.75,
+            "mcrA density (copies m-2)": 12.58,
+            "pmoA density (copies m-2)": 12.08
+          },
+          {
+            "Latitude": 55.25,
+            "Longitude": 80.25,
+            "mcrA density (copies m-2)": 11.97,
+            "pmoA density (copies m-2)": 12.35
+          },
+          {
+            "Latitude": 65.25,
+            "Longitude": -144.75,
+            "mcrA density (copies m-2)": 12.45,
+            "pmoA density (copies m-2)": 12.61
+          },
+          {
+            "Latitude": 65.25,
+            "Longitude": 50.25,
+            "mcrA density (copies m-2)": 11.66,
+            "pmoA density (copies m-2)": 12.56
+          },
+          {
+            "Latitude": 65.25,
+            "Longitude": 140.25,
+            "mcrA density (copies m-2)": 11.53,
+            "pmoA density (copies m-2)": 11.58
+          },
+          {
+            "Latitude": 75.25,
+            "Longitude": 140.25,
+            "mcrA density (copies m-2)": 9.51,
+            "pmoA density (copies m-2)": 11.64
+          }
+        ],
+        "total_count": "54,059 valid 0.5-degree land grid cells (360 x 720 matrix)"
+      }
+    },
+    {
+      "id": 11,
+      "title": "Global Soil Microbial Metabolic Quotient Observations",
+      "author": "MicrobialDataSystem archive (SDSU)",
+      "year": 2026,
+      "doi": "",
+      "description": "Physical file: MMQ.csv archived in data/Microbe Data/MMQ. Compiles 2,444 field and incubation observations from 48 countries with microbial biomass C, N and P, basal respiration, microbial quotient (microbial C / organic C), soil C/N/P, pH, MAT, MAP and sampling depth.",
+      "spatial_scale": "Global",
+      "site_code": "Global-Terrestrial",
+      "site": {
+        "site_code": "Global-Terrestrial",
+        "site_name": "Global Terrestrial Ecosystems (MMQ synthesis)",
+        "biome": "Global / Multi-Biome",
+        "latitude": 20,
+        "longitude": 0
+      },
+      "start_date": "2026-01-01",
+      "end_date": "2026-12-31",
+      "temporal_resolution": "Snapshot",
+      "data_type": "Field Observation",
+      "scenario": "Control",
+      "min_depth": 0,
+      "max_depth": 1.0,
+      "data_source_type": "github",
+      "github_url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/MMQ/MMQ.csv",
+      "local_file_path": "data/Microbe Data/MMQ/MMQ.csv",
+      "files": [
+        {
+          "name": "MMQ.csv",
+          "label": "MMQ Observations CSV",
+          "path": "data/Microbe Data/MMQ/MMQ.csv",
+          "size": "1.3 MB",
+          "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/MMQ/MMQ.csv"
+        }
+      ],
+      "keywords": [
+        "metabolic_quotient",
+        "basal_respiration",
+        "soil_respiration",
+        "soil_microbial_biomass",
+        "global_synthesis",
+        "soil_chemistry"
+      ],
+      "variables": [
+        {
+          "id": 29,
+          "code": "MQ",
+          "display_name": "Microbial Quotient",
+          "display_name_en": "Microbial Quotient",
+          "category": "Microbial Pool",
+          "unit": "%",
+          "description": "Microbial biomass carbon as a percentage of soil organic carbon"
+        },
+        {
+          "id": 1,
+          "code": "MBC",
+          "display_name": "Soil Microbial Biomass Carbon",
+          "display_name_en": "Soil Microbial Biomass Carbon",
+          "category": "Microbial Pool",
+          "unit": "mmol kg-1",
+          "description": "Total living microbial biomass carbon in soil (Chloroform fumigation extraction)"
+        },
+        {
+          "id": 2,
+          "code": "MBN",
+          "display_name": "Soil Microbial Biomass Nitrogen",
+          "display_name_en": "Soil Microbial Biomass Nitrogen",
+          "category": "Microbial Pool",
+          "unit": "mmol kg-1",
+          "description": "Total living microbial biomass nitrogen in soil"
+        },
+        {
+          "id": 3,
+          "code": "MBP",
+          "display_name": "Soil Microbial Biomass Phosphorus",
+          "display_name_en": "Soil Microbial Biomass Phosphorus",
+          "category": "Microbial Pool",
+          "unit": "mmol kg-1",
+          "description": "Total living microbial biomass phosphorus in soil"
+        },
+        {
+          "id": 30,
+          "code": "BR",
+          "display_name": "Basal Respiration",
+          "display_name_en": "Basal Respiration",
+          "category": "Gas Flux",
+          "unit": "ug C g-1 h-1",
+          "description": "Measured basal soil respiration rate"
+        },
+        {
+          "id": 11,
+          "code": "PH",
+          "display_name": "Soil pH",
+          "display_name_en": "Soil pH",
+          "category": "Soil Physics",
+          "unit": "pH units",
+          "description": "Soil reaction in water/CaCl2 suspension"
+        }
+      ],
+      "vis_data": {
+        "data_type": "csv",
+        "chart_title": "Global Biome Microbial Quotient, Respiration and Biomass Carbon",
+        "chart_subtitle": "Mean values aggregated from 2,444 observations across 48 countries",
+        "x_labels": [
+          "Desert",
+          "Bare Soil",
+          "Grassland",
+          "Tropical Forest",
+          "Pasture",
+          "Cropland",
+          "Boreal Forest",
+          "Temperate Coniferous Forest",
+          "Temperate Broadleaf Forest",
+          "Shrubland",
+          "Wetland"
+        ],
+        "x_axis_name": "Global Biomes",
+        "series1_name": "Microbial quotient (%)",
+        "series1_data": [
+          4.75,
+          3.5,
+          2.43,
+          2.35,
+          2.15,
+          2.07,
+          1.75,
+          1.63,
+          1.34,
+          0.89,
+          0.73
+        ],
+        "series2_name": "Basal respiration (ug C g-1 h-1)",
+        "series2_data": [
+          0.022,
+          0.16,
+          0.169,
+          0.151,
+          0.187,
+          0.481,
+          0.902,
+          0.496,
+          0.549,
+          0.249,
+          0.633
+        ],
+        "series3_name": "Biomass C (mmol kg-1)",
+        "series3_data": [
+          6.69,
+          37.04,
+          62.44,
+          66.82,
+          92.15,
+          27.35,
+          339.25,
+          144.51,
+          159.5,
+          45.54,
+          141.54
+        ],
+        "series3_axis": 1,
+        "y_axis_name": "MQ (%) / Respiration (ug C g-1 h-1)",
+        "y_axis_name2": "Biomass C (mmol kg-1)",
+        "depth_title": "Microbial Quotient Depth Profile",
+        "depth_subtitle": "Mean microbial quotient across reported soil depth horizons",
+        "depth_x_axis_name": "Microbial quotient (%)",
+        "depth_labels": [
+          "0-10cm",
+          "10-20cm",
+          "20-30cm",
+          "30-50cm",
+          "50-100cm"
+        ],
+        "depth_series": [
+          {
+            "name": "Microbial quotient (%)",
+            "data": [
+              2.04,
+              1.73,
+              2.42,
+              2.05,
+              2.02
+            ],
+            "color": "#2e7d32"
+          }
+        ],
+        "kin_x": [
+          0.21,
+          0.64,
+          1.98,
+          6.15,
+          19.1,
+          59.31,
+          184.18,
+          572.0,
+          1776.43
+        ],
+        "kin_y": [
+          0.004,
+          0.015,
+          0.064,
+          0.245,
+          0.288,
+          0.478,
+          0.612,
+          1.707,
+          2.545
+        ],
+        "kin_x_label": "Biomass C (mmol kg-1)",
+        "kin_y_label": "Basal respiration (ug C g-1 h-1)",
+        "kin_title": "Biomass Carbon vs. Basal Respiration",
+        "kin_subtitle": "Log-binned observations linking microbial biomass to respiration",
+        "columns": [
+          "Country",
+          "Biome",
+          "Depth (cm)",
+          "Biomass C (mmol kg-1)",
+          "Basal respiration (ug C g-1 h-1)",
+          "Microbial quotient (%)",
+          "pH"
+        ],
+        "records": [
+          {
+            "Country": "UK",
+            "Biome": "Grassland",
+            "Depth (cm)": 5.0,
+            "Biomass C (mmol kg-1)": 61.75,
+            "Basal respiration (ug C g-1 h-1)": 0.288,
+            "Microbial quotient (%)": null,
+            "pH": 7.0
+          },
+          {
+            "Country": "Germany",
+            "Biome": "Cropland",
+            "Depth (cm)": 10.5,
+            "Biomass C (mmol kg-1)": 18.92,
+            "Basal respiration (ug C g-1 h-1)": 0.015,
+            "Microbial quotient (%)": 2.2,
+            "pH": null
+          },
+          {
+            "Country": "Germany",
+            "Biome": "Bare Soil",
+            "Depth (cm)": null,
+            "Biomass C (mmol kg-1)": 238.25,
+            "Basal respiration (ug C g-1 h-1)": 0.822,
+            "Microbial quotient (%)": null,
+            "pH": 7.4
+          },
+          {
+            "Country": "Spain",
+            "Biome": "Cropland",
+            "Depth (cm)": 10.0,
+            "Biomass C (mmol kg-1)": 33.33,
+            "Basal respiration (ug C g-1 h-1)": 0.089,
+            "Microbial quotient (%)": 2.32,
+            "pH": null
+          },
+          {
+            "Country": "China",
+            "Biome": "Wetland",
+            "Depth (cm)": 5.0,
+            "Biomass C (mmol kg-1)": 13.69,
+            "Basal respiration (ug C g-1 h-1)": 0.066,
+            "Microbial quotient (%)": 1.08,
+            "pH": null
+          },
+          {
+            "Country": "South Africa",
+            "Biome": "Grassland",
+            "Depth (cm)": 2.5,
+            "Biomass C (mmol kg-1)": 104.17,
+            "Basal respiration (ug C g-1 h-1)": 0.25,
+            "Microbial quotient (%)": 2.1,
+            "pH": 5.5
+          },
+          {
+            "Country": "Italy",
+            "Biome": "Temperate Broadleaf Forest",
+            "Depth (cm)": 10.0,
+            "Biomass C (mmol kg-1)": 35.42,
+            "Basal respiration (ug C g-1 h-1)": 0.032,
+            "Microbial quotient (%)": null,
+            "pH": 5.2
+          },
+          {
+            "Country": "USA",
+            "Biome": "Cropland",
+            "Depth (cm)": 7.5,
+            "Biomass C (mmol kg-1)": 4.33,
+            "Basal respiration (ug C g-1 h-1)": 0.01,
+            "Microbial quotient (%)": null,
+            "pH": 4.0
+          },
+          {
+            "Country": "Brazil",
+            "Biome": "Cropland",
+            "Depth (cm)": 7.5,
+            "Biomass C (mmol kg-1)": 24.65,
+            "Basal respiration (ug C g-1 h-1)": 0.392,
+            "Microbial quotient (%)": 1.5,
+            "pH": null
+          },
+          {
+            "Country": "India",
+            "Biome": "Tropical Forest",
+            "Depth (cm)": 5.0,
+            "Biomass C (mmol kg-1)": 15.0,
+            "Basal respiration (ug C g-1 h-1)": 0.022,
+            "Microbial quotient (%)": null,
+            "pH": 6.3
+          },
+          {
+            "Country": "Canada",
+            "Biome": "Boreal Forest",
+            "Depth (cm)": 15.0,
+            "Biomass C (mmol kg-1)": 16.67,
+            "Basal respiration (ug C g-1 h-1)": 0.206,
+            "Microbial quotient (%)": null,
+            "pH": 5.42
+          },
+          {
+            "Country": "US",
+            "Biome": "Boreal Forest",
+            "Depth (cm)": 37.5,
+            "Biomass C (mmol kg-1)": 1.01,
+            "Basal respiration (ug C g-1 h-1)": 0.002,
+            "Microbial quotient (%)": null,
+            "pH": 5.91
+          },
+          {
+            "Country": "UK",
+            "Biome": "Grassland",
+            "Depth (cm)": 5.0,
+            "Biomass C (mmol kg-1)": 34.42,
+            "Basal respiration (ug C g-1 h-1)": 0.132,
+            "Microbial quotient (%)": null,
+            "pH": 7.0
+          },
+          {
+            "Country": "Germany",
+            "Biome": "Cropland",
+            "Depth (cm)": 10.5,
+            "Biomass C (mmol kg-1)": 23.08,
+            "Basal respiration (ug C g-1 h-1)": 0.052,
+            "Microbial quotient (%)": 1.7,
+            "pH": null
+          },
+          {
+            "Country": "German",
+            "Biome": "Boreal Forest",
+            "Depth (cm)": 15.0,
+            "Biomass C (mmol kg-1)": 8.42,
+            "Basal respiration (ug C g-1 h-1)": 0.01,
+            "Microbial quotient (%)": null,
+            "pH": 4.2
+          }
+        ],
+        "total_count": "2,444 observations across 48 countries"
+      }
+    },
+    {
+      "id": 12,
+      "title": "Global Microbial Nitrogen and Phosphorus Limitation Predictions (0.1-Degree Rasters)",
+      "author": "MicrobialDataSystem archive (SDSU)",
+      "year": 2026,
+      "doi": "10.5061/dryad.jm63xsjnw",
+      "description": "Physical files: Global_MNL.tif and Global_MPL.tif archived in data/Microbe Data/MNL_MPL. Two 0.1-degree GeoTIFF rasters (3599 x 1367) of predicted microbial nitrogen (MNL) and phosphorus (MPL) limitation indices, with 1,203,365 valid land pixels. Dataset DOI: 10.5061/dryad.jm63xsjnw.",
+      "spatial_scale": "Global",
+      "site_code": "Global-Terrestrial",
+      "site": {
+        "site_code": "Global-Terrestrial",
+        "site_name": "Global Terrestrial Raster (0.1 degree)",
+        "biome": "Global / Multi-Biome",
+        "latitude": 20,
+        "longitude": 0
+      },
+      "start_date": "2026-01-01",
+      "end_date": "2026-12-31",
+      "temporal_resolution": "Static Raster",
+      "data_type": "Model Simulation",
+      "scenario": "Control",
+      "min_depth": 0,
+      "max_depth": 0.3,
+      "data_source_type": "github",
+      "github_url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/MNL_MPL/Global_MNL.tif",
+      "local_file_path": "data/Microbe Data/MNL_MPL/Global_MNL.tif",
+      "files": [
+        {
+          "name": "Global_MNL.tif",
+          "label": "MNL GeoTIFF",
+          "path": "data/Microbe Data/MNL_MPL/Global_MNL.tif",
+          "size": "6.1 MB",
+          "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/MNL_MPL/Global_MNL.tif"
+        },
+        {
+          "name": "Global_MPL.tif",
+          "label": "MPL GeoTIFF",
+          "path": "data/Microbe Data/MNL_MPL/Global_MPL.tif",
+          "size": "6.0 MB",
+          "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/MNL_MPL/Global_MPL.tif"
+        }
+      ],
+      "keywords": [
+        "microbial_n_limitation",
+        "microbial_p_limitation",
+        "nutrient_limitation",
+        "global_grid"
+      ],
+      "variables": [
+        {
+          "id": 31,
+          "code": "MNL",
+          "display_name": "Microbial N Limitation Index",
+          "display_name_en": "Microbial N Limitation Index",
+          "category": "Microbial Pool",
+          "unit": "index",
+          "description": "Predicted microbial nitrogen limitation index"
+        },
+        {
+          "id": 32,
+          "code": "MPL",
+          "display_name": "Microbial P Limitation Index",
+          "display_name_en": "Microbial P Limitation Index",
+          "category": "Microbial Pool",
+          "unit": "index",
+          "description": "Predicted microbial phosphorus limitation index"
+        }
+      ],
+      "vis_data": {
+        "data_type": "netcdf",
+        "chart_title": "Global Zonal Microbial N and P Limitation Indices",
+        "chart_subtitle": "Zonal means across 1,203,365 valid 0.1-degree land pixels (3599 x 1367 rasters; 5-degree latitude bands)",
+        "x_labels": [
+          "55.3°S",
+          "52.5°S",
+          "47.5°S",
+          "42.5°S",
+          "37.5°S",
+          "32.5°S",
+          "27.5°S",
+          "22.5°S",
+          "17.5°S",
+          "12.5°S",
+          "7.5°S",
+          "2.5°S",
+          "2.5°N",
+          "7.5°N",
+          "12.5°N",
+          "17.5°N",
+          "22.5°N",
+          "27.5°N",
+          "32.5°N",
+          "37.5°N",
+          "42.5°N",
+          "47.5°N",
+          "52.5°N",
+          "57.5°N",
+          "62.5°N",
+          "67.5°N",
+          "72.5°N",
+          "77.5°N",
+          "80.6°N"
+        ],
+        "x_axis_name": "Latitude",
+        "series1_name": "MNL index",
+        "series1_data": [
+          -0.287,
+          0.254,
+          0.242,
+          0.171,
+          0.105,
+          0.252,
+          0.413,
+          0.404,
+          0.098,
+          0.118,
+          0.036,
+          0.111,
+          0.137,
+          0.085,
+          -0.022,
+          0.217,
+          0.057,
+          0.235,
+          0.637,
+          0.537,
+          0.288,
+          0.184,
+          0.009,
+          0.158,
+          0.462,
+          0.803,
+          0.883,
+          0.686,
+          0.571
+        ],
+        "series2_name": "MPL index",
+        "series2_data": [
+          0.84,
+          0.416,
+          -0.03,
+          0.115,
+          0.304,
+          -0.225,
+          -0.181,
+          0.018,
+          0.363,
+          0.971,
+          1.528,
+          1.969,
+          1.689,
+          0.933,
+          0.136,
+          0.396,
+          0.59,
+          0.429,
+          0.353,
+          0.536,
+          0.467,
+          0.309,
+          0.556,
+          0.68,
+          0.753,
+          0.694,
+          0.496,
+          0.455,
+          0.485
+        ],
+        "series3_name": null,
+        "series3_data": null,
+        "y_axis_name": "Limitation index",
+        "depth_title": "Distribution of Limitation Index Values",
+        "depth_subtitle": "Share of valid land area across index classes",
+        "depth_x_axis_name": "Share of land area (%)",
+        "depth_labels": [
+          "-8.0--7.0",
+          "-7.0--6.0",
+          "-6.0--5.0",
+          "-5.0--4.0",
+          "-4.0--3.0",
+          "-3.0--2.0",
+          "-2.0--1.0",
+          "-1.0-0.0",
+          "0.0-1.0",
+          "1.0-2.0",
+          "2.0-3.0",
+          "3.0-4.0",
+          "4.0-5.0",
+          "5.0-6.0",
+          "6.0-7.0",
+          "7.0-8.0"
+        ],
+        "depth_series": [
+          {
+            "name": "MNL share (%)",
+            "data": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.01,
+              0.08,
+              2.17,
+              32.98,
+              47.38,
+              15.42,
+              1.49,
+              0.36,
+              0.09,
+              0.01,
+              0.0,
+              0.0
+            ],
+            "color": "#2e7d32"
+          },
+          {
+            "name": "MPL share (%)",
+            "data": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.04,
+              0.61,
+              3.32,
+              14.66,
+              51.97,
+              23.47,
+              5.34,
+              0.54,
+              0.03,
+              0.01,
+              0.0,
+              0.0
+            ],
+            "color": "#1565c0"
+          }
+        ],
+        "kin_x": [
+          -1.06,
+          -0.73,
+          -0.4,
+          -0.08,
+          0.25,
+          0.58,
+          0.91,
+          1.24,
+          1.57,
+          1.9,
+          2.22
+        ],
+        "kin_y": [
+          0.29,
+          0.47,
+          0.7,
+          0.84,
+          0.84,
+          0.6,
+          0.44,
+          0.31,
+          0.25,
+          0.29,
+          0.51
+        ],
+        "kin_x_label": "MNL index",
+        "kin_y_label": "MPL index",
+        "kin_title": "Microbial N vs. P Limitation",
+        "kin_subtitle": "Binned land pixels linking the nitrogen and phosphorus indices",
+        "columns": [
+          "Latitude",
+          "Longitude",
+          "MNL index",
+          "MPL index"
+        ],
+        "records": [
+          {
+            "Latitude": 72.1,
+            "Longitude": -123.9,
+            "MNL index": 0.401,
+            "MPL index": 0.146
+          },
+          {
+            "Latitude": 72.1,
+            "Longitude": 146.1,
+            "MNL index": 1.546,
+            "MPL index": -0.018
+          },
+          {
+            "Latitude": 65.1,
+            "Longitude": -51.9,
+            "MNL index": -0.481,
+            "MPL index": 0.967
+          },
+          {
+            "Latitude": 65.1,
+            "Longitude": 128.1,
+            "MNL index": 0.49,
+            "MPL index": 1.113
+          },
+          {
+            "Latitude": 58.1,
+            "Longitude": 38.1,
+            "MNL index": -0.85,
+            "MPL index": 0.768
+          },
+          {
+            "Latitude": 51.1,
+            "Longitude": -87.9,
+            "MNL index": -0.231,
+            "MPL index": 0.754
+          },
+          {
+            "Latitude": 51.1,
+            "Longitude": 128.1,
+            "MNL index": 0.28,
+            "MPL index": 0.326
+          },
+          {
+            "Latitude": 44.1,
+            "Longitude": 110.1,
+            "MNL index": 1.906,
+            "MPL index": -0.154
+          },
+          {
+            "Latitude": 37.1,
+            "Longitude": 110.1,
+            "MNL index": -0.156,
+            "MPL index": 0.54
+          },
+          {
+            "Latitude": 23.1,
+            "Longitude": 92.1,
+            "MNL index": 0.224,
+            "MPL index": 1.399
+          },
+          {
+            "Latitude": 9.1,
+            "Longitude": 2.1,
+            "MNL index": -0.584,
+            "MPL index": -0.107
+          },
+          {
+            "Latitude": -4.9,
+            "Longitude": -69.9,
+            "MNL index": -0.272,
+            "MPL index": 1.787
+          },
+          {
+            "Latitude": -11.9,
+            "Longitude": 38.1,
+            "MNL index": -0.481,
+            "MPL index": -0.686
+          },
+          {
+            "Latitude": -25.9,
+            "Longitude": 128.1,
+            "MNL index": 0.079,
+            "MPL index": -1.082
+          },
+          {
+            "Latitude": -53.9,
+            "Longitude": -69.9,
+            "MNL index": -0.133,
+            "MPL index": 0.956
+          }
+        ],
+        "total_count": "1,203,365 valid 0.1-degree land pixels (3599 x 1367 rasters)"
+      }
+    },
+    {
+      "id": 13,
+      "title": "Global Soil pmoA Gene Density (0.5-Degree Grid)",
+      "author": "Xinhao Zhu, Xiaofeng Xu, et al. (SDSU)",
+      "year": 2026,
+      "doi": "",
+      "description": "Physical file: global_pmoA.nc archived in data/Microbe Data/PMOA. A 0.5-degree random-forest prediction grid (360 x 720) with 54,059 valid land cells. The file stores predicted pmoA gene density and the companion methane-cycle gene density, both in copies m-2.",
+      "spatial_scale": "Global",
+      "site_code": "Global-Terrestrial",
+      "site": {
+        "site_code": "Global-Terrestrial",
+        "site_name": "Global Terrestrial Grid (0.5 degree)",
+        "biome": "Global / Multi-Biome",
+        "latitude": 20,
+        "longitude": 0
+      },
+      "start_date": "2026-01-01",
+      "end_date": "2026-12-31",
+      "temporal_resolution": "Static Grid",
+      "data_type": "Model Simulation",
+      "scenario": "Control",
+      "min_depth": 0,
+      "max_depth": 0.3,
+      "data_source_type": "github",
+      "github_url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/PMOA/global_pmoA.nc",
+      "local_file_path": "data/Microbe Data/PMOA/global_pmoA.nc",
+      "files": [
+        {
+          "name": "global_pmoA.nc",
+          "label": "pmoA Grid NetCDF",
+          "path": "data/Microbe Data/PMOA/global_pmoA.nc",
+          "size": "384 KB",
+          "url": "https://raw.githubusercontent.com/beyond-1234/sdsu-data-panel/gh-pages/data/Microbe%20Data/PMOA/global_pmoA.nc"
+        }
+      ],
+      "keywords": [
+        "pmoa",
+        "methane_oxidation",
+        "gene_density",
+        "soil_microbial_community",
+        "gridded_simulation",
+        "global_grid"
+      ],
+      "variables": [
+        {
+          "id": 28,
+          "code": "PMO_A",
+          "display_name": "pmoA Gene Density",
+          "display_name_en": "pmoA Gene Density",
+          "category": "Microbial Pool",
+          "unit": "copies m-2",
+          "description": "Predicted soil pmoA gene density (methane oxidation marker)"
+        },
+        {
+          "id": 27,
+          "code": "MCR_A",
+          "display_name": "mcrA Gene Density",
+          "display_name_en": "mcrA Gene Density",
+          "category": "Microbial Pool",
+          "unit": "copies m-2",
+          "description": "Predicted soil mcrA gene density (methanogenesis marker)"
+        }
+      ],
+      "vis_data": {
+        "data_type": "netcdf",
+        "chart_title": "Global Zonal Soil pmoA Gene Density",
+        "chart_subtitle": "Zonal means across 54,059 valid 0.5-degree land cells (360 x 720 matrix; 5-degree latitude bands)",
+        "x_labels": [
+          "57.5°S",
+          "52.5°S",
+          "47.5°S",
+          "42.5°S",
+          "37.5°S",
+          "32.5°S",
+          "27.5°S",
+          "22.5°S",
+          "17.5°S",
+          "12.5°S",
+          "7.5°S",
+          "2.5°S",
+          "2.5°N",
+          "7.5°N",
+          "12.5°N",
+          "17.5°N",
+          "22.5°N",
+          "27.5°N",
+          "32.5°N",
+          "37.5°N",
+          "42.5°N",
+          "47.5°N",
+          "52.5°N",
+          "57.5°N",
+          "62.5°N",
+          "67.5°N",
+          "72.5°N",
+          "77.5°N",
+          "82.5°N"
+        ],
+        "x_axis_name": "Latitude",
+        "series1_name": "pmoA density (copies m-2)",
+        "series1_data": [
+          12.614,
+          12.055,
+          11.915,
+          12.124,
+          12.108,
+          12.13,
+          11.989,
+          11.839,
+          11.958,
+          11.951,
+          11.816,
+          11.571,
+          11.733,
+          11.857,
+          12.064,
+          11.6,
+          11.622,
+          11.713,
+          11.922,
+          12.155,
+          12.14,
+          12.181,
+          12.278,
+          12.281,
+          12.294,
+          12.212,
+          11.801,
+          11.317,
+          10.71
+        ],
+        "series2_name": null,
+        "series2_data": null,
+        "series3_name": null,
+        "series3_data": null,
+        "y_axis_name": "Gene density (copies m-2)",
+        "depth_title": "pmoA Density Distribution",
+        "depth_subtitle": "Share of valid land area across predicted gene-density classes",
+        "depth_x_axis_name": "Share of land area (%)",
+        "depth_labels": [
+          "8.71-9.21",
+          "9.21-9.71",
+          "9.71-10.21",
+          "10.21-10.71",
+          "10.71-11.22",
+          "11.22-11.72",
+          "11.72-12.22",
+          "12.22-12.72",
+          "12.72-13.22",
+          "13.22-13.73"
+        ],
+        "depth_series": [
+          {
+            "name": "Land area share (%)",
+            "data": [
+              0.03,
+              0.09,
+              0.22,
+              2.15,
+              7.48,
+              20.23,
+              23.97,
+              39.86,
+              5.96,
+              0.01
+            ],
+            "color": "#2e7d32"
+          }
+        ],
+        "kin_x": [
+          10.64,
+          10.85,
+          11.06,
+          11.27,
+          11.48,
+          11.68,
+          11.89,
+          12.1,
+          12.31,
+          12.52,
+          12.73
+        ],
+        "kin_y": [
+          10.89,
+          11.06,
+          10.74,
+          10.78,
+          10.99,
+          11.23,
+          11.49,
+          11.72,
+          11.82,
+          11.88,
+          11.82
+        ],
+        "kin_x_label": "pmoA density (copies m-2)",
+        "kin_y_label": "mcrA density (copies m-2)",
+        "kin_title": "pmoA vs. mcrA Gene Density",
+        "kin_subtitle": "Binned grid cells linking the two methane-cycle gene markers",
+        "columns": [
+          "Latitude",
+          "Longitude",
+          "mcrA density (copies m-2)",
+          "pmoA density (copies m-2)"
+        ],
+        "records": [
+          {
+            "Latitude": -54.75,
+            "Longitude": -69.75,
+            "mcrA density (copies m-2)": 11.93,
+            "pmoA density (copies m-2)": 10.75
+          },
+          {
+            "Latitude": -24.75,
+            "Longitude": -54.75,
+            "mcrA density (copies m-2)": 12.38,
+            "pmoA density (copies m-2)": 12.72
+          },
+          {
+            "Latitude": -14.75,
+            "Longitude": -39.75,
+            "mcrA density (copies m-2)": 11.27,
+            "pmoA density (copies m-2)": 11.74
+          },
+          {
+            "Latitude": -4.75,
+            "Longitude": 35.25,
+            "mcrA density (copies m-2)": 11.73,
+            "pmoA density (copies m-2)": 12.51
+          },
+          {
+            "Latitude": 15.25,
+            "Longitude": -9.75,
+            "mcrA density (copies m-2)": 12.11,
+            "pmoA density (copies m-2)": 11.77
+          },
+          {
+            "Latitude": 25.25,
+            "Longitude": -9.75,
+            "mcrA density (copies m-2)": 9.83,
+            "pmoA density (copies m-2)": 12.29
+          },
+          {
+            "Latitude": 35.25,
+            "Longitude": -114.75,
+            "mcrA density (copies m-2)": 10.89,
+            "pmoA density (copies m-2)": 12.48
+          },
+          {
+            "Latitude": 35.25,
+            "Longitude": 95.25,
+            "mcrA density (copies m-2)": 11.12,
+            "pmoA density (copies m-2)": 11.94
+          },
+          {
+            "Latitude": 45.25,
+            "Longitude": 5.25,
+            "mcrA density (copies m-2)": 12.2,
+            "pmoA density (copies m-2)": 12.51
+          },
+          {
+            "Latitude": 55.25,
+            "Longitude": -114.75,
+            "mcrA density (copies m-2)": 12.58,
+            "pmoA density (copies m-2)": 12.08
+          },
+          {
+            "Latitude": 55.25,
+            "Longitude": 80.25,
+            "mcrA density (copies m-2)": 11.97,
+            "pmoA density (copies m-2)": 12.35
+          },
+          {
+            "Latitude": 65.25,
+            "Longitude": -144.75,
+            "mcrA density (copies m-2)": 12.45,
+            "pmoA density (copies m-2)": 12.61
+          },
+          {
+            "Latitude": 65.25,
+            "Longitude": 50.25,
+            "mcrA density (copies m-2)": 11.66,
+            "pmoA density (copies m-2)": 12.56
+          },
+          {
+            "Latitude": 65.25,
+            "Longitude": 140.25,
+            "mcrA density (copies m-2)": 11.53,
+            "pmoA density (copies m-2)": 11.58
+          },
+          {
+            "Latitude": 75.25,
+            "Longitude": 140.25,
+            "mcrA density (copies m-2)": 9.51,
+            "pmoA density (copies m-2)": 11.64
+          }
+        ],
+        "total_count": "54,059 valid 0.5-degree land grid cells (360 x 720 matrix)"
+      }
     }
   ],
   "variables": [
@@ -2969,9 +5400,113 @@ window.PORTAL_DATA = {
       "category": "Soil Physics",
       "unit": "class",
       "description": "Vegetation or biome class code carried by the gridded files"
+    },
+    {
+      "id": 23,
+      "code": "AOC",
+      "display_name": "Aggregate Organic Carbon",
+      "display_name_en": "Aggregate Organic Carbon",
+      "category": "Soil Physics",
+      "unit": "g C m-2",
+      "description": "Organic carbon stored in soil aggregates"
+    },
+    {
+      "id": 24,
+      "code": "AD",
+      "display_name": "Aggregate Distribution",
+      "display_name_en": "Aggregate Distribution",
+      "category": "Soil Physics",
+      "unit": "%",
+      "description": "Mass proportion of a soil aggregate size class"
+    },
+    {
+      "id": 25,
+      "code": "DOC_TURN",
+      "display_name": "DOC Turnover Rate",
+      "display_name_en": "DOC Turnover Rate",
+      "category": "Soil Physics",
+      "unit": "day-1",
+      "description": "Predicted turnover rate of dissolved organic carbon"
+    },
+    {
+      "id": 26,
+      "code": "FB_RATIO",
+      "display_name": "Fungal:Bacterial Ratio",
+      "display_name_en": "Fungal:Bacterial Ratio",
+      "category": "Microbial Pool",
+      "unit": "unitless",
+      "description": "Ratio of fungal to bacterial biomass carbon"
+    },
+    {
+      "id": 27,
+      "code": "MCR_A",
+      "display_name": "mcrA Gene Density",
+      "display_name_en": "mcrA Gene Density",
+      "category": "Microbial Pool",
+      "unit": "copies m-2",
+      "description": "Predicted soil mcrA gene density (methanogenesis marker)"
+    },
+    {
+      "id": 28,
+      "code": "PMO_A",
+      "display_name": "pmoA Gene Density",
+      "display_name_en": "pmoA Gene Density",
+      "category": "Microbial Pool",
+      "unit": "copies m-2",
+      "description": "Predicted soil pmoA gene density (methane oxidation marker)"
+    },
+    {
+      "id": 29,
+      "code": "MQ",
+      "display_name": "Microbial Quotient",
+      "display_name_en": "Microbial Quotient",
+      "category": "Microbial Pool",
+      "unit": "%",
+      "description": "Microbial biomass carbon as a percentage of soil organic carbon"
+    },
+    {
+      "id": 30,
+      "code": "BR",
+      "display_name": "Basal Respiration",
+      "display_name_en": "Basal Respiration",
+      "category": "Gas Flux",
+      "unit": "ug C g-1 h-1",
+      "description": "Measured basal soil respiration rate"
+    },
+    {
+      "id": 31,
+      "code": "MNL",
+      "display_name": "Microbial N Limitation Index",
+      "display_name_en": "Microbial N Limitation Index",
+      "category": "Microbial Pool",
+      "unit": "index",
+      "description": "Predicted microbial nitrogen limitation index"
+    },
+    {
+      "id": 32,
+      "code": "MPL",
+      "display_name": "Microbial P Limitation Index",
+      "display_name_en": "Microbial P Limitation Index",
+      "category": "Microbial Pool",
+      "unit": "index",
+      "description": "Predicted microbial phosphorus limitation index"
     }
   ],
   "keywords": [
+    "soil_aoc",
+    "aggregate_organic_carbon",
+    "doc_turnover",
+    "mcra",
+    "pmoa",
+    "microbial_n_limitation",
+    "microbial_p_limitation",
+    "basal_respiration",
+    "aggregate_stability",
+    "methanogenesis",
+    "methane_oxidation",
+    "gene_density",
+    "nutrient_limitation",
+    "carbon_cycling",
     "soil_doc",
     "dissolved_organic_carbon",
     "soil_poc",

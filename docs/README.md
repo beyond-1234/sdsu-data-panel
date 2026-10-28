@@ -26,10 +26,17 @@ docs/
 | `#/` | Data discovery, multi-dimensional slicer, dataset cards |
 | `#/dataset/1` | Microbial biomass C/N/P observations |
 | `#/dataset/2` | Microbial biomass C/N gridded simulation |
-| `#/dataset/3` | Soil DOC field observations (Excel workbook) |
+| `#/dataset/3` | Soil DOC field observations |
 | `#/dataset/4` | Soil DOC 0.5-degree gridded dataset |
 | `#/dataset/5` | Soil POC field observations (0-30 cm and 0-100 cm) |
 | `#/dataset/6` | Soil POC 0.5-degree gridded dataset |
+| `#/dataset/7` | Soil aggregate organic carbon components |
+| `#/dataset/8` | Soil DOC turnover rate |
+| `#/dataset/9` | Fungal and bacterial biomass carbon |
+| `#/dataset/10` | Soil mcrA gene density |
+| `#/dataset/11` | Microbial metabolic quotient observations |
+| `#/dataset/12` | Microbial N and P limitation rasters |
+| `#/dataset/13` | Soil pmoA gene density |
 
 ## Scope of the static build
 
@@ -63,13 +70,22 @@ open the site with an extra query parameter, for example `?t=202610202200`.
 
 `assets/js/data.js` is generated from two sources:
 
-1. the original metadata for datasets 1-2 in the existing bundle;
+1. the existing metadata for datasets 1-6 in the bundle;
 2. the archived source files under `data/Microbe Data`:
    - `DOC/Soil_DOC.csv`
    - `DOC/Global_Soil_DOC.nc`
    - `POC/POC_0-30.csv`
    - `POC/POC_0_100.csv`
    - `POC/POC_Global_Map.nc`
+   - `AOC/Global_AOC.nc`
+   - `DOC Turnover/DOC_turnover.csv`
+   - `DOC Turnover/global_DOC_turnover.nc`
+   - `FBC_BBC/FBC_BBC.nc`
+   - `MCRA/global_mcrA.nc`
+   - `MMQ/MMQ.csv`
+   - `MNL_MPL/Global_MNL.tif`
+   - `MNL_MPL/Global_MPL.tif`
+   - `PMOA/global_pmoA.nc`
 
 After changing the source files, regenerate the bundle from the repository root:
 
@@ -77,6 +93,7 @@ After changing the source files, regenerate the bundle from the repository root:
 .venv/bin/python docs/tools/build_data.py
 ```
 
-The script requires `pandas` and `numpy`. Only CSV and NetCDF files are published for
-download; the original Excel workbook is kept as a local authoring source and is not part
-of the public download set. Every file in a dataset is exposed as its own download link.
+The script requires `pandas`, `numpy`, `h5py`, `tifffile`, and `imagecodecs`. Only CSV,
+NetCDF, and GeoTIFF files are published for download; Excel workbooks are kept as local
+authoring sources and are not part of the public download set. Every file in a dataset is
+exposed as its own download link.

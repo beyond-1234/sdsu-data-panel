@@ -36,6 +36,7 @@ htmlcov/
 
 # Data source spreadsheets (not distributed; export to CSV instead)
 *.xlsx
+*.xls
 
 # macOS
 .DS_Store
